@@ -1,0 +1,21 @@
+[package]
+name = "stv-rs"
+version = "0.0.1"
+authors = ["Guillaume Endignoux <guillaumee@google.com>"]
+license = "Apache-2.0"
+edition = "2021"
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+env_logger = "0.9"
+log = "0.4"
+num = "0.4"
+rayon = "1"
+regex = "1"
+
+[dev-dependencies]
+rand = "0.8"
+
+[features]
+default = ["checked_i64"]
+checked_i64 = []
