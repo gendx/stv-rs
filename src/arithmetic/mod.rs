@@ -141,7 +141,7 @@ pub(crate) mod test {
         ( $case:ident, $( $others:tt )* ) => {
             #[test]
             fn $case() {
-                crate::arithmetic::test::NumericTests::$case(&get_positive_test_values());
+                $crate::arithmetic::test::NumericTests::$case(&get_positive_test_values());
             }
 
             numeric_tests!($($others)*);
@@ -150,7 +150,7 @@ pub(crate) mod test {
             #[test]
             #[should_panic(expected = $msg)]
             fn $case() {
-                crate::arithmetic::test::NumericTests::$case(&get_positive_test_values());
+                $crate::arithmetic::test::NumericTests::$case(&get_positive_test_values());
             }
 
             numeric_tests!($($others)*);
@@ -163,7 +163,7 @@ pub(crate) mod test {
         ( $num_samples:expr, $case:ident, $( $others:tt )* ) => {
             #[test]
             fn $case() {
-                crate::arithmetic::test::NumericTests::$case(
+                $crate::arithmetic::test::NumericTests::$case(
                     &get_positive_test_values(),
                     $num_samples
                 );
@@ -175,7 +175,7 @@ pub(crate) mod test {
             #[test]
             #[should_panic(expected = $msg)]
             fn $case() {
-                crate::arithmetic::test::NumericTests::$case(
+                $crate::arithmetic::test::NumericTests::$case(
                     &get_positive_test_values(),
                     $num_samples
                 );
@@ -226,6 +226,7 @@ pub(crate) mod test {
             })
         }
 
+        #[allow(clippy::eq_op)]
         pub fn test_add_is_commutative(test_values: &[R]) {
             Self::loop_check2(test_values, |a, b| {
                 assert_eq!(a + b, b + a, "a + b != b + a for {a}, {b}");
@@ -248,6 +249,7 @@ pub(crate) mod test {
             });
         }
 
+        #[allow(clippy::eq_op)]
         pub fn test_sub_self(test_values: &[R]) {
             Self::loop_check1(test_values, |a| {
                 assert_eq!(a - a, R::zero(), "a - a != 0 for {a}");
@@ -326,6 +328,7 @@ pub(crate) mod test {
             });
         }
 
+        #[allow(clippy::eq_op)]
         pub fn test_div_self(test_values: &[R]) {
             Self::loop_check1(test_values, |a| {
                 assert_eq!(a / a, R::one(), "a / a != 1 for {a}");
