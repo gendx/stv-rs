@@ -21,10 +21,10 @@ jobs:
           toolchain: ${{ matrix.rust }}
 
       - name: Build with default features
-        run: cargo build --verbose
+        run: cargo build --release --verbose
       - name: Tests with default features
-        run: cargo test --verbose
+        run: cargo test --release --verbose
       - name: Build with all features
-        run: cargo build --all-features --verbose
+        run: cargo build --release --all-features --verbose
       - name: Tests with all features
-        run: cargo test --all-features --verbose
+        run: cargo test --release --all-features --verbose
