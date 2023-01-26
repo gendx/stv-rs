@@ -1,5 +1,9 @@
 # Single Transferable Vote implementation in Rust
 
+[![Safety Dance](https://img.shields.io/badge/unsafe-forbidden-success.svg)](https://github.com/rust-secure-code/safety-dance/)
+![Build Status](https://github.com/gendx/lzma-rs/workflows/Build%20and%20run%20tests/badge.svg)
+[![Minimum rust 1.67](https://img.shields.io/badge/rust-1.67%2B-orange.svg)](https://github.com/rust-lang/rust/blob/master/RELEASES.md#version-1670-2023-01-26)
+
 This program is an implementation of
 [Single Transferable Vote](https://en.wikipedia.org/wiki/Single_transferable_vote)
 in Rust. The goal is to provide vote-counting transcripts that are reproducible

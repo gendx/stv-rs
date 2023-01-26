@@ -1,0 +1,30 @@
+on: [push, pull_request]
+name: Build and run tests
+jobs:
+  build_and_test:
+    strategy:
+      matrix:
+        rust:
+          - stable
+          - beta
+          - nightly
+          - 1.67.0  # MSRV
+      fail-fast: false
+    runs-on: ubuntu-latest
+    env:
+      RUSTFLAGS: "-D warnings"
+      CARGO_UNSTABLE_SPARSE_REGISTRY: true
+    steps:
+      - uses: actions/checkout@v2
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.rust }}
+
+      - name: Build with default features
+        run: cargo build --verbose
+      - name: Tests with default features
+        run: cargo test --verbose
+      - name: Build with all features
+        run: cargo build --all-features --verbose
+      - name: Tests with all features
+        run: cargo test --all-features --verbose
