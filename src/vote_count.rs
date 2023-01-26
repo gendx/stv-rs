@@ -66,7 +66,9 @@ where
 
     fn reduce(self, other: Self) -> Self {
         Self {
-            sum: std::iter::zip(self.sum, other.sum).map(|(a, b)| a + b).collect(),
+            sum: std::iter::zip(self.sum, other.sum)
+                .map(|(a, b)| a + b)
+                .collect(),
             exhausted: self.exhausted + other.exhausted,
             fn_calls: self.fn_calls + other.fn_calls,
             _phantom: PhantomData,
@@ -74,7 +76,11 @@ where
     }
 
     fn into_vote_count(self) -> VoteCount<I, R> {
-        VoteCount { sum: self.sum, exhausted: self.exhausted, _phantom: PhantomData }
+        VoteCount {
+            sum: self.sum,
+            exhausted: self.exhausted,
+            _phantom: PhantomData,
+        }
     }
 }
 
@@ -139,7 +145,10 @@ where
                 Self::process_ballot(&mut vote_accumulator, keep_factors, i, ballot);
                 vote_accumulator
             })
-            .reduce(|| VoteAccumulator::new(election.num_candidates), |a, b| a.reduce(b))
+            .reduce(
+                || VoteAccumulator::new(election.num_candidates),
+                |a, b| a.reduce(b),
+            )
     }
 
     /// Processes a ballot and adds its votes to the accumulator.
@@ -327,8 +336,10 @@ where
         // TODO: skip defeated candidates according to their status.
         // Number of eligible candidates (with a positive keep factor) in the current
         // ranking.
-        let filtered_ranking_len =
-            ranking.iter().filter(|&&candidate| !self.keep_factors[candidate].is_zero()).count();
+        let filtered_ranking_len = ranking
+            .iter()
+            .filter(|&&candidate| !self.keep_factors[candidate].is_zero())
+            .count();
         // If all the candidates are defeated in the current ranking, the original
         // implementation (from Droop.py) doesn't distribute votes any further!
         if filtered_ranking_len == 0 {
@@ -342,8 +353,9 @@ where
         // recursion to the next ranking in the ballot, rather than being distributed
         // back to any other candidate in the same ranking.
         voting_power /= &I::from_usize(filtered_ranking_len);
-        for &candidate in
-            ranking.iter().filter(|&&candidate| !self.keep_factors[candidate].is_zero())
+        for &candidate in ranking
+            .iter()
+            .filter(|&&candidate| !self.keep_factors[candidate].is_zero())
         {
             let (used_power, remaining_power) =
                 self.split_power_one_candidate(&voting_power, candidate);

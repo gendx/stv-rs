@@ -76,8 +76,11 @@ pub fn parse_election(input: impl BufRead) -> Result<Election, Box<dyn std::erro
     info!("Candidates (by nickname): {nicknames:?}");
     assert_eq!(nicknames.len(), num_candidates);
 
-    let hash_nicknames: HashMap<&str, usize> =
-        nicknames.iter().enumerate().map(|(i, c)| (c.as_str(), i)).collect();
+    let hash_nicknames: HashMap<&str, usize> = nicknames
+        .iter()
+        .enumerate()
+        .map(|(i, c)| (c.as_str(), i))
+        .collect();
 
     let mut ballots = Vec::new();
     loop {
@@ -87,7 +90,12 @@ pub fn parse_election(input: impl BufRead) -> Result<Election, Box<dyn std::erro
         }
         match re_ballot.captures(&line) {
             Some(cap_ballots) => {
-                let count = cap_ballots.get(1).unwrap().as_str().parse::<usize>().unwrap();
+                let count = cap_ballots
+                    .get(1)
+                    .unwrap()
+                    .as_str()
+                    .parse::<usize>()
+                    .unwrap();
                 let order_str = cap_ballots.get(2).unwrap().as_str();
                 let order: Vec<Vec<usize>> = order_str
                     .split(' ')
@@ -102,7 +110,11 @@ pub fn parse_election(input: impl BufRead) -> Result<Election, Box<dyn std::erro
                                 }
                             })
                             .collect();
-                        if level_candidates.is_empty() { None } else { Some(level_candidates) }
+                        if level_candidates.is_empty() {
+                            None
+                        } else {
+                            Some(level_candidates)
+                        }
                     })
                     .collect();
 
@@ -139,7 +151,14 @@ pub fn parse_election(input: impl BufRead) -> Result<Election, Box<dyn std::erro
     let title = remove_quotes(&lines.next().unwrap().unwrap()).to_string();
     info!("Election title: {title}");
 
-    Ok(Election { title, num_candidates, num_seats, num_ballots, candidates, ballots })
+    Ok(Election {
+        title,
+        num_candidates,
+        num_seats,
+        num_ballots,
+        candidates,
+        ballots,
+    })
 }
 
 /// Removes the leading and trailing quotes. The input string must start with a

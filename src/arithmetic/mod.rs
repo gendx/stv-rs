@@ -346,10 +346,26 @@ pub(crate) mod test {
 
         pub fn test_references(test_values: &[R]) {
             Self::loop_check2(test_values, |a, b| {
-                assert_eq!(a + b, a.clone() + b.clone(), "&a + &b != a + b for {a}, {b}");
-                assert_eq!(a - b, a.clone() - b.clone(), "&a - &b != a - b for {a}, {b}");
-                assert_eq!(a * b, a.clone() * b.clone(), "&a * &b != a * b for {a}, {b}");
-                assert_eq!(a / b, a.clone() / b.clone(), "&a / &b != a / b for {a}, {b}");
+                assert_eq!(
+                    a + b,
+                    a.clone() + b.clone(),
+                    "&a + &b != a + b for {a}, {b}"
+                );
+                assert_eq!(
+                    a - b,
+                    a.clone() - b.clone(),
+                    "&a - &b != a - b for {a}, {b}"
+                );
+                assert_eq!(
+                    a * b,
+                    a.clone() * b.clone(),
+                    "&a * &b != a * b for {a}, {b}"
+                );
+                assert_eq!(
+                    a / b,
+                    a.clone() / b.clone(),
+                    "&a / &b != a / b for {a}, {b}"
+                );
                 assert_eq!(a + b, a.clone() + b, "&a + &b != a + &b for {a}, {b}");
                 assert_eq!(a - b, a.clone() - b, "&a - &b != a - &b for {a}, {b}");
                 assert_eq!(a * b, a.clone() * b, "&a * &b != a * &b for {a}, {b}");

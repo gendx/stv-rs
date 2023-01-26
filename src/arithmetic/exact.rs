@@ -170,8 +170,10 @@ mod test {
             "1/2113929215", "1/2080374783", "1/2013265919", "1/1879048191", "1/1610612735",
             "1/1073741823",
         ];
-        let actual_displays: Vec<String> =
-            get_positive_test_values().iter().map(|x| format!("{x}")).collect();
+        let actual_displays: Vec<String> = get_positive_test_values()
+            .iter()
+            .map(|x| format!("{x}"))
+            .collect();
         assert_eq!(actual_displays, expected_displays);
     }
 }

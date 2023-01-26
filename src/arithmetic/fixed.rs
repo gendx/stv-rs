@@ -75,7 +75,9 @@ impl Mul for FixedDecimal9 {
     fn mul(self, rhs: Self) -> Self {
         #[cfg(feature = "checked_i64")]
         return FixedDecimal9(
-            ((self.0 as i128 * rhs.0 as i128) / 1_000_000_000).try_into().unwrap(),
+            ((self.0 as i128 * rhs.0 as i128) / 1_000_000_000)
+                .try_into()
+                .unwrap(),
         );
         #[cfg(not(feature = "checked_i64"))]
         return FixedDecimal9(((self.0 as i128 * rhs.0 as i128) / 1_000_000_000) as i64);
@@ -139,7 +141,9 @@ impl Mul<&'_ Self> for FixedDecimal9 {
     fn mul(self, rhs: &'_ Self) -> Self {
         #[cfg(feature = "checked_i64")]
         return FixedDecimal9(
-            ((self.0 as i128 * rhs.0 as i128) / 1_000_000_000).try_into().unwrap(),
+            ((self.0 as i128 * rhs.0 as i128) / 1_000_000_000)
+                .try_into()
+                .unwrap(),
         );
         #[cfg(not(feature = "checked_i64"))]
         return FixedDecimal9(((self.0 as i128 * rhs.0 as i128) / 1_000_000_000) as i64);
@@ -185,7 +189,9 @@ impl Mul<&'_ FixedDecimal9> for &'_ FixedDecimal9 {
     fn mul(self, rhs: &'_ FixedDecimal9) -> FixedDecimal9 {
         #[cfg(feature = "checked_i64")]
         return FixedDecimal9(
-            ((self.0 as i128 * rhs.0 as i128) / 1_000_000_000).try_into().unwrap(),
+            ((self.0 as i128 * rhs.0 as i128) / 1_000_000_000)
+                .try_into()
+                .unwrap(),
         );
         #[cfg(not(feature = "checked_i64"))]
         return FixedDecimal9(((self.0 as i128 * rhs.0 as i128) / 1_000_000_000) as i64);
@@ -254,7 +260,9 @@ impl MulAssign for FixedDecimal9 {
     fn mul_assign(&mut self, rhs: Self) {
         #[cfg(feature = "checked_i64")]
         {
-            self.0 = ((self.0 as i128 * rhs.0 as i128) / 1_000_000_000).try_into().unwrap();
+            self.0 = ((self.0 as i128 * rhs.0 as i128) / 1_000_000_000)
+                .try_into()
+                .unwrap();
         }
         #[cfg(not(feature = "checked_i64"))]
         {
@@ -291,7 +299,9 @@ impl MulAssign<&'_ Self> for FixedDecimal9 {
     fn mul_assign(&mut self, rhs: &'_ Self) {
         #[cfg(feature = "checked_i64")]
         {
-            self.0 = ((self.0 as i128 * rhs.0 as i128) / 1_000_000_000).try_into().unwrap();
+            self.0 = ((self.0 as i128 * rhs.0 as i128) / 1_000_000_000)
+                .try_into()
+                .unwrap();
         }
         #[cfg(not(feature = "checked_i64"))]
         {
@@ -379,7 +389,10 @@ impl Rational<i64> for FixedDecimal9 {
     fn mul_up(&self, rhs: &Self) -> Self {
         #[cfg(feature = "checked_i64")]
         return FixedDecimal9(
-            ((self.0 as i128 * rhs.0 as i128).checked_add(999_999_999).unwrap() / 1_000_000_000)
+            ((self.0 as i128 * rhs.0 as i128)
+                .checked_add(999_999_999)
+                .unwrap()
+                / 1_000_000_000)
                 .try_into()
                 .unwrap(),
         );
@@ -494,8 +507,10 @@ mod test {
             "2.130706431", "2.113929215", "2.080374783", "2.013265919",
             "1.879048191", "1.610612735", "1.073741823",
         ];
-        let actual_displays: Vec<String> =
-            get_positive_test_values().iter().map(|x| format!("{x}")).collect();
+        let actual_displays: Vec<String> = get_positive_test_values()
+            .iter()
+            .map(|x| format!("{x}"))
+            .collect();
         assert_eq!(actual_displays, expected_displays);
     }
 }

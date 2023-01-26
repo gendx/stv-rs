@@ -166,8 +166,10 @@ mod test {
           "0.0000000004967053733749714", "0.0000000005321843286349222",
           "0.0000000006208817167958132", "0.0000000009313225754828403"
         ];
-        let actual_displays: Vec<String> =
-            get_positive_test_values().iter().map(|x| format!("{x}")).collect();
+        let actual_displays: Vec<String> = get_positive_test_values()
+            .iter()
+            .map(|x| format!("{x}"))
+            .collect();
         assert_eq!(actual_displays, expected_displays);
     }
 }

@@ -106,14 +106,23 @@ where
         omega_exponent: usize,
         parallel: bool,
     ) -> ElectionResult {
-        info!("Parallel vote counting is {}", if parallel { "enabled" } else { "disabled" });
+        info!(
+            "Parallel vote counting is {}",
+            if parallel { "enabled" } else { "disabled" }
+        );
 
         let mut state = State {
             election,
             statuses: election
                 .candidates
                 .iter()
-                .map(|c| if c.is_withdrawn { Status::Withdrawn } else { Status::Candidate })
+                .map(|c| {
+                    if c.is_withdrawn {
+                        Status::Withdrawn
+                    } else {
+                        Status::Candidate
+                    }
+                })
                 .collect(),
             elected: Vec::new(),
             not_elected: Vec::new(),
@@ -122,7 +131,9 @@ where
             threshold: VoteCount::<I, R>::threshold_exhausted(election, &R::zero()),
             surplus: R::zero(),
             omega: R::one()
-                / &(0..omega_exponent).map(|_| R::from_int(I::from_usize(10))).product(),
+                / &(0..omega_exponent)
+                    .map(|_| R::from_int(I::from_usize(10)))
+                    .product(),
             parallel,
             _phantom: PhantomData,
         };
@@ -155,7 +166,10 @@ where
         let now = Instant::now();
         info!("Total elapsed time: {:?}", now.duration_since(beginning));
 
-        let result = ElectionResult { elected: state.elected, not_elected: state.not_elected };
+        let result = ElectionResult {
+            elected: state.elected,
+            not_elected: state.not_elected,
+        };
 
         println!();
 
@@ -213,7 +227,11 @@ Election: {}
         for candidate in &self.election.candidates {
             println!(
                 "\tAdd {}: {}",
-                if candidate.is_withdrawn { "withdrawn" } else { "eligible" },
+                if candidate.is_withdrawn {
+                    "withdrawn"
+                } else {
+                    "eligible"
+                },
                 candidate.name
             );
         }
@@ -229,8 +247,11 @@ Election: {}
 
     /// Returns true if the election is complete.
     fn election_completed(&self, round: usize) -> bool {
-        let candidate_count =
-            self.statuses.iter().filter(|&&status| status == Status::Candidate).count();
+        let candidate_count = self
+            .statuses
+            .iter()
+            .filter(|&&status| status == Status::Candidate)
+            .count();
         debug!(
             "Checking if count is complete: candidates={candidate_count}, to_elect={}",
             self.to_elect
@@ -252,7 +273,11 @@ Election: {}
             );
         }
 
-        if self.statuses.iter().all(|&status| status != Status::Candidate) {
+        if self
+            .statuses
+            .iter()
+            .all(|&status| status != Status::Candidate)
+        {
             debug!("Election done!");
             return true;
         }
@@ -369,13 +394,16 @@ Election: {}
 
             // Update keep factors of elected candidates.
             debug!("Updating keep factors");
-            for i in
-                self.statuses.iter().enumerate().filter_map(|(i, &status)| {
-                    if status == Status::Elected { Some(i) } else { None }
-                })
-            {
-                let mut new_factor =
-                    self.keep_factors[i].mul_up(&self.threshold).div_up(&count.sum[i]);
+            for i in self.statuses.iter().enumerate().filter_map(|(i, &status)| {
+                if status == Status::Elected {
+                    Some(i)
+                } else {
+                    None
+                }
+            }) {
+                let mut new_factor = self.keep_factors[i]
+                    .mul_up(&self.threshold)
+                    .div_up(&count.sum[i]);
                 new_factor.ceil_precision();
                 debug!(
                     "\t{}: {} ~ {} -> {new_factor} ~ {}",
@@ -419,13 +447,22 @@ Election: {}
             .sum
             .iter()
             .enumerate()
-            .filter_map(|(i, x)| if self.statuses[i] == Status::Candidate { Some(x) } else { None })
+            .filter_map(|(i, x)| {
+                if self.statuses[i] == Status::Candidate {
+                    Some(x)
+                } else {
+                    None
+                }
+            })
             .min_by(|x, y| x.partial_cmp(y).unwrap())
             .unwrap();
         debug!("Lowest vote: {min_sum} ~ {}", min_sum.to_f64());
 
         let low_threshold = min_sum + &self.surplus;
-        debug!("Low threshold: {low_threshold} ~ {}", low_threshold.to_f64());
+        debug!(
+            "Low threshold: {low_threshold} ~ {}",
+            low_threshold.to_f64()
+        );
 
         let low_candidates = (0..self.num_candidates())
             .filter(|&i| self.statuses[i] == Status::Candidate && count.sum[i] <= low_threshold)
@@ -476,7 +513,10 @@ Election: {}
                 Status::NotElected => "Defeated:",
                 Status::Withdrawn => continue,
             };
-            println!("\t{status} {} ({})", self.election.candidates[i].name, count.sum[i]);
+            println!(
+                "\t{status} {} ({})",
+                self.election.candidates[i].name, count.sum[i]
+            );
         }
 
         // Candidates beyond the first defeated one with a zero count must all be

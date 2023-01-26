@@ -238,7 +238,10 @@ impl Rational<BigInt> for BigFixedDecimal9 {
     }
 
     fn to_f64(&self) -> f64 {
-        Rational::to_f64(&BigRational::new(self.0.clone(), BigInt::from(1_000_000_000)))
+        Rational::to_f64(&BigRational::new(
+            self.0.clone(),
+            BigInt::from(1_000_000_000),
+        ))
     }
 
     fn assert_eq(a: Self, b: Self, msg: &str) {
@@ -288,7 +291,9 @@ mod test {
             result.push(BigFixedDecimal9(BigInt::from(1i64 << i)));
         }
         for i in 0..=62 {
-            result.push(BigFixedDecimal9(BigInt::from(0x7FFF_FFFF_FFFF_FFFF_i64 - (1 << i))));
+            result.push(BigFixedDecimal9(BigInt::from(
+                0x7FFF_FFFF_FFFF_FFFF_i64 - (1 << i),
+            )));
         }
         result
     }
@@ -337,12 +342,30 @@ mod test {
     fn test_display() {
         assert_eq!(format!("{}", BigFixedDecimal9::zero()), "0.000000000");
         assert_eq!(format!("{}", BigFixedDecimal9::one()), "1.000000000");
-        assert_eq!(format!("{}", BigFixedDecimal9(BigInt::from(0))), "0.000000000");
-        assert_eq!(format!("{}", BigFixedDecimal9(BigInt::from(1))), "0.000000001");
-        assert_eq!(format!("{}", BigFixedDecimal9(BigInt::from(1_000_000_000))), "1.000000000");
-        assert_eq!(format!("{}", BigFixedDecimal9(BigInt::from(1_234_567_890))), "1.234567890");
-        assert_eq!(format!("{}", BigFixedDecimal9(BigInt::from(-1))), "-0.000000001");
-        assert_eq!(format!("{}", BigFixedDecimal9(BigInt::from(-1_000_000_000))), "-1.000000000");
+        assert_eq!(
+            format!("{}", BigFixedDecimal9(BigInt::from(0))),
+            "0.000000000"
+        );
+        assert_eq!(
+            format!("{}", BigFixedDecimal9(BigInt::from(1))),
+            "0.000000001"
+        );
+        assert_eq!(
+            format!("{}", BigFixedDecimal9(BigInt::from(1_000_000_000))),
+            "1.000000000"
+        );
+        assert_eq!(
+            format!("{}", BigFixedDecimal9(BigInt::from(1_234_567_890))),
+            "1.234567890"
+        );
+        assert_eq!(
+            format!("{}", BigFixedDecimal9(BigInt::from(-1))),
+            "-0.000000001"
+        );
+        assert_eq!(
+            format!("{}", BigFixedDecimal9(BigInt::from(-1_000_000_000))),
+            "-1.000000000"
+        );
         assert_eq!(
             format!("{}", BigFixedDecimal9(BigInt::from(10).pow(20))),
             "100000000000.000000000"
@@ -392,8 +415,10 @@ mod test {
             "9079256848.778919935", "8935141660.703064063", "8646911284.551352319",
             "8070450532.247928831", "6917529027.641081855", "4611686018.427387903"
         ];
-        let actual_displays: Vec<String> =
-            get_positive_test_values().iter().map(|x| format!("{x}")).collect();
+        let actual_displays: Vec<String> = get_positive_test_values()
+            .iter()
+            .map(|x| format!("{x}"))
+            .collect();
         assert_eq!(actual_displays, expected_displays);
     }
 }
