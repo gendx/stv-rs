@@ -1,0 +1,169 @@
+
+Election: Vegetable contest
+
+	Implementation: STV-rs (equalized counting)
+	Rule: Meek Parametric (omega = 1/10^6)
+	Arithmetic: fixed-point decimal arithmetic (9 places)
+	Seats: 4
+	Ballots: 45
+	Quota: 9.000000001
+	Omega: 0.000001000
+
+	Add eligible: Apple
+	Add withdrawn: Banana
+	Add eligible: Cherry
+	Add eligible: Date
+	Add eligible: Eggplant
+	Add withdrawn: Fig
+	Add eligible: Grape
+	Add eligible: Hazelnut
+	Add eligible: Jalapeno
+Action: Begin Count
+	Hopeful:  Apple (1.000000000)
+	Hopeful:  Cherry (5.000000000)
+	Hopeful:  Date (4.000000000)
+	Hopeful:  Eggplant (5.000000000)
+	Hopeful:  Grape (13.000000000)
+	Hopeful:  Hazelnut (8.000000000)
+	Hopeful:  Jalapeno (9.000000000)
+	Quota: 9.000000001
+	Votes: 45.000000000
+	Residual: 0.000000000
+	Total: 45.000000000
+	Surplus: 0.000000000
+Round 1:
+Action: Elect: Grape
+	Elected:  Grape (13.000000000)
+	Hopeful:  Apple (1.000000000)
+	Hopeful:  Cherry (5.000000000)
+	Hopeful:  Date (4.000000000)
+	Hopeful:  Eggplant (5.000000000)
+	Hopeful:  Hazelnut (8.000000000)
+	Hopeful:  Jalapeno (9.000000000)
+	Quota: 9.000000001
+	Votes: 45.000000000
+	Residual: 0.000000000
+	Total: 45.000000000
+	Surplus: 0.000000000
+Action: Iterate (elected)
+	Quota: 9.000000001
+	Votes: 45.000000000
+	Residual: 0.000000000
+	Total: 45.000000000
+	Surplus: 3.999999999
+Round 2:
+Action: Elect: Hazelnut
+	Elected:  Grape (9.000000009)
+	Elected:  Hazelnut (10.153846149)
+	Hopeful:  Apple (1.000000000)
+	Hopeful:  Cherry (5.000000000)
+	Hopeful:  Date (4.000000000)
+	Hopeful:  Eggplant (5.000000000)
+	Hopeful:  Jalapeno (9.000000000)
+	Quota: 8.630769232
+	Votes: 43.153846158
+	Residual: 1.846153842
+	Total: 45.000000000
+	Surplus: 3.999999999
+Action: Elect: Jalapeno
+	Elected:  Grape (9.000000009)
+	Elected:  Hazelnut (10.153846149)
+	Elected:  Jalapeno (9.000000000)
+	Hopeful:  Apple (1.000000000)
+	Hopeful:  Cherry (5.000000000)
+	Hopeful:  Date (4.000000000)
+	Hopeful:  Eggplant (5.000000000)
+	Quota: 8.630769232
+	Votes: 43.153846158
+	Residual: 1.846153842
+	Total: 45.000000000
+	Surplus: 3.999999999
+Action: Iterate (elected)
+	Quota: 8.630769232
+	Votes: 43.153846158
+	Residual: 1.846153842
+	Total: 45.000000000
+	Surplus: 2.261538462
+Round 3:
+Action: Iterate (omega)
+	Quota: 8.416270386
+	Votes: 42.081351929
+	Residual: 2.918648071
+	Total: 45.000000000
+	Surplus: 0.000000461
+Action: Defeat (surplus 0.000000461 < omega): Apple
+	Elected:  Grape (8.416270460)
+	Elected:  Hazelnut (8.416270517)
+	Elected:  Jalapeno (8.416270642)
+	Hopeful:  Cherry (5.000000000)
+	Hopeful:  Date (4.000000000)
+	Hopeful:  Eggplant (5.000000000)
+	Defeated: Apple (2.832540310)
+	Quota: 8.416270386
+	Votes: 42.081351929
+	Residual: 2.918648071
+	Total: 45.000000000
+	Surplus: 0.000000461
+Round 4:
+Action: Iterate (omega)
+	Quota: 7.000000429
+	Votes: 35.000002141
+	Residual: 9.999997859
+	Total: 45.000000000
+	Surplus: 0.000000854
+Action: Defeat (surplus 0.000000854 < omega): Date
+	Elected:  Grape (7.000000631)
+	Elected:  Hazelnut (7.000000712)
+	Elected:  Jalapeno (7.000000798)
+	Hopeful:  Cherry (5.000000000)
+	Hopeful:  Eggplant (5.000000000)
+	Defeated: Date (4.000000000)
+	Defeated: Apple (0.000000000)
+	Quota: 7.000000429
+	Votes: 35.000002141
+	Residual: 9.999997859
+	Total: 45.000000000
+	Surplus: 0.000000854
+Round 5:
+Action: Elect: Eggplant
+	Elected:  Eggplant (9.000000000)
+	Elected:  Grape (7.000000631)
+	Elected:  Hazelnut (7.000000712)
+	Elected:  Jalapeno (7.000000798)
+	Hopeful:  Cherry (5.000000000)
+	Defeated: Apple, Date (0.000000000)
+	Quota: 7.000000429
+	Votes: 35.000002141
+	Residual: 9.999997859
+	Total: 45.000000000
+	Surplus: 0.000000854
+Action: Iterate (elected)
+	Quota: 7.000000429
+	Votes: 35.000002141
+	Residual: 9.999997859
+	Total: 45.000000000
+	Surplus: 2.000000425
+Action: Defeat remaining: Cherry
+	Elected:  Eggplant (9.000000000)
+	Elected:  Grape (7.000000631)
+	Elected:  Hazelnut (7.000000712)
+	Elected:  Jalapeno (7.000000798)
+	Defeated: Cherry (5.000000000)
+	Defeated: Apple, Date (0.000000000)
+	Quota: 7.000000429
+	Votes: 35.000002141
+	Residual: 9.999997859
+	Total: 45.000000000
+	Surplus: 2.000000425
+Action: Count Complete
+	Elected:  Eggplant (9.000000000)
+	Elected:  Grape (7.000000631)
+	Elected:  Hazelnut (7.000000712)
+	Elected:  Jalapeno (7.000000798)
+	Defeated: Apple, Cherry, Date (0.000000000)
+	Quota: 7.000000429
+	Votes: 30.000002141
+	Residual: 14.999997859
+	Total: 45.000000000
+	Surplus: 2.000000425
+

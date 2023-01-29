@@ -19,8 +19,6 @@ use crate::arithmetic::{Integer, Rational};
 use crate::types::{Ballot, Election};
 use log::{debug, trace, warn};
 use rayon::prelude::*;
-#[cfg(test)]
-use std::borrow::Borrow;
 use std::io;
 use std::marker::PhantomData;
 use std::ops::{Add, Div, Mul, Sub};
@@ -134,11 +132,16 @@ where
     }
 
     /// Counts the votes, based on the given keep factors.
-    pub fn count_votes(election: &Election, keep_factors: &[R], parallel: bool) -> Self {
+    pub fn count_votes(
+        election: &Election,
+        keep_factors: &[R],
+        parallel: bool,
+        pascal: Option<&[Vec<I>]>,
+    ) -> Self {
         let vote_accumulator = if parallel {
-            Self::accumulate_votes_rayon(election, keep_factors)
+            Self::accumulate_votes_rayon(election, keep_factors, pascal)
         } else {
-            Self::accumulate_votes_serial(election, keep_factors)
+            Self::accumulate_votes_serial(election, keep_factors, pascal)
         };
 
         trace!("Finished counting ballots:");
@@ -146,21 +149,37 @@ where
             trace!("  Sum[{i}] = {x} ~ {}", x.to_f64());
         }
 
+        let equalize = pascal.is_some();
+        if !equalize {
+            debug!(
+                "Finished counting votes ({} recursive calls)",
+                vote_accumulator.fn_calls
+            );
+        }
+
         vote_accumulator.into_vote_count()
     }
 
     /// Serial implementation of vote counting, using only one CPU core.
-    fn accumulate_votes_serial(election: &Election, keep_factors: &[R]) -> VoteAccumulator<I, R> {
+    fn accumulate_votes_serial(
+        election: &Election,
+        keep_factors: &[R],
+        pascal: Option<&[Vec<I>]>,
+    ) -> VoteAccumulator<I, R> {
         let mut vote_accumulator = VoteAccumulator::new(election.num_candidates);
         for (i, ballot) in election.ballots.iter().enumerate() {
-            Self::process_ballot(&mut vote_accumulator, keep_factors, i, ballot);
+            Self::process_ballot(&mut vote_accumulator, keep_factors, pascal, i, ballot);
         }
         vote_accumulator
     }
 
     /// Parallel implementation of vote counting, leveraging all CPU cores to
     /// speed up the computation.
-    fn accumulate_votes_rayon(election: &Election, keep_factors: &[R]) -> VoteAccumulator<I, R> {
+    fn accumulate_votes_rayon(
+        election: &Election,
+        keep_factors: &[R],
+        pascal: Option<&[Vec<I>]>,
+    ) -> VoteAccumulator<I, R> {
         election
             .ballots
             .par_iter()
@@ -168,7 +187,7 @@ where
             .fold_with(
                 VoteAccumulator::new(election.num_candidates),
                 |mut vote_accumulator, (i, ballot)| {
-                    Self::process_ballot(&mut vote_accumulator, keep_factors, i, ballot);
+                    Self::process_ballot(&mut vote_accumulator, keep_factors, pascal, i, ballot);
                     vote_accumulator
                 },
             )
@@ -182,6 +201,7 @@ where
     fn process_ballot(
         vote_accumulator: &mut VoteAccumulator<I, R>,
         keep_factors: &[R],
+        pascal: Option<&[Vec<I>]>,
         i: usize,
         ballot: &Ballot,
     ) {
@@ -194,9 +214,16 @@ where
             unused_power: &mut unused_power,
             keep_factors,
             fn_calls: &mut vote_accumulator.fn_calls,
+            pascal,
             _phantom: PhantomData,
         };
-        counter.process_ballot_rec();
+
+        let equalize = pascal.is_some();
+        if equalize {
+            counter.process_ballot_equalize()
+        } else {
+            counter.process_ballot_rec()
+        };
 
         if !unused_power.is_zero() {
             let pwr = &unused_power / &I::from_usize(ballot.count);
@@ -299,6 +326,9 @@ struct BallotCounter<'a, I, R> {
     keep_factors: &'a [R],
     /// Number of functions called to count this ballot (due to recursion).
     fn_calls: &'a mut usize,
+    /// Pre-computed Pascal triangle. Set only if the "equalized counting" is
+    /// enabled.
+    pascal: Option<&'a [Vec<I>]>,
     _phantom: PhantomData<I>,
 }
 
@@ -421,6 +451,78 @@ where
         }
     }
 
+    /// Processes a ballot which contains at least a tie, according to the
+    /// following "equalized counting" rules.
+    ///
+    /// In this mode, candidates ranked equally are counted by simulating a
+    /// superposition of all possible permutations of these equally-ranked
+    /// candidates.
+    ///
+    /// For example, the ballot `a b=c` becomes a superposition of `a b c` (with
+    /// weight 1/2) and `a c b` (with weight 1/2). Likewise, the ballot `a
+    /// b=c=d` is counted as a superposition of 6 ballots, each with weight
+    /// 1/6: `a b c d`, `a b d c`, `a c b d`, `a c d b`, `a d b c`, `a d c
+    /// b`.
+    fn process_ballot_equalize(mut self) {
+        // Note: we separate the voting power and the number of occurrences of each
+        // ballot, and multiply by the ballot count only at the end, so that in
+        // order to ensure fairness a repeated ballot is really counted as the sum
+        // of `b.count` identical ballots.
+        let mut voting_power = R::one();
+        let ballot_count = I::from_usize(self.ballot.count);
+
+        let pascal: &[Vec<I>] = self.pascal.unwrap();
+
+        for ranking in &self.ballot.order {
+            if ranking.len() == 1 {
+                // Only one candidate at this level. Easy case.
+                let candidate = ranking[0];
+                let (used_power, remaining_power) =
+                    self.split_power_one_candidate(&voting_power, candidate);
+                self.increment_candidate(candidate, used_power, &ballot_count);
+                voting_power = remaining_power;
+            } else {
+                // Multiple candidates ranked equally. Finer computation.
+                trace!("  Ranking = {ranking:?}");
+                let ranking_keep_factors: Vec<R> = ranking
+                    .iter()
+                    .map(|&candidate| self.keep_factors[candidate].clone())
+                    .collect();
+                // For each candidate, the unused factor is one minus the keep factor (whatever
+                // is not kept).
+                let ranking_unused_factors: Vec<R> =
+                    ranking_keep_factors.iter().map(|k| R::one() - k).collect();
+                trace!("    Ranking keep_factors = {ranking_keep_factors:?}");
+                for (i, &candidate) in ranking.iter().enumerate() {
+                    let w =
+                        Self::polyweights(&ranking_unused_factors, i, &pascal[ranking.len() - 1])
+                            * &ranking_keep_factors[i]
+                            / I::from_usize(ranking.len());
+                    trace!("    polyweight[{i}] = {w} ~ {}", w.to_f64());
+                    let used_power = &voting_power * &w;
+                    trace!(
+                        "  Sum[{candidate}] += {used_power} ~ {}",
+                        used_power.to_f64()
+                    );
+                    self.increment_candidate(candidate, used_power, &ballot_count);
+                }
+                // Conservatively, the remaining voting power passed to the next ranking in the
+                // ballot is the product of the unused factors (rounded down). Like for
+                // splitting the voting power for one candidate, we cannot simply let the
+                // remaining power being 1 minus the used power, because that would round up the
+                // remaining power and potentially giving more votes to candidates further in
+                // the ballot.
+                // TODO: Multiplication is not associative! Calculate this product in a
+                // deterministic and fair way.
+                let remaining_power: R = ranking_unused_factors.into_iter().product();
+                voting_power *= remaining_power;
+            }
+            if voting_power.is_zero() {
+                break;
+            }
+        }
+    }
+
     /// Increments the votes attributed to a candidate.
     ///
     /// Note: we separate the voting power and the number of occurrences of each
@@ -466,6 +568,126 @@ where
 
         (used_power, remaining_power)
     }
+
+    /// Helper function to calculate the voting power kept by a candidate in an
+    /// equal ranking, according to the "equalized couting" rules.
+    ///
+    /// Parameters:
+    /// - `ranking_unused_factors`: unused factors of the candidates in the
+    ///   equal ranking (for each candidate, the unused factor is 1 minus the
+    ///   keep factor).
+    /// - `skip`: index of the candidate for which the weight is calculated by
+    ///   this function.
+    /// - `pascal_row`: row of Pascal's triangle with `n` elements, where `n` is
+    ///   the length of the `ranking_unused_factors` array.
+    #[allow(clippy::needless_range_loop)]
+    fn polyweights(ranking_unused_factors: &[R], skip: usize, pascal_row: &[I]) -> R {
+        let n = ranking_unused_factors.len() - 1;
+        let poly = expand_polynomial(ranking_unused_factors, skip);
+
+        let mut result = R::zero();
+        for i in 0..=n {
+            result += &poly[i] / &pascal_row[i];
+        }
+        result
+    }
+}
+
+/// Computes the coefficients of the polynomial `(X + a)*(X + b)*...*(X +
+/// z)`, where `a`, `b`, ..., `z` are the input `coefficients` excluding the
+/// one at index `skip`.
+///
+/// The output poynomial is represented with the most-significant coefficient
+/// first, i.e. the entry at index `i` in the output array represents the
+/// coefficient of degree `n - i`. In other words, the output array `p`
+/// represents the polynomial `p[0]*X^n + p[1]*X^n-1 + ... + p[n-1]*X + p[n]`.
+///
+/// Warning: even though all the input coefficients should in principle play a
+/// symmetric role (except the skipped one), in practice the output will depend
+/// on the order of the input coefficients, if multiplication in [`R`] is not
+/// associative (e.g. due to rounding). For example, the last output coefficient
+/// `p[n]` is computed as `a * b * ... * z` (in this order), so re-ordering `(a,
+/// b, ..., z)` can lead to a different result in case of non-associativity.
+#[allow(clippy::needless_range_loop)]
+fn expand_polynomial<I, R>(coefficients: &[R], skip: usize) -> Vec<R>
+where
+    I: Integer,
+    for<'a> &'a I: Add<&'a I, Output = I>,
+    for<'a> &'a I: Sub<&'a I, Output = I>,
+    for<'a> &'a I: Mul<&'a I, Output = I>,
+    R: Rational<I>,
+    for<'a> &'a R: Add<&'a R, Output = R>,
+    for<'a> &'a R: Sub<&'a R, Output = R>,
+    for<'a> &'a R: Mul<&'a R, Output = R>,
+    for<'a> &'a R: Mul<&'a I, Output = R>,
+    for<'a> &'a R: Div<&'a R, Output = R>,
+    for<'a> &'a R: Div<&'a I, Output = R>,
+{
+    // One coefficient is excluded, so the degree `n` of the output polynomial is
+    // one less of that.
+    let n = coefficients.len() - 1;
+    // For a polynomial of degree `n`, there are `n + 1` coefficients.
+    let mut poly = vec![R::zero(); n + 1];
+    // We start the computation with a polynomial equal to 1.
+    poly[0] = R::one();
+
+    // Each iteration of the loop multiplies the current polynomial by (X + a),
+    // given the coefficient a.
+    for (i, a) in coefficients.iter().enumerate() {
+        if i == skip {
+            continue;
+        }
+
+        // Optimization: do nothing if a coefficient is zero.
+        if !a.is_zero() {
+            // We start from `P = p[0] X^k + p[1] X^k-1 + ... + p[k]` and want to compute
+            // `Q = P * (X + a)`. The resulting coefficients are given by:
+            //
+            //    p[0] X^k+1 +   p[1] X^k + ... +     p[k] X
+            // +               a*p[0] X^k + ... + a*p[k-1] X + a*p[k]
+            // ------------------------------------------------------
+            // =  q[0] X^k+1 +   q[1] X^k + ... +     q[k] X + q[k+1]
+            //
+            // In other words, for each entry q[j], we take p[j], and add to it p[j-1] * a.
+            // We do that in one pass with a simple loop.
+            let mut prev = poly[0].clone();
+            for j in 1..=n {
+                let tmp = poly[j].clone();
+                poly[j] += prev * a;
+                prev = tmp;
+            }
+        }
+    }
+
+    poly
+}
+
+/// Computes rows `0..=n` of
+/// [Pascal's triangle](https://en.wikipedia.org/wiki/Pascal%27s_triangle),
+/// defined by the relation `pascal[n][k] = pascal[n-1][k-1] + pascal[n-1][k]`.
+pub fn pascal<I>(n: usize) -> Vec<Vec<I>>
+where
+    I: Integer,
+    for<'a> &'a I: Add<&'a I, Output = I>,
+    for<'a> &'a I: Sub<&'a I, Output = I>,
+    for<'a> &'a I: Mul<&'a I, Output = I>,
+{
+    let mut result = Vec::new();
+
+    let mut row = vec![I::zero(); n + 1];
+    row[0] = I::one();
+    result.push(row);
+
+    for i in 1..=n {
+        let row = result.last().unwrap();
+        let mut newrow = vec![I::zero(); n + 1];
+        newrow[0] = I::one();
+        for j in 1..=i {
+            newrow[j] = &row[j - 1] + &row[j];
+        }
+        result.push(newrow);
+    }
+    result
 }
 
 #[cfg(test)]
@@ -476,6 +698,7 @@ mod test {
     use ::test::Bencher;
     use num::rational::Ratio;
     use num::{BigInt, BigRational};
+    use std::borrow::Borrow;
     use std::fmt::{Debug, Display};
     use std::hint::black_box;
 
@@ -520,6 +743,13 @@ mod test {
                 bench_process_ballot_rec_tens_2,
                 bench_process_ballot_rec_tens_3,
                 bench_process_ballot_rec_tens_4,
+                bench_process_ballot_equalize_chain,
+                bench_process_ballot_equalize_pairs_05,
+                bench_process_ballot_equalize_pairs_10,
+                bench_process_ballot_equalize_pairs_15,
+                bench_process_ballot_equalize_tens_2,
+                bench_process_ballot_equalize_tens_3,
+                bench_process_ballot_equalize_tens_4,
             );
         };
     }
@@ -534,15 +764,19 @@ mod test {
                 test_threshold_exhausted,
                 test_surplus_droop,
                 test_surplus_positive,
-                test_process_ballot_rec_first,
-                test_process_ballot_rec_chain,
-                test_process_ballot_rec_defeated,
+                test_process_ballot_first,
+                test_process_ballot_chain,
+                test_process_ballot_defeated,
                 test_process_ballot_rec_tie_first,
                 test_process_ballot_rec_tie_chain,
                 test_process_ballot_rec_tie_defeated,
                 test_process_ballot_rec_ties,
                 test_process_ballot_multiplier,
                 test_increment_candidate_ballot_multiplier,
+                test_pascal,
+                test_pascal_properties,
+                test_expand_polynomial,
+                test_polyweights,
             );
         };
     }
@@ -787,9 +1021,10 @@ mod test {
                     .ballots(ballots)
                     .build();
 
-                let vote_count = VoteCount::<I, R>::count_votes(&election, &keep_factors, false);
+                let vote_count =
+                    VoteCount::<I, R>::count_votes(&election, &keep_factors, false, None);
                 let vote_count_parallel =
-                    VoteCount::<I, R>::count_votes(&election, &keep_factors, true);
+                    VoteCount::<I, R>::count_votes(&election, &keep_factors, true, None);
                 assert_eq!(
                     vote_count, vote_count_parallel,
                     "Mismatch with {n} candidates"
@@ -812,6 +1047,7 @@ mod test {
                 unused_power: &mut unused_power,
                 keep_factors,
                 fn_calls: &mut fn_calls,
+                pascal: None,
                 _phantom: PhantomData,
             };
             counter.process_ballot_rec();
@@ -819,42 +1055,84 @@ mod test {
             (sum, unused_power, fn_calls)
         }
 
-        // First candidate takes it all.
-        fn test_process_ballot_rec_first() {
-            let (sum, unused_power, fn_calls) = Self::process_ballot_rec(
-                Ballot::new(1, [vec![0], vec![1], vec![2]]),
-                /* keep_factors = */ &[R::one(), R::one(), R::one()],
-            );
+        fn process_ballot_equalize(
+            ballot: impl Borrow<Ballot>,
+            keep_factors: &[R],
+            pascal: &[Vec<I>],
+        ) -> (Vec<R>, R) {
+            let num_candidates = keep_factors.len();
+            let mut sum = vec![R::zero(); num_candidates];
+            let mut unused_power = R::one();
 
+            let counter = BallotCounter {
+                ballot: ballot.borrow(),
+                sum: &mut sum,
+                unused_power: &mut unused_power,
+                keep_factors,
+                fn_calls: &mut 0,
+                pascal: Some(pascal),
+                _phantom: PhantomData,
+            };
+            counter.process_ballot_equalize();
+
+            (sum, unused_power)
+        }
+
+        // First candidate takes it all.
+        fn test_process_ballot_first() {
+            let ballot = Ballot::new(1, [vec![0], vec![1], vec![2]]);
+            let keep_factors = [R::one(), R::one(), R::one()];
+            let pascal = pascal::<I>(3);
+
+            // Recursive method.
+            let (sum, unused_power, fn_calls) = Self::process_ballot_rec(&ballot, &keep_factors);
             assert_eq!(sum, vec![R::one(), R::zero(), R::zero()]);
             assert_eq!(unused_power, R::zero());
             assert_eq!(fn_calls, 1);
+
+            // Equalized counting method.
+            let (sum, unused_power) =
+                Self::process_ballot_equalize(&ballot, &keep_factors, &pascal);
+            assert_eq!(sum, vec![R::one(), R::zero(), R::zero()]);
+            assert_eq!(unused_power, R::zero());
         }
 
         // Chain of keep factors.
-        fn test_process_ballot_rec_chain() {
-            let (sum, unused_power, fn_calls) = Self::process_ballot_rec(
-                Ballot::new(1, [vec![0], vec![1], vec![2]]),
-                /* keep_factors = */ &[R::ratio(1, 2), R::ratio(2, 3), R::ratio(3, 4)],
-            );
+        fn test_process_ballot_chain() {
+            let ballot = Ballot::new(1, [vec![0], vec![1], vec![2]]);
+            let keep_factors = [R::ratio(1, 2), R::ratio(2, 3), R::ratio(3, 4)];
+            let pascal = pascal::<I>(3);
 
+            // Recursive method.
+            let (sum, unused_power, fn_calls) = Self::process_ballot_rec(&ballot, &keep_factors);
             assert_eq!(sum, vec![R::ratio(1, 2), R::ratio(1, 3), R::ratio(1, 8)]);
-            // 1/24.
             assert_eq!(unused_power, R::one() - R::ratio(23, 24));
             assert_eq!(fn_calls, 1);
+
+            // Equalized counting method.
+            let (sum, unused_power) =
+                Self::process_ballot_equalize(&ballot, &keep_factors, &pascal);
+            assert_eq!(sum, vec![R::ratio(1, 2), R::ratio(1, 3), R::ratio(1, 8)]);
+            assert_eq!(unused_power, R::one() - R::ratio(23, 24));
         }
 
         // Defeated candidate (keep factor is zero).
-        fn test_process_ballot_rec_defeated() {
-            let (sum, unused_power, fn_calls) = Self::process_ballot_rec(
-                Ballot::new(1, [vec![0], vec![1], vec![2]]),
-                /* keep_factors = */ &[R::zero(), R::ratio(2, 3), R::ratio(3, 4)],
-            );
+        fn test_process_ballot_defeated() {
+            let ballot = Ballot::new(1, [vec![0], vec![1], vec![2]]);
+            let keep_factors = [R::zero(), R::ratio(2, 3), R::ratio(3, 4)];
+            let pascal = pascal::<I>(3);
 
+            // Recursive method.
+            let (sum, unused_power, fn_calls) = Self::process_ballot_rec(&ballot, &keep_factors);
             assert_eq!(sum, vec![R::zero(), R::ratio(2, 3), R::ratio(1, 4)]);
-            // 1/12.
             assert_eq!(unused_power, R::one() - R::ratio(11, 12));
             assert_eq!(fn_calls, 1);
+
+            // Equalized counting method.
+            let (sum, unused_power) =
+                Self::process_ballot_equalize(&ballot, &keep_factors, &pascal);
+            assert_eq!(sum, vec![R::zero(), R::ratio(2, 3), R::ratio(1, 4)]);
+            assert_eq!(unused_power, R::one() - R::ratio(11, 12));
         }
 
         // Tie to start the ballot.
@@ -961,6 +1239,7 @@ mod test {
                             VoteCount::process_ballot(
                                 &mut vote_accumulator,
                                 keep_factors,
+                                None,
                                 0,
                                 &ballot,
                             );
@@ -975,6 +1254,7 @@ mod test {
                                 VoteCount::process_ballot(
                                     &mut vote_accumulator,
                                     keep_factors,
+                                    None,
                                     0,
                                     &ballot,
                                 );
@@ -1006,6 +1286,7 @@ mod test {
                             unused_power: &mut unused_power,
                             keep_factors: &empty_keep_factors,
                             fn_calls: &mut 0,
+                            pascal: None,
                             _phantom: PhantomData,
                         };
                         ballot_counter.increment_candidate(
@@ -1027,6 +1308,7 @@ mod test {
                             unused_power: &mut unused_power,
                             keep_factors: &empty_keep_factors,
                             fn_calls: &mut 0,
+                            pascal: None,
                             _phantom: PhantomData,
                         };
                         for _ in 0..ballot_count {
@@ -1044,6 +1326,189 @@ mod test {
                     assert_eq!(left_unused_power, right_unused_power);
                 }
             }
+        }
+
+        fn test_pascal() {
+            assert_eq!(
+                pascal::<I>(0),
+                [[1]].map(|row| row.map(I::from_usize).to_vec()).to_vec()
+            );
+            assert_eq!(
+                pascal::<I>(1),
+                [[1, 0], [1, 1]]
+                    .map(|row| row.map(I::from_usize).to_vec())
+                    .to_vec()
+            );
+            assert_eq!(
+                pascal::<I>(5),
+                [
+                    [1, 0, 0, 0, 0, 0],
+                    [1, 1, 0, 0, 0, 0],
+                    [1, 2, 1, 0, 0, 0],
+                    [1, 3, 3, 1, 0, 0],
+                    [1, 4, 6, 4, 1, 0],
+                    [1, 5, 10, 10, 5, 1],
+                ]
+                .map(|row| row.map(I::from_usize).to_vec())
+                .to_vec()
+            );
+            assert_eq!(
+                pascal::<I>(10),
+                [
+                    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [1, 3, 3, 1, 0, 0, 0, 0, 0, 0, 0],
+                    [1, 4, 6, 4, 1, 0, 0, 0, 0, 0, 0],
+                    [1, 5, 10, 10, 5, 1, 0, 0, 0, 0, 0],
+                    [1, 6, 15, 20, 15, 6, 1, 0, 0, 0, 0],
+                    [1, 7, 21, 35, 35, 21, 7, 1, 0, 0, 0],
+                    [1, 8, 28, 56, 70, 56, 28, 8, 1, 0, 0],
+                    [1, 9, 36, 84, 126, 126, 84, 36, 9, 1, 0],
+                    [1, 10, 45, 120, 210, 252, 210, 120, 45, 10, 1],
+                ]
+                .map(|row| row.map(I::from_usize).to_vec())
+                .to_vec()
+            );
+        }
+
+        fn test_pascal_properties() {
+            let count = 50;
+            let pascal50 = pascal::<I>(count);
+            for i in 0..=count {
+                assert_eq!(pascal50[i][0], I::from_usize(1));
+                assert_eq!(pascal50[i][i], I::from_usize(1));
+                assert_eq!(pascal50[i][1], I::from_usize(i));
+                if i < count {
+                    assert_eq!(pascal50[i + 1][i], I::from_usize(i + 1));
+                }
+                for j in 1..=i {
+                    assert_eq!(
+                        pascal50[i][j],
+                        &pascal50[i - 1][j - 1] + &pascal50[i - 1][j]
+                    );
+                }
+            }
+        }
+
+        fn test_expand_polynomial() {
+            assert_eq!(
+                expand_polynomial::<I, R>(&[1].map(R::from_usize), 0),
+                [1].map(R::from_usize)
+            );
+            assert_eq!(
+                expand_polynomial::<I, R>(&[1, 1].map(R::from_usize), 0),
+                [1, 1].map(R::from_usize)
+            );
+            assert_eq!(
+                expand_polynomial::<I, R>(&[1, 1, 1].map(R::from_usize), 0),
+                [1, 2, 1].map(R::from_usize)
+            );
+            assert_eq!(
+                expand_polynomial::<I, R>(&[1, 1, 1, 1].map(R::from_usize), 0),
+                [1, 3, 3, 1].map(R::from_usize)
+            );
+            assert_eq!(
+                expand_polynomial::<I, R>(&[1, 1, 1, 1, 1].map(R::from_usize), 0),
+                [1, 4, 6, 4, 1].map(R::from_usize)
+            );
+            // (x + 1)(x + 2)(x + 3)
+            // = (x^2 + 3x + 2)(x + 3)
+            // = x^3 + 3x^2 + 2x + 3x^2 + 9x + 6
+            // = x^3 + 6x^2 + 11x + 6
+            assert_eq!(
+                expand_polynomial::<I, R>(&[1, 2, 3, 0].map(R::from_usize), 3),
+                [1, 6, 11, 6].map(R::from_usize)
+            );
+            // (x + 2)(x + 3)(x + 4)(x + 5)
+            assert_eq!(
+                expand_polynomial::<I, R>(&[1, 2, 3, 4, 5].map(R::from_usize), 0),
+                [1, 14, 71, 154, 120].map(R::from_usize)
+            );
+        }
+
+        fn polyweight_array(keep_factors: &[R], pascal: &[Vec<I>]) -> Vec<R> {
+            let unused_factors: Vec<_> = keep_factors.iter().map(|k| R::one() - k).collect();
+            let count = keep_factors.len();
+            (0..count)
+                .map(|i| BallotCounter::<I, R>::polyweights(&unused_factors, i, &pascal[count - 1]))
+                .collect::<Vec<_>>()
+        }
+
+        fn weights(keep_factors: &[R], pascal: &[Vec<I>]) -> Vec<R> {
+            let unused_factors: Vec<_> = keep_factors.iter().map(|k| R::one() - k).collect();
+            let count = keep_factors.len();
+            (0..count)
+                .map(|i| {
+                    BallotCounter::<I, R>::polyweights(&unused_factors, i, &pascal[count - 1])
+                        * &keep_factors[i]
+                        / I::from_usize(count)
+                })
+                .collect::<Vec<_>>()
+        }
+
+        fn test_polyweights() {
+            let count = 3;
+            let pascal = pascal::<I>(count);
+
+            let keep_factors = [1, 1, 1].map(R::from_usize);
+            assert_eq!(
+                Self::polyweight_array(&keep_factors, &pascal),
+                [1, 1, 1].map(R::from_usize)
+            );
+            assert_eq!(
+                Self::weights(&keep_factors, &pascal),
+                [R::ratio(1, 3), R::ratio(1, 3), R::ratio(1, 3)]
+            );
+
+            let keep_factors = [1, 0, 1].map(R::from_usize);
+            assert_eq!(
+                Self::polyweight_array(&keep_factors, &pascal),
+                [R::ratio(3, 2), R::from_usize(1), R::ratio(3, 2)]
+            );
+            assert_eq!(
+                Self::weights(&keep_factors, &pascal),
+                [R::ratio(1, 2), R::from_usize(0), R::ratio(1, 2)]
+            );
+
+            let keep_factors = [1, 0, 0].map(R::from_usize);
+            assert_eq!(
+                Self::polyweight_array(&keep_factors, &pascal),
+                [R::from_usize(3), R::ratio(3, 2), R::ratio(3, 2)]
+            );
+            assert_eq!(
+                Self::weights(&keep_factors, &pascal),
+                [R::from_usize(1), R::from_usize(0), R::from_usize(0)]
+            );
+
+            // ABC + ACB => [1/3, 0, 0]
+            // BAC => [1/12, 1/12, 0]
+            // CAB => [1/12, 0, 1/12]
+            // BCA => [1/24, 1/12, 1/24]
+            // CBA => [1/24, 1/24, 1/12]
+            // =====
+            // Total = [7/12, 5/24, 5/24]
+            let keep_factors = [R::from_usize(1), R::ratio(1, 2), R::ratio(1, 2)];
+            assert_eq!(
+                Self::polyweight_array(&keep_factors, &pascal),
+                [R::ratio(7, 4), R::ratio(5, 4), R::ratio(5, 4)]
+            );
+            assert_eq!(
+                Self::weights(&keep_factors, &pascal),
+                [R::ratio(7, 12), R::ratio(5, 24), R::ratio(5, 24)]
+            );
+
+            // 1/8th of each vote is forwarded to the next rank.
+            // The kept 7/8th are split in 3.
+            let keep_factors = [R::ratio(1, 2), R::ratio(1, 2), R::ratio(1, 2)];
+            assert_eq!(
+                Self::polyweight_array(&keep_factors, &pascal),
+                [R::ratio(7, 4), R::ratio(7, 4), R::ratio(7, 4)]
+            );
+            assert_eq!(
+                Self::weights(&keep_factors, &pascal),
+                [R::ratio(7, 24), R::ratio(7, 24), R::ratio(7, 24)]
+            );
         }
 
         fn bench_count_votes_serial_16(bencher: &mut Bencher) {
@@ -1093,6 +1558,7 @@ mod test {
                     black_box(&election),
                     black_box(&keep_factors),
                     parallel,
+                    None,
                 )
             });
         }
@@ -1152,6 +1618,76 @@ mod test {
             };
             let keep_factors = Self::fake_keep_factors(n);
             bencher.iter(|| Self::process_ballot_rec(black_box(&ballot), black_box(&keep_factors)))
+        }
+
+        fn bench_process_ballot_equalize_chain(bencher: &mut Bencher) {
+            let pascal = pascal::<I>(10);
+            let ballot = Ballot {
+                count: 1,
+                order: (0..10).map(|i| vec![i]).collect(),
+            };
+            let keep_factors = Self::fake_keep_factors(10);
+            bencher.iter(|| {
+                Self::process_ballot_equalize(black_box(&ballot), black_box(&keep_factors), &pascal)
+            })
+        }
+
+        fn bench_process_ballot_equalize_pairs_05(bencher: &mut Bencher) {
+            Self::bench_process_ballot_equalize_pairs(bencher, 5);
+        }
+
+        fn bench_process_ballot_equalize_pairs_10(bencher: &mut Bencher) {
+            Self::bench_process_ballot_equalize_pairs(bencher, 10);
+        }
+
+        fn bench_process_ballot_equalize_pairs_15(bencher: &mut Bencher) {
+            Self::bench_process_ballot_equalize_pairs(bencher, 15);
+        }
+
+        fn bench_process_ballot_equalize_pairs(bencher: &mut Bencher, layers: usize) {
+            let n = layers * 2;
+            let pascal = pascal::<I>(n);
+            let ballot = Ballot {
+                count: 1,
+                order: (0..n)
+                    .collect::<Vec<_>>()
+                    .chunks(2)
+                    .map(|chunk| chunk.to_vec())
+                    .collect(),
+            };
+            let keep_factors = Self::fake_keep_factors(n);
+            bencher.iter(|| {
+                Self::process_ballot_equalize(black_box(&ballot), black_box(&keep_factors), &pascal)
+            })
+        }
+
+        fn bench_process_ballot_equalize_tens_2(bencher: &mut Bencher) {
+            Self::bench_process_ballot_equalize_tens(bencher, 2);
+        }
+
+        fn bench_process_ballot_equalize_tens_3(bencher: &mut Bencher) {
+            Self::bench_process_ballot_equalize_tens(bencher, 3);
+        }
+
+        fn bench_process_ballot_equalize_tens_4(bencher: &mut Bencher) {
+            Self::bench_process_ballot_equalize_tens(bencher, 4);
+        }
+
+        fn bench_process_ballot_equalize_tens(bencher: &mut Bencher, layers: usize) {
+            let n = layers * 10;
+            let pascal = pascal::<I>(n);
+            let ballot = Ballot {
+                count: 1,
+                order: (0..n)
+                    .collect::<Vec<_>>()
+                    .chunks(10)
+                    .map(|chunk| chunk.to_vec())
+                    .collect(),
+            };
+            let keep_factors = Self::fake_keep_factors(n);
+            bencher.iter(|| {
+                Self::process_ballot_equalize(black_box(&ballot), black_box(&keep_factors), &pascal)
+            })
         }
     }
 }

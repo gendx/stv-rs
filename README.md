@@ -30,6 +30,15 @@ $ RUST_LOG=$LOG_LEVEL cargo run \
   < ballots.txt
 ```
 
+```bash
+$ RUST_LOG=$LOG_LEVEL cargo run \
+  --release -- \
+  --arithmetic $ARITHMETIC \
+  --parallel=<true|false> \
+  --equalize \
+  < ballots.txt
+```
+
 ### Arithmetic implementations
 
 You can control the arithmetic used to count votes via the `--arithmetic`
@@ -55,6 +64,17 @@ command-line flag. The following implementations are available.
 -   `approx`: Use exact rational numbers within each STV round, but then round
     the Meek keep factors after each round, to avoid computational complexity
     explosion.
+
+### Equalized counting
+
+In this mode, ballots where candidates are ranked equally are counted as fairly
+as possible, by simulating a superposition of all possible permutations of
+equally-ranked candidates.
+
+For example, the ballot `a b=c` becomes a superposition of `a b c` (with weight
+1/2) and `a c b` (with weight 1/2). Likewise, the ballot `a b=c=d` is counted as
+a superposition of 6 ballots, each with weight 1/6: `a b c d`, `a b d c`, `a c b
+d`, `a c d b`, `a d b c`, `a d c b`.
 
 ### Log levels
 

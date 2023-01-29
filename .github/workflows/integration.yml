@@ -48,6 +48,10 @@ jobs:
         run: |
           chmod +x target/release/stv-rs
           target/release/stv-rs --arithmetic fixed9 < testdata/${{ matrix.file }}.blt | diff testdata/${{ matrix.file }}.fixed9.log -
+      - name: Check STV-rs output (equalized counting)
+        run: |
+          chmod +x target/release/stv-rs
+          target/release/stv-rs --equalize --arithmetic fixed9 < testdata/${{ matrix.file }}.blt | diff testdata/${{ matrix.file }}.equalize.fixed9.log -
       - name: Check Droop output
         run: |
           sed -i "s/Implementation: STV-rs/Droop package: droop v0.14/g" testdata/${{ matrix.file }}.fixed9.log
@@ -73,4 +77,8 @@ jobs:
       - name: Check STV-rs output
         run: |
           chmod +x target/release/stv-rs
-          target/release/stv-rs --arithmetic fixed9 --force-positive-surplus=true < testdata/${{ matrix.file }}.blt | diff testdata/${{ matrix.file }}.fixed9.log -
+          target/release/stv-rs --arithmetic fixed9 --force-positive-surplus < testdata/${{ matrix.file }}.blt | diff testdata/${{ matrix.file }}.fixed9.log -
+      - name: Check STV-rs output (equalized counting)
+        run: |
+          chmod +x target/release/stv-rs
+          target/release/stv-rs --equalize --arithmetic fixed9 --force-positive-surplus < testdata/${{ matrix.file }}.blt | diff testdata/${{ matrix.file }}.equalize.fixed9.log -

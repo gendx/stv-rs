@@ -1,0 +1,74 @@
+
+Election: Example election with a ballot ranking two candidates equally, with Droop's interpretation of ballots
+
+	Implementation: STV-rs (equalized counting)
+	Rule: Meek Parametric (omega = 1/10^6)
+	Arithmetic: fixed-point decimal arithmetic (9 places)
+	Seats: 2
+	Ballots: 6
+	Quota: 2.000000001
+	Omega: 0.000001000
+
+	Add eligible: Apple
+	Add eligible: Banana
+	Add eligible: Cherry
+Action: Begin Count
+	Hopeful:  Apple (4.000000000)
+	Hopeful:  Banana (1.000000000)
+	Hopeful:  Cherry (1.000000000)
+	Quota: 2.000000001
+	Votes: 6.000000000
+	Residual: 0.000000000
+	Total: 6.000000000
+	Surplus: 0.000000000
+Round 1:
+Action: Elect: Apple
+	Elected:  Apple (4.000000000)
+	Hopeful:  Banana (1.000000000)
+	Hopeful:  Cherry (1.000000000)
+	Quota: 2.000000001
+	Votes: 6.000000000
+	Residual: 0.000000000
+	Total: 6.000000000
+	Surplus: 0.000000000
+Action: Iterate (elected)
+	Quota: 2.000000001
+	Votes: 6.000000000
+	Residual: 0.000000000
+	Total: 6.000000000
+	Surplus: 1.999999999
+Round 2:
+Action: Elect: Cherry
+	Elected:  Apple (1.500000004)
+	Elected:  Cherry (1.624999999)
+	Hopeful:  Banana (1.000000000)
+	Quota: 1.375000002
+	Votes: 4.125000003
+	Residual: 1.874999997
+	Total: 6.000000000
+	Surplus: 0.500000002
+Action: Iterate (elected)
+	Quota: 1.375000002
+	Votes: 4.125000003
+	Residual: 1.874999997
+	Total: 6.000000000
+	Surplus: 0.374999999
+Action: Defeat remaining: Banana
+	Elected:  Apple (1.500000004)
+	Elected:  Cherry (1.624999999)
+	Defeated: Banana (1.000000000)
+	Quota: 1.375000002
+	Votes: 4.125000003
+	Residual: 1.874999997
+	Total: 6.000000000
+	Surplus: 0.374999999
+Action: Count Complete
+	Elected:  Apple (1.500000004)
+	Elected:  Cherry (2.624999999)
+	Defeated: Banana (0.000000000)
+	Quota: 1.375000002
+	Votes: 4.125000003
+	Residual: 1.874999997
+	Total: 6.000000000
+	Surplus: 0.374999999
+

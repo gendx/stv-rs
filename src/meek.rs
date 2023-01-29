@@ -17,7 +17,7 @@
 
 use crate::arithmetic::{Integer, Rational};
 use crate::types::{Election, ElectionResult};
-use crate::vote_count::VoteCount;
+use crate::vote_count::{self, VoteCount};
 use log::{debug, info, warn};
 use std::fmt::{self, Debug, Display};
 use std::io;
@@ -86,6 +86,9 @@ pub struct State<'e, I, R> {
     /// Whether to use a positive surplus calculation (which avoids potential
     /// crashes if the surplus otherwise becomes negative.
     force_positive_surplus: bool,
+    /// Pre-computed Pascal triangle. Set only if the "equalized counting" is
+    /// enabled.
+    pascal: Option<&'e [Vec<I>]>,
     _phantom: PhantomData<I>,
 }
 
@@ -96,9 +99,9 @@ impl<'e, I, R> State<'e, I, R> {
     }
 }
 
-impl<I, R> State<'_, I, R>
+impl<'e, I, R> State<'e, I, R>
 where
-    I: Integer + Send + Sync,
+    I: Integer + Send + Sync + 'e,
     for<'a> &'a I: Add<&'a I, Output = I>,
     for<'a> &'a I: Sub<&'a I, Output = I>,
     for<'a> &'a I: Mul<&'a I, Output = I>,
@@ -110,12 +113,13 @@ where
     for<'a> &'a R: Div<&'a R, Output = R>,
     for<'a> &'a R: Div<&'a I, Output = R>,
 {
-    fn new(
-        election: &Election,
+    fn new<'a>(
+        election: &'a Election,
         omega_exponent: usize,
         parallel: bool,
         force_positive_surplus: bool,
-    ) -> State<'_, I, R> {
+        pascal: Option<&'a [Vec<I>]>,
+    ) -> State<'a, I, R> {
         State {
             election,
             statuses: election
@@ -138,6 +142,7 @@ where
             omega: R::one() / &(0..omega_exponent).map(|_| R::from_usize(10)).product(),
             parallel,
             force_positive_surplus,
+            pascal,
             _phantom: PhantomData,
         }
     }
@@ -151,13 +156,30 @@ where
         omega_exponent: usize,
         parallel: bool,
         force_positive_surplus: bool,
+        equalize: bool,
     ) -> io::Result<ElectionResult> {
         info!(
             "Parallel vote counting is {}",
             if parallel { "enabled" } else { "disabled" }
         );
+        info!(
+            "Equalized vote counting is {}",
+            if equalize { "enabled" } else { "disabled" }
+        );
 
-        let mut state = Self::new(election, omega_exponent, parallel, force_positive_surplus);
+        let pascal = if equalize {
+            Some(vote_count::pascal::<I>(election.num_candidates))
+        } else {
+            None
+        };
+
+        let mut state = Self::new(
+            election,
+            omega_exponent,
+            parallel,
+            force_positive_surplus,
+            pascal.as_deref(),
+        );
 
         let beginning = Instant::now();
         let mut timestamp = beginning;
@@ -220,7 +242,12 @@ where
 
     /// Counts the ballots based on the current keep factors.
     fn count_votes(&self) -> VoteCount<I, R> {
-        VoteCount::<I, R>::count_votes(self.election, &self.keep_factors, self.parallel)
+        VoteCount::<I, R>::count_votes(
+            self.election,
+            &self.keep_factors,
+            self.parallel,
+            self.pascal,
+        )
     }
 
     /// Performs the initial counting to start the election.
@@ -711,6 +738,7 @@ mod test {
         omega: Option<R>,
         parallel: Option<bool>,
         force_positive_surplus: Option<bool>,
+        pascal: Option<Option<&'e [Vec<I>]>>,
         _phantom: PhantomData<I>,
     }
 
@@ -725,6 +753,7 @@ mod test {
                 omega: None,
                 parallel: None,
                 force_positive_surplus: None,
+                pascal: None,
                 _phantom: PhantomData,
             }
         }
@@ -774,6 +803,12 @@ mod test {
             self
         }
 
+        fn pascal(mut self, pascal: Option<&'e [Vec<I>]>) -> Self {
+            self.pascal = Some(pascal);
+            self
+        }
+
+        #[track_caller]
         fn build(self) -> State<'e, I, R> {
             let election = self.election.unwrap();
             let statuses = self.statuses.unwrap();
@@ -812,6 +847,7 @@ mod test {
                 omega: self.omega.unwrap(),
                 parallel: self.parallel.unwrap(),
                 force_positive_surplus: self.force_positive_surplus.unwrap(),
+                pascal: self.pascal.unwrap(),
                 _phantom: PhantomData,
             }
         }
@@ -898,6 +934,7 @@ mod test {
             .omega(FixedDecimal9::ratio(1, 1_000_000))
             .parallel(false)
             .force_positive_surplus(false)
+            .pascal(None)
             .build()
     }
 
@@ -951,6 +988,7 @@ mod test {
             &election,
             "package name",
             6,
+            false,
             false,
             false,
         )
@@ -1160,7 +1198,7 @@ Action: Count Complete
             ])
             .build();
         let omega_exponent = 6;
-        let state = State::new(&election, omega_exponent, false, false);
+        let state = State::new(&election, omega_exponent, false, false, None);
 
         let mut buf = Vec::new();
         let count = state
@@ -1249,6 +1287,7 @@ Action: Begin Count
                 .omega(FixedDecimal9::zero())
                 .parallel(false)
                 .force_positive_surplus(false)
+                .pascal(None)
                 .build()
         }
 
@@ -1377,6 +1416,7 @@ Action: Begin Count
                 .omega(FixedDecimal9::ratio(1, 1_000_000))
                 .parallel(false)
                 .force_positive_surplus(false)
+                .pascal(None)
                 .build()
         }
 
@@ -1690,6 +1730,7 @@ Action: Defeat (stable surplus 0.000066666): Apple
                 .omega(FixedDecimal9::ratio(1, 1_000_000))
                 .parallel(false)
                 .force_positive_surplus(false)
+                .pascal(None)
                 .build()
         }
 
@@ -1938,6 +1979,7 @@ Action: Defeat (stable surplus 0.000066666): Apple
             .omega(FixedDecimal9::zero())
             .parallel(false)
             .force_positive_surplus(false)
+            .pascal(None)
             .build();
         let count = VoteCount::new(
             [
@@ -2037,6 +2079,7 @@ Action: Elect: Grape
             .omega(BigRational::zero())
             .parallel(false)
             .force_positive_surplus(false)
+            .pascal(None)
             .build();
         let count = VoteCount::new(
             [
@@ -2220,6 +2263,7 @@ Action: Defeat remaining: Eggplant
             .omega(FixedDecimal9::zero())
             .parallel(false)
             .force_positive_surplus(false)
+            .pascal(None)
             .build();
 
         // One defeated candidate.

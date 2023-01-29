@@ -31,8 +31,8 @@ use stv_rs::{
 #[derive(Parser, Debug, PartialEq, Eq)]
 struct Cli {
     /// Package name to show in the election report.
-    #[arg(long, default_value = "Implementation: STV-rs")]
-    package_name: String,
+    #[arg(long)]
+    package_name: Option<String>,
 
     /// Base-10 logarithm of the "omega" value, i.e. `omega =
     /// 10^omega_exponent`.
@@ -50,8 +50,12 @@ struct Cli {
     /// Enable a bug-fix in the surplus calculation, preventing it from being
     /// negative. Results may differ from Droop.py, but this prevents
     /// crashes.
-    #[arg(long, action = clap::ArgAction::Set, default_value = "false")]
+    #[arg(long)]
     force_positive_surplus: bool,
+
+    /// Enable "equalized counting".
+    #[arg(long)]
+    equalize: bool,
 }
 
 /// Arithmetic for rational numbers.
@@ -72,46 +76,56 @@ enum Arithmetic {
 impl Cli {
     /// Run the given election based on the command-line parameters.
     fn run(self, election: &Election) -> io::Result<()> {
+        let package_name: &str = self.package_name.as_deref().unwrap_or(if self.equalize {
+            "Implementation: STV-rs (equalized counting)"
+        } else {
+            "Implementation: STV-rs"
+        });
         match self.arithmetic {
             Arithmetic::Fixed9 => State::<i64, FixedDecimal9>::stv_droop(
                 &mut io::stdout().lock(),
                 election,
-                &self.package_name,
+                package_name,
                 self.omega_exponent,
                 self.parallel,
                 self.force_positive_surplus,
+                self.equalize,
             )?,
             Arithmetic::Bigfixed9 => State::<BigInt, BigFixedDecimal9>::stv_droop(
                 &mut io::stdout().lock(),
                 election,
-                &self.package_name,
+                package_name,
                 self.omega_exponent,
                 self.parallel,
                 self.force_positive_surplus,
+                self.equalize,
             )?,
             Arithmetic::Exact => State::<BigInt, BigRational>::stv_droop(
                 &mut io::stdout().lock(),
                 election,
-                &self.package_name,
+                package_name,
                 self.omega_exponent,
                 self.parallel,
                 self.force_positive_surplus,
+                self.equalize,
             )?,
             Arithmetic::Approx => State::<BigInt, ApproxRational>::stv_droop(
                 &mut io::stdout().lock(),
                 election,
-                &self.package_name,
+                package_name,
                 self.omega_exponent,
                 self.parallel,
                 self.force_positive_surplus,
+                self.equalize,
             )?,
             Arithmetic::Float64 => State::<f64, f64>::stv_droop(
                 &mut io::stdout().lock(),
                 election,
-                &self.package_name,
+                package_name,
                 self.omega_exponent,
                 self.parallel,
                 self.force_positive_surplus,
+                self.equalize,
             )?,
         };
         Ok(())
@@ -151,11 +165,12 @@ mod test {
         assert_eq!(
             cli,
             Cli {
-                package_name: "Implementation: STV-rs".to_owned(),
+                package_name: None,
                 omega_exponent: 6,
                 arithmetic: Arithmetic::Fixed9,
                 parallel: true,
                 force_positive_surplus: false,
+                equalize: false,
             }
         );
     }
@@ -174,17 +189,19 @@ mod test {
             "--package-name=foo bar",
             "--omega-exponent=42",
             "--parallel=false",
-            "--force-positive-surplus=true",
+            "--force-positive-surplus",
+            "--equalize",
         ])
         .unwrap();
         assert_eq!(
             cli,
             Cli {
-                package_name: "foo bar".to_owned(),
+                package_name: Some("foo bar".to_owned()),
                 omega_exponent: 42,
                 arithmetic: Arithmetic::Float64,
                 parallel: false,
                 force_positive_surplus: true,
+                equalize: true,
             }
         );
     }
@@ -198,17 +215,19 @@ mod test {
             "--package-name", "foo bar",
             "--omega-exponent", "42",
             "--parallel", "false",
-            "--force-positive-surplus", "true",
+            "--force-positive-surplus",
+            "--equalize",
         ])
         .unwrap();
         assert_eq!(
             cli,
             Cli {
-                package_name: "foo bar".to_owned(),
+                package_name: Some("foo bar".to_owned()),
                 omega_exponent: 42,
                 arithmetic: Arithmetic::Float64,
                 parallel: false,
                 force_positive_surplus: true,
+                equalize: true,
             }
         );
     }

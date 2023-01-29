@@ -1,0 +1,143 @@
+
+Election: Vegetable contest
+
+	Implementation: STV-rs (equalized counting)
+	Rule: Meek Parametric (omega = 1/10^6)
+	Arithmetic: fixed-point decimal arithmetic (9 places)
+	Seats: 3
+	Ballots: 21
+	Quota: 5.250000001
+	Omega: 0.000001000
+
+	Add eligible: Apple
+	Add eligible: Banana
+	Add eligible: Cherry
+	Add eligible: Date
+	Add eligible: Eggplant
+	Add eligible: Fig
+Action: Begin Count
+	Hopeful:  Apple (3.500000000)
+	Hopeful:  Banana (1.500000000)
+	Hopeful:  Cherry (2.500000000)
+	Hopeful:  Date (3.500000000)
+	Hopeful:  Eggplant (4.500000000)
+	Hopeful:  Fig (5.500000000)
+	Quota: 5.250000001
+	Votes: 21.000000000
+	Residual: 0.000000000
+	Total: 21.000000000
+	Surplus: 0.000000000
+Round 1:
+Action: Elect: Fig
+	Elected:  Fig (5.500000000)
+	Hopeful:  Apple (3.500000000)
+	Hopeful:  Banana (1.500000000)
+	Hopeful:  Cherry (2.500000000)
+	Hopeful:  Date (3.500000000)
+	Hopeful:  Eggplant (4.500000000)
+	Quota: 5.250000001
+	Votes: 21.000000000
+	Residual: 0.000000000
+	Total: 21.000000000
+	Surplus: 0.000000000
+Action: Iterate (elected)
+	Quota: 5.250000001
+	Votes: 21.000000000
+	Residual: 0.000000000
+	Total: 21.000000000
+	Surplus: 0.249999999
+Round 2:
+Action: Iterate (omega)
+	Quota: 5.249999998
+	Votes: 20.999999989
+	Residual: 0.000000011
+	Total: 21.000000000
+	Surplus: 0.000000000
+Action: Defeat (surplus 0.000000000 < omega): Banana
+	Elected:  Fig (5.249999997)
+	Hopeful:  Apple (3.636363632)
+	Hopeful:  Cherry (2.500000000)
+	Hopeful:  Date (3.500000000)
+	Hopeful:  Eggplant (4.613636360)
+	Defeated: Banana (1.500000000)
+	Quota: 5.249999998
+	Votes: 20.999999989
+	Residual: 0.000000011
+	Total: 21.000000000
+	Surplus: 0.000000000
+Round 3:
+Action: Iterate (omega)
+	Quota: 5.249999998
+	Votes: 20.999999989
+	Residual: 0.000000011
+	Total: 21.000000000
+	Surplus: 0.000000000
+Action: Break tie (defeat): [Cherry, Date] -> Cherry
+	Quota: 5.249999998
+	Votes: 20.999999989
+	Residual: 0.000000011
+	Total: 21.000000000
+	Surplus: 0.000000000
+Action: Defeat (surplus 0.000000000 < omega): Cherry
+	Elected:  Fig (5.249999997)
+	Hopeful:  Apple (4.136363632)
+	Hopeful:  Date (3.500000000)
+	Hopeful:  Eggplant (4.613636360)
+	Defeated: Cherry (3.500000000)
+	Defeated: Banana (0.000000000)
+	Quota: 5.249999998
+	Votes: 20.999999989
+	Residual: 0.000000011
+	Total: 21.000000000
+	Surplus: 0.000000000
+Round 4:
+Action: Elect: Date
+	Elected:  Date (6.000000000)
+	Elected:  Fig (5.249999997)
+	Hopeful:  Apple (4.136363632)
+	Hopeful:  Eggplant (5.613636360)
+	Defeated: Banana, Cherry (0.000000000)
+	Quota: 5.249999998
+	Votes: 20.999999989
+	Residual: 0.000000011
+	Total: 21.000000000
+	Surplus: 0.000000000
+Action: Elect: Eggplant
+	Elected:  Date (6.000000000)
+	Elected:  Eggplant (5.613636360)
+	Elected:  Fig (5.249999997)
+	Hopeful:  Apple (4.136363632)
+	Defeated: Banana, Cherry (0.000000000)
+	Quota: 5.249999998
+	Votes: 20.999999989
+	Residual: 0.000000011
+	Total: 21.000000000
+	Surplus: 0.000000000
+Action: Iterate (elected)
+	Quota: 5.249999998
+	Votes: 20.999999989
+	Residual: 0.000000011
+	Total: 21.000000000
+	Surplus: 1.113636364
+Action: Defeat remaining: Apple
+	Elected:  Date (6.000000000)
+	Elected:  Eggplant (5.613636360)
+	Elected:  Fig (5.249999997)
+	Defeated: Apple (4.136363632)
+	Defeated: Banana, Cherry (0.000000000)
+	Quota: 5.249999998
+	Votes: 20.999999989
+	Residual: 0.000000011
+	Total: 21.000000000
+	Surplus: 1.113636364
+Action: Count Complete
+	Elected:  Date (7.136363632)
+	Elected:  Eggplant (5.749999992)
+	Elected:  Fig (8.113636365)
+	Defeated: Apple, Banana, Cherry (0.000000000)
+	Quota: 5.249999998
+	Votes: 20.999999989
+	Residual: 0.000000011
+	Total: 21.000000000
+	Surplus: 1.113636364
+
