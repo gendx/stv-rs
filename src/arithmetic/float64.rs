@@ -81,6 +81,8 @@ mod test {
 
     numeric_tests!(
         test_values_are_positive,
+        test_is_exact,
+        test_ceil_precision,
         test_is_zero,
         test_zero_is_add_neutral,
         test_add_is_commutative,
@@ -104,6 +106,8 @@ mod test {
         test_div_mul => fail(r"assertion failed: `(left == right)`
   left: `0.9999999999999999`,
  right: `1.0`: (a / b) * b != a for 1, 2147483631"),
+        test_mul_by_int,
+        test_div_by_int,
         test_references,
         test_assign,
     );
@@ -125,6 +129,12 @@ mod test {
         test_mul_by_int_is_distributive => fail(r"assertion failed: `(left == right)`
   left: `3.0000000013969848`,
  right: `3.0000000013969843`: (a + b) * c != (a * c) + (b * c) for 1, 0.0000000004656613985469087, 3"),
+        test_div_by_int_is_associative => fail(r"assertion failed: `(left == right)`
+  left: `0.0303030303030303`,
+ right: `0.030303030303030304`: (a / b) / c != a / (b * c) for 1, 3, 11"),
+        test_div_by_int_is_distributive => fail(r"assertion failed: `(left == right)`
+  left: `0.6`,
+ right: `0.6000000000000001`: (a + b) / c != (a / c) + (b / c) for 1, 2, 5"),
         test_sum,
         test_product,
     );

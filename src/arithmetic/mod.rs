@@ -210,6 +210,23 @@ pub(crate) mod test {
             });
         }
 
+        pub fn test_is_exact(_positive_test_values: &[R]) {
+            assert!(
+                R::is_exact() == R::epsilon().is_zero(),
+                "epsilon is {} but is_exact() returns {}",
+                R::epsilon(),
+                R::is_exact()
+            );
+        }
+
+        pub fn test_ceil_precision(positive_test_values: &[R]) {
+            Self::loop_check1(positive_test_values, |a| {
+                let mut b = a.clone();
+                b.ceil_precision();
+                assert!(b >= *a, "b := ceil_precision(a) < a for {a}, {b}");
+            });
+        }
+
         pub fn test_is_zero(positive_test_values: &[R]) {
             assert!(R::zero().is_zero());
             assert!(!R::one().is_zero());
@@ -302,26 +319,6 @@ pub(crate) mod test {
             })
         }
 
-        pub fn test_mul_by_int_is_associative(test_values: &[R], num_samples: Option<usize>) {
-            Self::loop_check1_i2(test_values, num_samples, |a, b, c| {
-                assert_eq!(
-                    &(a * &b) * &c,
-                    a * &(b.clone() * c.clone()),
-                    "(a * b) * c != a * (b * c) for {a}, {b}, {c}"
-                );
-            })
-        }
-
-        pub fn test_mul_by_int_is_distributive(test_values: &[R], num_samples: Option<usize>) {
-            Self::loop_check2_i1(test_values, num_samples, |a: &R, b: &R, c: I| {
-                assert_eq!(
-                    &(a + b) * &c,
-                    &(a * &c) + &(b * &c),
-                    "(a + b) * c != (a * c) + (b * c) for {a}, {b}, {c}"
-                );
-            })
-        }
-
         pub fn test_invert(test_values: &[R]) {
             Self::loop_check1(test_values, |a| {
                 assert_eq!(R::one() / (R::one() / a), *a, "1/(1/a) != a for {a}");
@@ -345,6 +342,72 @@ pub(crate) mod test {
             Self::loop_check2(test_values, |a, b| {
                 assert_eq!(&(a / b) * b, *a, "(a / b) * b != a for {a}, {b}");
             });
+        }
+
+        pub fn test_mul_by_int(test_values: &[R]) {
+            Self::loop_check1_i1(test_values, |a, b| {
+                assert_eq!(
+                    a * &b,
+                    a * &R::from_int(b.clone()),
+                    "a * int(b) != a * b for {a}, {b}"
+                );
+            })
+        }
+
+        pub fn test_div_by_int(test_values: &[R]) {
+            Self::loop_check1_i1(test_values, |a, b| {
+                if !b.is_zero() {
+                    assert_eq!(
+                        a / &b,
+                        a / &R::from_int(b.clone()),
+                        "a / int(b) != a / b for {a}, {b}"
+                    );
+                }
+            })
+        }
+
+        pub fn test_mul_by_int_is_associative(test_values: &[R], num_samples: Option<usize>) {
+            Self::loop_check1_i2(test_values, num_samples, |a, b, c| {
+                assert_eq!(
+                    &(a * &b) * &c,
+                    a * &(b.clone() * c.clone()),
+                    "(a * b) * c != a * (b * c) for {a}, {b}, {c}"
+                );
+            })
+        }
+
+        pub fn test_mul_by_int_is_distributive(test_values: &[R], num_samples: Option<usize>) {
+            Self::loop_check2_i1(test_values, num_samples, |a: &R, b: &R, c: I| {
+                assert_eq!(
+                    &(a + b) * &c,
+                    &(a * &c) + &(b * &c),
+                    "(a + b) * c != (a * c) + (b * c) for {a}, {b}, {c}"
+                );
+            })
+        }
+
+        pub fn test_div_by_int_is_associative(test_values: &[R], num_samples: Option<usize>) {
+            Self::loop_check1_i2(test_values, num_samples, |a, b, c| {
+                if !b.is_zero() && !c.is_zero() {
+                    assert_eq!(
+                        &(a / &b) / &c,
+                        a / &(b.clone() * c.clone()),
+                        "(a / b) / c != a / (b * c) for {a}, {b}, {c}"
+                    );
+                }
+            })
+        }
+
+        pub fn test_div_by_int_is_distributive(test_values: &[R], num_samples: Option<usize>) {
+            Self::loop_check2_i1(test_values, num_samples, |a: &R, b: &R, c: I| {
+                if !c.is_zero() {
+                    assert_eq!(
+                        &(a + b) / &c,
+                        &(a / &c) + &(b / &c),
+                        "(a + b) / c != (a / c) + (b / c) for {a}, {b}, {c}"
+                    );
+                }
+            })
         }
 
         pub fn test_references(test_values: &[R]) {
@@ -374,6 +437,21 @@ pub(crate) mod test {
                 assert_eq!(a * b, a.clone() * b, "&a * &b != a * &b for {a}, {b}");
                 assert_eq!(a / b, a.clone() / b, "&a / &b != a / &b for {a}, {b}");
             });
+
+            Self::loop_check1_i1(test_values, |a, b| {
+                if !b.is_zero() {
+                    assert_eq!(
+                        a * &b,
+                        a.clone() * b.clone(),
+                        "&a * &b != a * b for {a}, {b}"
+                    );
+                    assert_eq!(
+                        a / &b,
+                        a.clone() / b.clone(),
+                        "&a / &b != a / b for {a}, {b}"
+                    );
+                }
+            });
         }
 
         pub fn test_assign(test_values: &[R]) {
@@ -397,6 +475,14 @@ pub(crate) mod test {
                 let mut c = a.clone();
                 c *= b;
                 assert_eq!(c, a * b, "a *= &b != a * b for {a}, {b}");
+            });
+
+            Self::loop_check1_i1(test_values, |a, b| {
+                if !b.is_zero() {
+                    let mut c = a.clone();
+                    c /= &b;
+                    assert_eq!(c, a / &b, "a /= &b != a / &b for {a}, {b}");
+                }
             });
         }
 
@@ -434,6 +520,15 @@ pub(crate) mod test {
         fn loop_check2(test_values: &[R], f: impl Fn(&R, &R)) {
             for a in test_values {
                 for b in test_values {
+                    f(a, b);
+                }
+            }
+        }
+
+        fn loop_check1_i1(test_values: &[R], f: impl Fn(&R, I)) {
+            for a in test_values {
+                for bb in 0..100 {
+                    let b = I::from_usize(bb);
                     f(a, b);
                 }
             }

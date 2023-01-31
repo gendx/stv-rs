@@ -270,6 +270,8 @@ mod test {
 
     numeric_tests!(
         test_values_are_positive,
+        test_is_exact,
+        test_ceil_precision,
         test_is_zero,
         test_zero_is_add_neutral,
         test_add_is_commutative,
@@ -283,6 +285,8 @@ mod test {
         test_div_self,
         test_mul_div,
         test_div_mul,
+        test_mul_by_int,
+        test_div_by_int,
         test_references,
         test_assign,
     );
@@ -294,6 +298,8 @@ mod test {
         test_mul_is_distributive,
         test_mul_by_int_is_associative,
         test_mul_by_int_is_distributive,
+        test_div_by_int_is_associative,
+        test_div_by_int_is_distributive,
         test_sum,
         test_product,
     );
