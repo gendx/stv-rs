@@ -74,7 +74,7 @@ where
 
 #[cfg(test)]
 mod test {
-    use crate::{big_numeric_tests, numeric_tests};
+    use crate::{big_numeric_tests, numeric_benchmarks, numeric_tests};
     use num::traits::{One, Zero};
     use num::{BigInt, BigRational};
 
@@ -133,6 +133,15 @@ mod test {
         test_div_by_int_is_distributive,
         test_sum,
         test_product,
+    );
+
+    numeric_benchmarks!(
+        BigInt,
+        BigRational,
+        bench_add,
+        bench_sub,
+        bench_mul,
+        bench_div,
     );
 
     #[test]

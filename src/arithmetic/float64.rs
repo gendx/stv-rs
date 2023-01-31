@@ -60,7 +60,7 @@ impl Rational<f64> for f64 {
 
 #[cfg(test)]
 mod test {
-    use crate::{big_numeric_tests, numeric_tests};
+    use crate::{big_numeric_tests, numeric_benchmarks, numeric_tests};
 
     fn get_positive_test_values() -> Vec<f64> {
         let mut result = Vec::new();
@@ -138,6 +138,8 @@ mod test {
         test_sum,
         test_product,
     );
+
+    numeric_benchmarks!(f64, f64, bench_add, bench_sub, bench_mul, bench_div,);
 
     #[test]
     fn test_display_test_values() {

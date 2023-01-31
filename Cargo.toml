@@ -19,3 +19,4 @@ rand = "0.8"
 [features]
 default = ["checked_i64"]
 checked_i64 = []
+benchmarks = []

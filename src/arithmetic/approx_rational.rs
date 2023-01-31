@@ -245,7 +245,7 @@ impl Rational<BigInt> for ApproxRational {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::{big_numeric_tests, numeric_tests};
+    use crate::{big_numeric_tests, numeric_benchmarks, numeric_tests};
 
     fn make_ratio(num: i64, denom: i64) -> ApproxRational {
         ApproxRational(BigRational::new(BigInt::from(num), BigInt::from(denom)))
@@ -302,6 +302,15 @@ mod test {
         test_div_by_int_is_distributive,
         test_sum,
         test_product,
+    );
+
+    numeric_benchmarks!(
+        BigInt,
+        ApproxRational,
+        bench_add,
+        bench_sub,
+        bench_mul,
+        bench_div,
     );
 
     #[test]

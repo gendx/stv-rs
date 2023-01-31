@@ -17,6 +17,10 @@
 
 #![deny(missing_docs)]
 #![forbid(unsafe_code)]
+#![cfg_attr(all(test, feature = "benchmarks"), feature(test))]
+
+#[cfg(all(test, feature = "benchmarks"))]
+extern crate test;
 
 pub mod arithmetic;
 pub mod meek;

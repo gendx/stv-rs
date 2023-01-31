@@ -283,7 +283,7 @@ impl Rational<BigInt> for BigFixedDecimal9 {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::{big_numeric_tests, numeric_tests};
+    use crate::{big_numeric_tests, numeric_benchmarks, numeric_tests};
 
     fn get_positive_test_values() -> Vec<BigFixedDecimal9> {
         let mut result = Vec::new();
@@ -344,6 +344,15 @@ mod test {
  right: `BigFixedDecimal9(0)`: (a + b) / c != (a / c) + (b / c) for 0.000000001, 0.000000001, 2"),
         test_sum,
         test_product,
+    );
+
+    numeric_benchmarks!(
+        BigInt,
+        BigFixedDecimal9,
+        bench_add,
+        bench_sub,
+        bench_mul,
+        bench_div,
     );
 
     #[test]
