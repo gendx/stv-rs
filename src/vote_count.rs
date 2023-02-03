@@ -412,3 +412,173 @@ where
         (used_power, remaining_power)
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use num::rational::Ratio;
+
+    fn process_ballot_rec(
+        ballot: Ballot,
+        keep_factors: &[Ratio<i64>],
+    ) -> (Vec<Ratio<i64>>, Ratio<i64>, usize) {
+        let num_candidates = keep_factors.len();
+        let mut sum = vec![Ratio::from(0); num_candidates];
+        let mut unused_power = Ratio::from(1);
+        let mut fn_calls = 0;
+
+        let counter = BallotCounter {
+            ballot: &ballot,
+            sum: &mut sum,
+            unused_power: &mut unused_power,
+            keep_factors,
+            fn_calls: &mut fn_calls,
+            _phantom: PhantomData,
+        };
+        counter.process_ballot_rec();
+
+        (sum, unused_power, fn_calls)
+    }
+
+    // First candidate takes it all.
+    #[test]
+    fn test_process_ballot_rec_first() {
+        let (sum, unused_power, fn_calls) = process_ballot_rec(
+            Ballot {
+                count: 1,
+                order: vec![vec![0], vec![1], vec![2]],
+            },
+            /* keep_factors = */ &[Ratio::from(1); 3],
+        );
+
+        assert_eq!(sum, vec![Ratio::from(1), Ratio::from(0), Ratio::from(0)]);
+        assert_eq!(unused_power, Ratio::from(0));
+        assert_eq!(fn_calls, 1);
+    }
+
+    // Chain of keep factors.
+    #[test]
+    fn test_process_ballot_rec_chain() {
+        let (sum, unused_power, fn_calls) = process_ballot_rec(
+            Ballot {
+                count: 1,
+                order: vec![vec![0], vec![1], vec![2]],
+            },
+            /* keep_factors = */ &[Ratio::new(1, 2), Ratio::new(2, 3), Ratio::new(3, 4)],
+        );
+
+        assert_eq!(
+            sum,
+            vec![Ratio::new(1, 2), Ratio::new(1, 3), Ratio::new(1, 8)]
+        );
+        assert_eq!(unused_power, Ratio::new(1, 24));
+        assert_eq!(fn_calls, 1);
+    }
+
+    // Defeated candidate (keep factor is zero).
+    #[test]
+    fn test_process_ballot_rec_defeated() {
+        let (sum, unused_power, fn_calls) = process_ballot_rec(
+            Ballot {
+                count: 1,
+                order: vec![vec![0], vec![1], vec![2]],
+            },
+            /* keep_factors = */ &[Ratio::from(0), Ratio::new(2, 3), Ratio::new(3, 4)],
+        );
+
+        assert_eq!(
+            sum,
+            vec![Ratio::from(0), Ratio::new(2, 3), Ratio::new(1, 4)]
+        );
+        assert_eq!(unused_power, Ratio::new(1, 12));
+        assert_eq!(fn_calls, 1);
+    }
+
+    // Tie to start the ballot.
+    #[test]
+    fn test_process_ballot_rec_tie_first() {
+        let (sum, unused_power, fn_calls) = process_ballot_rec(
+            Ballot {
+                count: 1,
+                order: vec![vec![0, 1], vec![2]],
+            },
+            /* keep_factors = */ &[Ratio::from(1); 3],
+        );
+
+        assert_eq!(
+            sum,
+            vec![Ratio::new(1, 2), Ratio::new(1, 2), Ratio::from(0)]
+        );
+        assert_eq!(unused_power, Ratio::from(0));
+        assert_eq!(fn_calls, 1);
+    }
+
+    // Tie with chaining.
+    #[test]
+    fn test_process_ballot_rec_tie_chain() {
+        let (sum, unused_power, fn_calls) = process_ballot_rec(
+            Ballot {
+                count: 1,
+                order: vec![vec![0, 1], vec![2]],
+            },
+            /* keep_factors = */ &[Ratio::new(1, 2), Ratio::new(2, 3), Ratio::new(3, 4)],
+        );
+
+        // The last candidate gets 0.5 * (1/2 + 1/3) * 3/4 = 5/6 * 3/8 = 5/16
+        assert_eq!(
+            sum,
+            vec![Ratio::new(1, 4), Ratio::new(1, 3), Ratio::new(5, 16)]
+        );
+        assert_eq!(unused_power, Ratio::new(5, 48));
+        assert_eq!(fn_calls, 5);
+    }
+
+    // Tie with defeated candidate.
+    #[test]
+    fn test_process_ballot_rec_tie_defeated() {
+        let (sum, unused_power, fn_calls) = process_ballot_rec(
+            Ballot {
+                count: 1,
+                order: vec![vec![0], vec![1, 2]],
+            },
+            /* keep_factors = */ &[Ratio::from(0), Ratio::new(2, 3), Ratio::new(3, 4)],
+        );
+
+        // No candidate gets anything (Droop.py's behavior)!
+        assert_eq!(sum, vec![Ratio::from(0); 3]);
+        assert_eq!(unused_power, Ratio::from(1));
+        assert_eq!(fn_calls, 1);
+    }
+
+    // Chain of multiple ties.
+    #[test]
+    fn test_process_ballot_rec_ties() {
+        let (sum, unused_power, fn_calls) = process_ballot_rec(
+            Ballot {
+                count: 1,
+                order: vec![vec![0, 1], vec![2, 3]],
+            },
+            /* keep_factors = */
+            &[
+                Ratio::new(1, 2),
+                Ratio::new(2, 3),
+                Ratio::new(3, 4),
+                Ratio::new(4, 5),
+            ],
+        );
+
+        // Candidates ranked second share 0.5 * (1/2 + 1/3) = 5/12.
+        assert_eq!(
+            sum,
+            vec![
+                Ratio::new(1, 4),
+                Ratio::new(1, 3),
+                Ratio::new(5, 32), // 0.5 * 5/12 * 3/4 = 5/32
+                Ratio::new(1, 6),  // 0.5 * 5/12 * 4/5 = 1/6
+            ]
+        );
+        // Remaining voting power is 0.5 * (1/4 + 1/5) * 5/12 = 9/40 * 5/12 = 3/32.
+        assert_eq!(unused_power, Ratio::new(3, 32));
+        assert_eq!(fn_calls, 7);
+    }
+}
