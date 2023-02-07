@@ -130,10 +130,7 @@ where
             keep_factors: vec![R::one(); election.candidates.len()],
             threshold: VoteCount::<I, R>::threshold_exhausted(election, &R::zero()),
             surplus: R::zero(),
-            omega: R::one()
-                / &(0..omega_exponent)
-                    .map(|_| R::from_int(I::from_usize(10)))
-                    .product(),
+            omega: R::one() / &(0..omega_exponent).map(|_| R::from_usize(10)).product(),
             parallel,
             _phantom: PhantomData,
         };
@@ -327,7 +324,7 @@ Election: {}
     /// the surplus becomes lower than omega, or the count has stabilized.
     fn iterate_droop(&mut self, count: &mut VoteCount<I, R>, round: usize) -> DroopIteration {
         let mut status = None;
-        let mut last_surplus = R::from_int(I::from_usize(self.election.num_ballots));
+        let mut last_surplus = R::from_usize(self.election.num_ballots);
 
         loop {
             *count = self.count_votes();
@@ -557,7 +554,7 @@ Election: {}
         debug!("Total = {total}");
         R::assert_eq(
             total,
-            R::from_int(I::from_usize(self.election.num_ballots)),
+            R::from_usize(self.election.num_ballots),
             "Total count must be equal to the number of ballots",
         );
 

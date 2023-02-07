@@ -51,6 +51,10 @@ where
         Ratio::from_integer(i)
     }
 
+    fn ratio_i(num: I, denom: I) -> Self {
+        Ratio::new(num, denom)
+    }
+
     fn to_f64(&self) -> f64 {
         ToPrimitive::to_f64(self).unwrap()
     }
@@ -103,6 +107,8 @@ mod test {
         test_values_are_positive,
         test_is_exact,
         test_ceil_precision,
+        test_ratio,
+        test_ratio_invert,
         test_is_zero,
         test_zero_is_add_neutral,
         test_add_is_commutative,

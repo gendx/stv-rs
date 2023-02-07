@@ -29,6 +29,10 @@ impl Rational<f64> for f64 {
         i
     }
 
+    fn ratio_i(num: f64, denom: f64) -> Self {
+        num / denom
+    }
+
     fn to_f64(&self) -> f64 {
         *self
     }
@@ -83,6 +87,10 @@ mod test {
         test_values_are_positive,
         test_is_exact,
         test_ceil_precision,
+        test_ratio,
+        test_ratio_invert => fail(r"assertion failed: `(left == right)`
+  left: `0.9999999999999999`,
+ right: `1.0`: R::ratio(1, a) * a != 1 for 49"),
         test_is_zero,
         test_zero_is_add_neutral,
         test_add_is_commutative,

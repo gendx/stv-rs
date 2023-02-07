@@ -89,6 +89,21 @@ where
     /// Obtains a number equal to the given integer.
     fn from_int(i: I) -> Self;
 
+    /// Obtains a number equal to the given integer.
+    fn from_usize(i: usize) -> Self {
+        Self::from_int(I::from_usize(i))
+    }
+
+    /// Obtains a number equal to the ratio between the given numerator and
+    /// denominator.
+    fn ratio_i(num: I, denom: I) -> Self;
+
+    /// Obtains a number equal to the ratio between the given numerator and
+    /// denominator.
+    fn ratio(num: usize, denom: usize) -> Self {
+        Self::ratio_i(I::from_usize(num), I::from_usize(denom))
+    }
+
     /// Converts a number into its floating-point approximation. This can be
     /// useful to print approximation of large numbers.
     fn to_f64(&self) -> f64;
@@ -242,6 +257,28 @@ pub(crate) mod test {
                 let mut b = a.clone();
                 b.ceil_precision();
                 assert!(b >= *a, "b := ceil_precision(a) < a for {a}, {b}");
+            });
+        }
+
+        pub fn test_ratio(_positive_test_values: &[R]) {
+            Self::loop_check_i1(|a| {
+                assert_eq!(
+                    R::ratio_i(a.clone(), I::from_usize(1)),
+                    R::from_int(a.clone()),
+                    "R::ratio(a, 1) != a for {a}"
+                );
+            });
+        }
+
+        pub fn test_ratio_invert(_positive_test_values: &[R]) {
+            Self::loop_check_i1(|a| {
+                if !a.is_zero() {
+                    assert_eq!(
+                        R::ratio_i(I::from_usize(1), a.clone()) * R::from_int(a.clone()),
+                        R::one(),
+                        "R::ratio(1, a) * a != 1 for {a}"
+                    );
+                }
             });
         }
 
@@ -531,34 +568,41 @@ pub(crate) mod test {
 
         #[cfg(feature = "benchmarks")]
         pub fn bench_add(bencher: &mut Bencher) {
-            let a = R::from_int(I::from_usize(0));
-            let b = R::from_int(I::from_usize(1));
+            let a = R::zero();
+            let b = R::one();
             bencher.iter(|| black_box(&a) + black_box(&b));
         }
 
         #[cfg(feature = "benchmarks")]
         pub fn bench_sub(bencher: &mut Bencher) {
-            let a = R::from_int(I::from_usize(0));
-            let b = R::from_int(I::from_usize(1));
+            let a = R::zero();
+            let b = R::one();
             bencher.iter(|| black_box(&a) - black_box(&b));
         }
 
         #[cfg(feature = "benchmarks")]
         pub fn bench_mul(bencher: &mut Bencher) {
-            let a = R::from_int(I::from_usize(0));
-            let b = R::from_int(I::from_usize(1));
+            let a = R::zero();
+            let b = R::one();
             bencher.iter(|| black_box(&a) * black_box(&b));
         }
 
         #[cfg(feature = "benchmarks")]
         pub fn bench_div(bencher: &mut Bencher) {
-            let a = R::from_int(I::from_usize(0));
-            let b = R::from_int(I::from_usize(1));
+            let a = R::zero();
+            let b = R::one();
             bencher.iter(|| black_box(&a) / black_box(&b));
         }
 
         fn loop_check1(test_values: &[R], f: impl Fn(&R)) {
             for a in test_values {
+                f(a);
+            }
+        }
+
+        fn loop_check_i1(f: impl Fn(I)) {
+            for aa in 0..100 {
+                let a = I::from_usize(aa);
                 f(a);
             }
         }

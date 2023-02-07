@@ -357,6 +357,19 @@ impl Rational<i64> for FixedDecimal9 {
         return FixedDecimal9(i * 1_000_000_000);
     }
 
+    fn ratio_i(num: i64, denom: i64) -> Self {
+        #[cfg(feature = "checked_i64")]
+        return FixedDecimal9(
+            (num as i128 * 1_000_000_000)
+                .checked_div(denom as i128)
+                .unwrap()
+                .try_into()
+                .unwrap(),
+        );
+        #[cfg(not(feature = "checked_i64"))]
+        return FixedDecimal9(((num as i128 * 1_000_000_000) / denom as i128) as i64);
+    }
+
     fn to_f64(&self) -> f64 {
         self.0 as f64 / 1_000_000_000_f64
     }
@@ -438,6 +451,10 @@ mod test {
         test_values_are_positive,
         test_is_exact,
         test_ceil_precision,
+        test_ratio,
+        test_ratio_invert => fail(r"assertion failed: `(left == right)`
+  left: `FixedDecimal9(999999999)`,
+ right: `FixedDecimal9(1000000000)`: R::ratio(1, a) * a != 1 for 3"),
         test_is_zero,
         test_zero_is_add_neutral,
         test_add_is_commutative,

@@ -237,6 +237,10 @@ impl Rational<BigInt> for BigFixedDecimal9 {
         BigFixedDecimal9(i * BigInt::from(1_000_000_000))
     }
 
+    fn ratio_i(num: BigInt, denom: BigInt) -> Self {
+        BigFixedDecimal9((num * BigInt::from(1_000_000_000)) / denom)
+    }
+
     fn to_f64(&self) -> f64 {
         Rational::to_f64(&BigRational::new(
             self.0.clone(),
@@ -302,6 +306,10 @@ mod test {
         test_values_are_positive,
         test_is_exact,
         test_ceil_precision,
+        test_ratio,
+        test_ratio_invert => fail(r"assertion failed: `(left == right)`
+  left: `BigFixedDecimal9(999999999)`,
+ right: `BigFixedDecimal9(1000000000)`: R::ratio(1, a) * a != 1 for 3"),
         test_is_zero,
         test_zero_is_add_neutral,
         test_add_is_commutative,

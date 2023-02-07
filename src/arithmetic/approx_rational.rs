@@ -213,6 +213,10 @@ impl Rational<BigInt> for ApproxRational {
         ApproxRational(BigRational::from_int(i))
     }
 
+    fn ratio_i(num: BigInt, denom: BigInt) -> Self {
+        ApproxRational(BigRational::new(num, denom))
+    }
+
     fn to_f64(&self) -> f64 {
         Rational::to_f64(&self.0)
     }
@@ -272,6 +276,8 @@ mod test {
         test_values_are_positive,
         test_is_exact,
         test_ceil_precision,
+        test_ratio,
+        test_ratio_invert,
         test_is_zero,
         test_zero_is_add_neutral,
         test_add_is_commutative,
