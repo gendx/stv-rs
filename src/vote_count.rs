@@ -417,9 +417,13 @@ where
 mod test {
     use super::*;
     use crate::arithmetic::{ApproxRational, BigFixedDecimal9, FixedDecimal9};
+    #[cfg(feature = "benchmarks")]
+    use ::test::Bencher;
     use num::rational::Ratio;
     use num::{BigInt, BigRational};
     use std::fmt::Display;
+    #[cfg(feature = "benchmarks")]
+    use std::hint::black_box;
 
     macro_rules! numeric_tests {
         ( $typei:ty, $typer:ty, $($case:ident,)+ ) => {
@@ -427,6 +431,18 @@ mod test {
             #[test]
             fn $case() {
                 $crate::vote_count::test::NumericTests::<$typei, $typer>::$case();
+            }
+            )+
+        };
+    }
+
+    #[cfg(feature = "benchmarks")]
+    macro_rules! numeric_benches {
+        ( $typei:ty, $typer:ty, $($case:ident,)+ ) => {
+            $(
+            #[bench]
+            fn $case(b: &mut ::test::Bencher) {
+                $crate::vote_count::test::NumericTests::<$typei, $typer>::$case(b);
             }
             )+
         };
@@ -447,6 +463,15 @@ mod test {
                     test_process_ballot_rec_tie_chain,
                     test_process_ballot_rec_tie_defeated,
                     test_process_ballot_rec_ties,
+                );
+
+                #[cfg(feature = "benchmarks")]
+                numeric_benches!(
+                    $typei,
+                    $typer,
+                    bench_process_ballot_rec_chain,
+                    bench_process_ballot_rec_pairs,
+                    bench_process_ballot_rec_tens,
                 );
             }
         };
@@ -477,14 +502,17 @@ mod test {
         for<'a> &'a R: Div<&'a R, Output = R>,
         for<'a> &'a R: Div<&'a I, Output = R>,
     {
-        fn process_ballot_rec(ballot: Ballot, keep_factors: &[R]) -> (Vec<R>, R, usize) {
+        fn process_ballot_rec(
+            ballot: impl std::borrow::Borrow<Ballot>,
+            keep_factors: &[R],
+        ) -> (Vec<R>, R, usize) {
             let num_candidates = keep_factors.len();
             let mut sum = vec![R::zero(); num_candidates];
             let mut unused_power = R::one();
             let mut fn_calls = 0;
 
             let counter = BallotCounter {
-                ballot: &ballot,
+                ballot: ballot.borrow(),
                 sum: &mut sum,
                 unused_power: &mut unused_power,
                 keep_factors,
@@ -629,6 +657,44 @@ mod test {
                         + R::ratio(1, 6))
             );
             assert_eq!(fn_calls, 7);
+        }
+
+        #[cfg(feature = "benchmarks")]
+        fn bench_process_ballot_rec_chain(bencher: &mut Bencher) {
+            let ballot = Ballot {
+                count: 1,
+                order: (0..10).map(|i| vec![i]).collect(),
+            };
+            let keep_factors: Vec<R> = (1..=10).map(|i| R::ratio(1, i)).collect();
+            bencher.iter(|| Self::process_ballot_rec(black_box(&ballot), black_box(&keep_factors)))
+        }
+
+        #[cfg(feature = "benchmarks")]
+        fn bench_process_ballot_rec_pairs(bencher: &mut Bencher) {
+            let ballot = Ballot {
+                count: 1,
+                order: (0..10)
+                    .collect::<Vec<_>>()
+                    .chunks(2)
+                    .map(|chunk| chunk.to_vec())
+                    .collect(),
+            };
+            let keep_factors: Vec<R> = (1..=10).map(|i| R::ratio(1, i)).collect();
+            bencher.iter(|| Self::process_ballot_rec(black_box(&ballot), black_box(&keep_factors)))
+        }
+
+        #[cfg(feature = "benchmarks")]
+        fn bench_process_ballot_rec_tens(bencher: &mut Bencher) {
+            let ballot = Ballot {
+                count: 1,
+                order: (0..30)
+                    .collect::<Vec<_>>()
+                    .chunks(10)
+                    .map(|chunk| chunk.to_vec())
+                    .collect(),
+            };
+            let keep_factors: Vec<R> = (1..=30).map(|i| R::ratio(1, i)).collect();
+            bencher.iter(|| Self::process_ballot_rec(black_box(&ballot), black_box(&keep_factors)))
         }
     }
 }

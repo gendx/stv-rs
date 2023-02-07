@@ -208,7 +208,7 @@ pub(crate) mod test {
     macro_rules! numeric_benchmarks {
         ( $typei:ty, $typer:ty, ) => {};
         ( $typei:ty, $typer:ty, $case:ident, $( $others:tt )* ) => {
-            #[cfg(all(test, feature = "benchmarks"))]
+            #[cfg(feature = "benchmarks")]
             #[bench]
             fn $case(b: &mut ::test::Bencher) {
                 $crate::arithmetic::test::NumericTests::<$typei, $typer>::$case(b);
