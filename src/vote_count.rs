@@ -480,8 +480,8 @@ mod test {
     all_numeric_tests!(ratio_i64, i64, Ratio<i64>);
     all_numeric_tests!(exact, BigInt, BigRational);
     all_numeric_tests!(approx_rational, BigInt, ApproxRational);
-    all_numeric_tests!(fixed9, i64, FixedDecimal9);
-    all_numeric_tests!(big_fixed9, BigInt, BigFixedDecimal9);
+    all_numeric_tests!(fixed, i64, FixedDecimal9);
+    all_numeric_tests!(fixed_big, BigInt, BigFixedDecimal9);
 
     pub struct NumericTests<I, R> {
         _phantomi: PhantomData<I>,
