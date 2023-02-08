@@ -20,6 +20,7 @@ use crate::types::{Election, ElectionResult};
 use crate::vote_count::VoteCount;
 use log::{debug, info, warn};
 use std::fmt::{self, Debug, Display};
+use std::io;
 use std::marker::PhantomData;
 use std::ops::{Add, Div, Mul, Sub};
 use std::time::Instant;
@@ -478,7 +479,9 @@ Election: {}
         if print_full_count {
             self.print_candidate_counts(count);
         }
-        count.print_stats(&self.threshold, &self.surplus);
+        count
+            .write_stats(io::stdout().lock(), &self.threshold, &self.surplus)
+            .unwrap();
     }
 
     /// Prints current candidate counts to stdout.

@@ -19,6 +19,7 @@ use crate::arithmetic::{Integer, Rational};
 use crate::types::{Ballot, Election};
 use log::{debug, trace, warn};
 use rayon::prelude::*;
+use std::io;
 use std::marker::PhantomData;
 use std::ops::{Add, Div, Mul, Sub};
 
@@ -98,14 +99,20 @@ where
     for<'a> &'a R: Div<&'a R, Output = R>,
     for<'a> &'a R: Div<&'a I, Output = R>,
 {
-    /// Prints statistics about this vote count to stdout.
-    pub fn print_stats(&self, threshold: &R, surplus: &R) {
-        println!("\tQuota: {threshold}");
+    /// Writes statistics about this vote count to the given output.
+    pub fn write_stats(
+        &self,
+        mut out: impl io::Write,
+        threshold: &R,
+        surplus: &R,
+    ) -> io::Result<()> {
+        writeln!(out, "\tQuota: {threshold}")?;
         let total_votes = self.sum.iter().sum::<R>();
-        println!("\tVotes: {total_votes}");
-        println!("\tResidual: {}", self.exhausted);
-        println!("\tTotal: {}", total_votes + &self.exhausted);
-        println!("\tSurplus: {surplus}");
+        writeln!(out, "\tVotes: {total_votes}")?;
+        writeln!(out, "\tResidual: {}", self.exhausted)?;
+        writeln!(out, "\tTotal: {}", total_votes + &self.exhausted)?;
+        writeln!(out, "\tSurplus: {surplus}")?;
+        Ok(())
     }
 
     /// Counts the votes, based on the given keep factors.
@@ -456,6 +463,8 @@ mod test {
                 numeric_tests!(
                     $typei,
                     $typer,
+                    test_write_stats,
+                    test_threshold,
                     test_process_ballot_rec_first,
                     test_process_ballot_rec_chain,
                     test_process_ballot_rec_defeated,
@@ -463,6 +472,8 @@ mod test {
                     test_process_ballot_rec_tie_chain,
                     test_process_ballot_rec_tie_defeated,
                     test_process_ballot_rec_ties,
+                    test_process_ballot_multiplier,
+                    test_increment_candidate_ballot_multiplier,
                 );
 
                 #[cfg(feature = "benchmarks")]
@@ -490,11 +501,11 @@ mod test {
 
     impl<I, R> NumericTests<I, R>
     where
-        I: Integer + Display,
+        I: Integer + Send + Sync + Display,
         for<'a> &'a I: Add<&'a I, Output = I>,
         for<'a> &'a I: Sub<&'a I, Output = I>,
         for<'a> &'a I: Mul<&'a I, Output = I>,
-        R: Rational<I>,
+        R: Rational<I> + Send + Sync,
         for<'a> &'a R: Add<&'a R, Output = R>,
         for<'a> &'a R: Sub<&'a R, Output = R>,
         for<'a> &'a R: Mul<&'a R, Output = R>,
@@ -502,6 +513,66 @@ mod test {
         for<'a> &'a R: Div<&'a R, Output = R>,
         for<'a> &'a R: Div<&'a I, Output = R>,
     {
+        fn test_write_stats() {
+            let mut buf = Vec::new();
+
+            let vote_count = VoteCount {
+                sum: (0..10).map(R::from_usize).collect(),
+                exhausted: R::from_usize(42),
+                _phantom: PhantomData,
+            };
+            vote_count
+                .write_stats(
+                    &mut buf,
+                    /* threshold = */ &R::from_usize(123),
+                    /* surplus = */ &R::from_usize(456),
+                )
+                .unwrap();
+
+            let stdout = std::str::from_utf8(&buf).unwrap();
+            let expected = format!(
+                "\tQuota: {quota}\n\tVotes: {votes}\n\tResidual: {residual}\n\tTotal: {total}\n\tSurplus: {surplus}\n",
+                quota = R::from_usize(123),
+                votes = R::from_usize(45),
+                residual = R::from_usize(42),
+                total = R::from_usize(87),
+                surplus = R::from_usize(456)
+            );
+            assert_eq!(stdout, expected);
+        }
+
+        fn test_threshold() {
+            for num_seats in 0..10 {
+                for num_ballots in 0..100 {
+                    let election = Election {
+                        title: String::new(),
+                        num_candidates: 0,
+                        num_seats,
+                        num_ballots,
+                        candidates: Vec::new(),
+                        ballots: Vec::new(),
+                    };
+
+                    assert_eq!(
+                        VoteCount::threshold_exhausted(
+                            &election,
+                            /* exhausted = */ &R::zero()
+                        ),
+                        R::ratio(num_ballots, num_seats + 1) + R::epsilon()
+                    );
+
+                    let exhausted = std::cmp::min(num_ballots, 42);
+                    assert_eq!(
+                        VoteCount::threshold_exhausted(
+                            &election,
+                            /* exhausted = */ &R::from_usize(exhausted)
+                        ),
+                        R::ratio(num_ballots - exhausted, num_seats + 1) + R::epsilon()
+                    );
+                }
+            }
+        }
+
         fn process_ballot_rec(
             ballot: impl std::borrow::Borrow<Ballot>,
             keep_factors: &[R],
@@ -657,6 +728,128 @@ mod test {
                         + R::ratio(1, 6))
             );
             assert_eq!(fn_calls, 7);
+        }
+
+        fn test_process_ballot_multiplier() {
+            let ballots = [
+                vec![vec![0], vec![1], vec![2], vec![3], vec![4]],
+                vec![vec![4], vec![3], vec![2], vec![1], vec![0]],
+                vec![vec![0, 2], vec![1, 3, 4]],
+                vec![vec![0, 1, 2, 3, 4]],
+            ];
+            let keep_factors_list = [
+                [R::zero(), R::zero(), R::zero(), R::zero(), R::zero()],
+                [R::one(), R::one(), R::one(), R::one(), R::one()],
+                [
+                    R::ratio(1, 2),
+                    R::ratio(2, 3),
+                    R::ratio(4, 5),
+                    R::ratio(6, 7),
+                    R::ratio(10, 11),
+                ],
+            ];
+            for keep_factors in &keep_factors_list {
+                for order in &ballots {
+                    for ballot_count in 1..=30 {
+                        // Count the ballot once with a multiplier of ballot_count.
+                        let left_vote_count = {
+                            let mut vote_accumulator = VoteAccumulator::new(5);
+                            let ballot = Ballot {
+                                count: ballot_count,
+                                order: order.clone(),
+                            };
+                            VoteCount::process_ballot(
+                                &mut vote_accumulator,
+                                keep_factors,
+                                0,
+                                &ballot,
+                            );
+                            vote_accumulator.into_vote_count()
+                        };
+
+                        // Count the ballot ballot_count times with a multiplier of one each time.
+                        let right_vote_count = {
+                            let mut vote_accumulator = VoteAccumulator::new(5);
+                            let ballot = Ballot {
+                                count: 1,
+                                order: order.clone(),
+                            };
+                            for _ in 0..ballot_count {
+                                VoteCount::process_ballot(
+                                    &mut vote_accumulator,
+                                    keep_factors,
+                                    0,
+                                    &ballot,
+                                );
+                            }
+                            vote_accumulator.into_vote_count()
+                        };
+
+                        // Check that both match.
+                        assert_eq!(left_vote_count.sum, right_vote_count.sum);
+                        assert_eq!(left_vote_count.exhausted, right_vote_count.exhausted);
+                    }
+                }
+            }
+        }
+
+        fn test_increment_candidate_ballot_multiplier() {
+            let fake_ballot = Ballot {
+                count: 0,
+                order: vec![],
+            };
+            let fake_keep_factors = vec![];
+
+            for used_power in R::get_positive_test_values() {
+                for ballot_count in 1..=30 {
+                    // Increment the candidate once with a multiplier of ballot_count.
+                    let (left_sum, left_unused_power) = {
+                        let mut sum = vec![R::zero()];
+                        let mut unused_power = R::zero();
+                        let mut ballot_counter = BallotCounter {
+                            ballot: &fake_ballot,
+                            sum: &mut sum,
+                            unused_power: &mut unused_power,
+                            keep_factors: &fake_keep_factors,
+                            fn_calls: &mut 0,
+                            _phantom: PhantomData,
+                        };
+                        ballot_counter.increment_candidate(
+                            0,
+                            used_power.clone(),
+                            &I::from_usize(ballot_count),
+                        );
+                        (sum, unused_power)
+                    };
+
+                    // Increment the candidate ballot_count times, with a multiplier of one each
+                    // time.
+                    let (right_sum, right_unused_power) = {
+                        let mut sum = vec![R::zero()];
+                        let mut unused_power = R::zero();
+                        let mut ballot_counter = BallotCounter {
+                            ballot: &fake_ballot,
+                            sum: &mut sum,
+                            unused_power: &mut unused_power,
+                            keep_factors: &fake_keep_factors,
+                            fn_calls: &mut 0,
+                            _phantom: PhantomData,
+                        };
+                        for _ in 0..ballot_count {
+                            ballot_counter.increment_candidate(
+                                0,
+                                used_power.clone(),
+                                &I::from_usize(1),
+                            );
+                        }
+                        (sum, unused_power)
+                    };
+
+                    // Check that both match.
+                    assert_eq!(left_sum, right_sum);
+                    assert_eq!(left_unused_power, right_unused_power);
+                }
+            }
         }
 
         #[cfg(feature = "benchmarks")]
