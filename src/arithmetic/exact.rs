@@ -74,36 +74,40 @@ where
     fn description() -> &'static str {
         "exact rational arithmetic"
     }
+
+    #[cfg(test)]
+    fn get_positive_test_values() -> Vec<Self> {
+        let mut result = Vec::new();
+        for i in 0..=30 {
+            result.push(Self::ratio(1 << i, 1));
+        }
+        for i in 0..=30 {
+            result.push(Self::ratio(1, 1 << i));
+        }
+        for i in 0..=30 {
+            result.push(Self::ratio(0x7FFF_FFFF - (1 << i), 1));
+        }
+        for i in 0..=30 {
+            result.push(Self::ratio(1, 0x7FFF_FFFF - (1 << i)));
+        }
+        result
+    }
 }
 
 #[cfg(test)]
 mod test {
+    use super::*;
     use crate::{big_numeric_tests, numeric_benchmarks, numeric_tests};
-    use num::traits::{One, Zero};
-    use num::{BigInt, BigRational};
+    use num::traits::One;
+    use num::BigRational;
 
     fn make_ratio(num: i64, denom: i64) -> BigRational {
-        BigRational::new(BigInt::from(num), BigInt::from(denom))
-    }
-
-    fn get_positive_test_values() -> Vec<BigRational> {
-        let mut result = Vec::new();
-        for i in 0..=30 {
-            result.push(make_ratio(1 << i, 1));
-        }
-        for i in 0..=30 {
-            result.push(make_ratio(1, 1 << i));
-        }
-        for i in 0..=30 {
-            result.push(make_ratio(0x7FFF_FFFF - (1 << i), 1));
-        }
-        for i in 0..=30 {
-            result.push(make_ratio(1, 0x7FFF_FFFF - (1 << i)));
-        }
-        result
+        BigRational::ratio_i(BigInt::from(num), BigInt::from(denom))
     }
 
     numeric_tests!(
+        BigInt,
+        BigRational,
         test_values_are_positive,
         test_is_exact,
         test_ceil_precision,
@@ -129,6 +133,8 @@ mod test {
     );
 
     big_numeric_tests!(
+        BigInt,
+        BigRational,
         Some(100_000),
         test_add_is_associative,
         test_mul_is_associative,
@@ -191,7 +197,7 @@ mod test {
             "1/2113929215", "1/2080374783", "1/2013265919", "1/1879048191", "1/1610612735",
             "1/1073741823",
         ];
-        let actual_displays: Vec<String> = get_positive_test_values()
+        let actual_displays: Vec<String> = BigRational::get_positive_test_values()
             .iter()
             .map(|x| format!("{x}"))
             .collect();

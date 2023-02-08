@@ -429,14 +429,9 @@ impl Rational<i64> for FixedDecimal9 {
             ((self.0 as i128 * 1_000_000_000 + rhs.0 as i128 - 1) / rhs.0 as i128) as i64,
         );
     }
-}
 
-#[cfg(test)]
-mod test {
-    use super::*;
-    use crate::{big_numeric_tests, numeric_benchmarks, numeric_tests};
-
-    fn get_positive_test_values() -> Vec<FixedDecimal9> {
+    #[cfg(test)]
+    fn get_positive_test_values() -> Vec<Self> {
         let mut result = Vec::new();
         for i in 0..=30 {
             result.push(FixedDecimal9(1 << i));
@@ -446,8 +441,16 @@ mod test {
         }
         result
     }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use crate::{big_numeric_tests, numeric_benchmarks, numeric_tests};
 
     numeric_tests!(
+        i64,
+        FixedDecimal9,
         test_values_are_positive,
         test_is_exact,
         test_ceil_precision,
@@ -481,6 +484,8 @@ mod test {
     );
 
     big_numeric_tests!(
+        i64,
+        FixedDecimal9,
         None,
         test_add_is_associative,
         test_mul_is_associative => fail(r"assertion failed: `(left == right)`
@@ -541,7 +546,7 @@ mod test {
             "2.130706431", "2.113929215", "2.080374783", "2.013265919",
             "1.879048191", "1.610612735", "1.073741823",
         ];
-        let actual_displays: Vec<String> = get_positive_test_values()
+        let actual_displays: Vec<String> = FixedDecimal9::get_positive_test_values()
             .iter()
             .map(|x| format!("{x}"))
             .collect();

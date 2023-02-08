@@ -244,6 +244,24 @@ impl Rational<BigInt> for ApproxRational {
         let numer = self.0.ceil().numer().clone();
         self.0 = BigRational::new(numer, precision);
     }
+
+    #[cfg(test)]
+    fn get_positive_test_values() -> Vec<Self> {
+        let mut result = Vec::new();
+        for i in 0..=30 {
+            result.push(Self::ratio(1 << i, 1));
+        }
+        for i in 0..=30 {
+            result.push(Self::ratio(1, 1 << i));
+        }
+        for i in 0..=30 {
+            result.push(Self::ratio(0x7FFF_FFFF - (1 << i), 1));
+        }
+        for i in 0..=30 {
+            result.push(Self::ratio(1, 0x7FFF_FFFF - (1 << i)));
+        }
+        result
+    }
 }
 
 #[cfg(test)]
@@ -252,27 +270,12 @@ mod test {
     use crate::{big_numeric_tests, numeric_benchmarks, numeric_tests};
 
     fn make_ratio(num: i64, denom: i64) -> ApproxRational {
-        ApproxRational(BigRational::new(BigInt::from(num), BigInt::from(denom)))
-    }
-
-    fn get_positive_test_values() -> Vec<ApproxRational> {
-        let mut result = Vec::new();
-        for i in 0..=30 {
-            result.push(make_ratio(1 << i, 1));
-        }
-        for i in 0..=30 {
-            result.push(make_ratio(1, 1 << i));
-        }
-        for i in 0..=30 {
-            result.push(make_ratio(0x7FFF_FFFF - (1 << i), 1));
-        }
-        for i in 0..=30 {
-            result.push(make_ratio(1, 0x7FFF_FFFF - (1 << i)));
-        }
-        result
+        ApproxRational::ratio_i(BigInt::from(num), BigInt::from(denom))
     }
 
     numeric_tests!(
+        BigInt,
+        ApproxRational,
         test_values_are_positive,
         test_is_exact,
         test_ceil_precision,
@@ -298,6 +301,8 @@ mod test {
     );
 
     big_numeric_tests!(
+        BigInt,
+        ApproxRational,
         Some(100_000),
         test_add_is_associative,
         test_mul_is_associative,
@@ -360,7 +365,7 @@ mod test {
             "1/2113929215", "1/2080374783", "1/2013265919", "1/1879048191", "1/1610612735",
             "1/1073741823",
         ];
-        let actual_displays: Vec<String> = get_positive_test_values()
+        let actual_displays: Vec<String> = ApproxRational::get_positive_test_values()
             .iter()
             .map(|x| format!("{x}"))
             .collect();

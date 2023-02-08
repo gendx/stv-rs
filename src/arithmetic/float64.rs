@@ -60,13 +60,9 @@ impl Rational<f64> for f64 {
     fn description() -> &'static str {
         "64-bit floating-point arithmetic"
     }
-}
 
-#[cfg(test)]
-mod test {
-    use crate::{big_numeric_tests, numeric_benchmarks, numeric_tests};
-
-    fn get_positive_test_values() -> Vec<f64> {
+    #[cfg(test)]
+    fn get_positive_test_values() -> Vec<Self> {
         let mut result = Vec::new();
         for i in 0..=30 {
             result.push((1 << i) as f64);
@@ -82,8 +78,16 @@ mod test {
         }
         result
     }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use crate::{big_numeric_tests, numeric_benchmarks, numeric_tests};
 
     numeric_tests!(
+        f64,
+        f64,
         test_values_are_positive,
         test_is_exact,
         test_ceil_precision,
@@ -121,6 +125,8 @@ mod test {
     );
 
     big_numeric_tests!(
+        f64,
+        f64,
         None,
         test_add_is_associative => fail(r"assertion failed: `(left == right)`
   left: `2.0000000004656617`,
@@ -186,7 +192,7 @@ mod test {
           "0.0000000004967053733749714", "0.0000000005321843286349222",
           "0.0000000006208817167958132", "0.0000000009313225754828403"
         ];
-        let actual_displays: Vec<String> = get_positive_test_values()
+        let actual_displays: Vec<String> = f64::get_positive_test_values()
             .iter()
             .map(|x| format!("{x}"))
             .collect();

@@ -282,14 +282,9 @@ impl Rational<BigInt> for BigFixedDecimal9 {
         let ratio = BigRational::new(&self.0 * BigInt::from(1_000_000_000), rhs.0.clone());
         BigFixedDecimal9(ratio.ceil().numer().clone())
     }
-}
 
-#[cfg(test)]
-mod test {
-    use super::*;
-    use crate::{big_numeric_tests, numeric_benchmarks, numeric_tests};
-
-    fn get_positive_test_values() -> Vec<BigFixedDecimal9> {
+    #[cfg(test)]
+    fn get_positive_test_values() -> Vec<Self> {
         let mut result = Vec::new();
         for i in 0..=62 {
             result.push(BigFixedDecimal9(BigInt::from(1i64 << i)));
@@ -301,8 +296,16 @@ mod test {
         }
         result
     }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use crate::{big_numeric_tests, numeric_benchmarks, numeric_tests};
 
     numeric_tests!(
+        BigInt,
+        BigFixedDecimal9,
         test_values_are_positive,
         test_is_exact,
         test_ceil_precision,
@@ -336,6 +339,8 @@ mod test {
     );
 
     big_numeric_tests!(
+        BigInt,
+        BigFixedDecimal9,
         None,
         test_add_is_associative,
         test_mul_is_associative => fail(r"assertion failed: `(left == right)`
@@ -440,7 +445,7 @@ mod test {
             "9079256848.778919935", "8935141660.703064063", "8646911284.551352319",
             "8070450532.247928831", "6917529027.641081855", "4611686018.427387903"
         ];
-        let actual_displays: Vec<String> = get_positive_test_values()
+        let actual_displays: Vec<String> = BigFixedDecimal9::get_positive_test_values()
             .iter()
             .map(|x| format!("{x}"))
             .collect();

@@ -140,6 +140,9 @@ where
     fn div_up(&self, rhs: &Self) -> Self {
         self / rhs
     }
+
+    #[cfg(test)]
+    fn get_positive_test_values() -> Vec<Self>;
 }
 
 #[cfg(test)]
@@ -156,51 +159,45 @@ pub(crate) mod test {
 
     #[macro_export]
     macro_rules! numeric_tests {
-        () => {};
-        ( $case:ident, $( $others:tt )* ) => {
+        ( $typei:ty, $typer:ty, ) => {};
+        ( $typei:ty, $typer:ty, $case:ident, $( $others:tt )* ) => {
             #[test]
             fn $case() {
-                $crate::arithmetic::test::NumericTests::$case(&get_positive_test_values());
+                $crate::arithmetic::test::NumericTests::<$typei, $typer>::$case();
             }
 
-            numeric_tests!($($others)*);
+            numeric_tests!($typei, $typer, $($others)*);
         };
-        ( $case:ident => fail($msg:expr), $( $others:tt )* ) => {
+        ( $typei:ty, $typer:ty, $case:ident => fail($msg:expr), $( $others:tt )* ) => {
             #[test]
             #[should_panic(expected = $msg)]
             fn $case() {
-                $crate::arithmetic::test::NumericTests::$case(&get_positive_test_values());
+                $crate::arithmetic::test::NumericTests::<$typei, $typer>::$case();
             }
 
-            numeric_tests!($($others)*);
+            numeric_tests!($typei, $typer, $($others)*);
         };
     }
 
     #[macro_export]
     macro_rules! big_numeric_tests {
-        ( $num_samples:expr, ) => {};
-        ( $num_samples:expr, $case:ident, $( $others:tt )* ) => {
+        ( $typei:ty, $typer:ty, $num_samples:expr, ) => {};
+        ( $typei:ty, $typer:ty, $num_samples:expr, $case:ident, $( $others:tt )* ) => {
             #[test]
             fn $case() {
-                $crate::arithmetic::test::NumericTests::$case(
-                    &get_positive_test_values(),
-                    $num_samples
-                );
+                $crate::arithmetic::test::NumericTests::<$typei, $typer>::$case($num_samples);
             }
 
-            big_numeric_tests!($num_samples, $($others)*);
+            big_numeric_tests!($typei, $typer, $num_samples, $($others)*);
         };
-        ( $num_samples:expr, $case:ident => fail($msg:expr), $( $others:tt )* ) => {
+        ( $typei:ty, $typer:ty, $num_samples:expr, $case:ident => fail($msg:expr), $( $others:tt )* ) => {
             #[test]
             #[should_panic(expected = $msg)]
             fn $case() {
-                $crate::arithmetic::test::NumericTests::$case(
-                    &get_positive_test_values(),
-                    $num_samples
-                );
+                $crate::arithmetic::test::NumericTests::<$typei, $typer>::$case($num_samples);
             }
 
-            big_numeric_tests!($num_samples, $($others)*);
+            big_numeric_tests!($typei, $typer, $num_samples, $($others)*);
         };
     }
 
@@ -237,13 +234,14 @@ pub(crate) mod test {
         for<'a> &'a R: Div<&'a R, Output = R>,
         for<'a> &'a R: Div<&'a I, Output = R>,
     {
-        pub fn test_values_are_positive(positive_test_values: &[R]) {
-            Self::loop_check1(positive_test_values, |a| {
+        pub fn test_values_are_positive() {
+            let test_values = R::get_positive_test_values();
+            Self::loop_check1(&test_values, |a| {
                 assert!(*a > R::zero(), "{a} is not positive");
             });
         }
 
-        pub fn test_is_exact(_positive_test_values: &[R]) {
+        pub fn test_is_exact() {
             assert!(
                 R::is_exact() == R::epsilon().is_zero(),
                 "epsilon is {} but is_exact() returns {}",
@@ -252,15 +250,16 @@ pub(crate) mod test {
             );
         }
 
-        pub fn test_ceil_precision(positive_test_values: &[R]) {
-            Self::loop_check1(positive_test_values, |a| {
+        pub fn test_ceil_precision() {
+            let test_values = R::get_positive_test_values();
+            Self::loop_check1(&test_values, |a| {
                 let mut b = a.clone();
                 b.ceil_precision();
                 assert!(b >= *a, "b := ceil_precision(a) < a for {a}, {b}");
             });
         }
 
-        pub fn test_ratio(_positive_test_values: &[R]) {
+        pub fn test_ratio() {
             Self::loop_check_i1(|a| {
                 assert_eq!(
                     R::ratio_i(a.clone(), I::from_usize(1)),
@@ -270,7 +269,7 @@ pub(crate) mod test {
             });
         }
 
-        pub fn test_ratio_invert(_positive_test_values: &[R]) {
+        pub fn test_ratio_invert() {
             Self::loop_check_i1(|a| {
                 if !a.is_zero() {
                     assert_eq!(
@@ -282,16 +281,18 @@ pub(crate) mod test {
             });
         }
 
-        pub fn test_is_zero(positive_test_values: &[R]) {
+        pub fn test_is_zero() {
+            let test_values = R::get_positive_test_values();
             assert!(R::zero().is_zero());
             assert!(!R::one().is_zero());
-            Self::loop_check1(positive_test_values, |a| {
+            Self::loop_check1(&test_values, |a| {
                 assert!(!a.is_zero(), "{a} is zero");
             });
         }
 
-        pub fn test_zero_is_add_neutral(test_values: &[R]) {
-            Self::loop_check1(test_values, |a| {
+        pub fn test_zero_is_add_neutral() {
+            let test_values = R::get_positive_test_values();
+            Self::loop_check1(&test_values, |a| {
                 assert_eq!(a + &R::zero(), *a, "a + 0 != a for {a}");
                 assert_eq!(&R::zero() + a, *a, "0 + a != a for {a}");
                 assert_eq!(a - &R::zero(), *a, "a - 0 != a for {a}");
@@ -299,14 +300,16 @@ pub(crate) mod test {
         }
 
         #[allow(clippy::eq_op)]
-        pub fn test_add_is_commutative(test_values: &[R]) {
-            Self::loop_check2(test_values, |a, b| {
+        pub fn test_add_is_commutative() {
+            let test_values = R::get_positive_test_values();
+            Self::loop_check2(&test_values, |a, b| {
                 assert_eq!(a + b, b + a, "a + b != b + a for {a}, {b}");
             })
         }
 
-        pub fn test_add_is_associative(test_values: &[R], num_samples: Option<usize>) {
-            Self::loop_check3(test_values, num_samples, |a, b, c| {
+        pub fn test_add_is_associative(num_samples: Option<usize>) {
+            let test_values = R::get_positive_test_values();
+            Self::loop_check3(&test_values, num_samples, |a, b, c| {
                 assert_eq!(
                     &(a + b) + c,
                     a + &(b + c),
@@ -315,47 +318,54 @@ pub(crate) mod test {
             })
         }
 
-        pub fn test_opposite(test_values: &[R]) {
-            Self::loop_check1(test_values, |a| {
+        pub fn test_opposite() {
+            let test_values = R::get_positive_test_values();
+            Self::loop_check1(&test_values, |a| {
                 assert_eq!(R::zero() - (R::zero() - a), *a, "-(-a) != a for {a}");
             });
         }
 
         #[allow(clippy::eq_op)]
-        pub fn test_sub_self(test_values: &[R]) {
-            Self::loop_check1(test_values, |a| {
+        pub fn test_sub_self() {
+            let test_values = R::get_positive_test_values();
+            Self::loop_check1(&test_values, |a| {
                 assert_eq!(a - a, R::zero(), "a - a != 0 for {a}");
             });
         }
 
-        pub fn test_add_sub(test_values: &[R]) {
-            Self::loop_check2(test_values, |a, b| {
+        pub fn test_add_sub() {
+            let test_values = R::get_positive_test_values();
+            Self::loop_check2(&test_values, |a, b| {
                 assert_eq!(&(a + b) - b, *a, "(a + b) - b != a for {a}, {b}");
             });
         }
 
-        pub fn test_sub_add(test_values: &[R]) {
-            Self::loop_check2(test_values, |a, b| {
+        pub fn test_sub_add() {
+            let test_values = R::get_positive_test_values();
+            Self::loop_check2(&test_values, |a, b| {
                 assert_eq!(&(a - b) + b, *a, "(a - b) + b != a for {a}, {b}");
             });
         }
 
-        pub fn test_one_is_mul_neutral(test_values: &[R]) {
-            Self::loop_check1(test_values, |a| {
+        pub fn test_one_is_mul_neutral() {
+            let test_values = R::get_positive_test_values();
+            Self::loop_check1(&test_values, |a| {
                 assert_eq!(a * &R::one(), *a, "a * 1 != a for {a}");
                 assert_eq!(&R::one() * a, *a, "1 * a != a for {a}");
                 assert_eq!(a / &R::one(), *a, "a / 1 != a for {a}");
             })
         }
 
-        pub fn test_mul_is_commutative(test_values: &[R]) {
-            Self::loop_check2(test_values, |a, b| {
+        pub fn test_mul_is_commutative() {
+            let test_values = R::get_positive_test_values();
+            Self::loop_check2(&test_values, |a, b| {
                 assert_eq!(a * b, b * a, "a * b != b * a for {a}, {b}");
             })
         }
 
-        pub fn test_mul_is_associative(test_values: &[R], num_samples: Option<usize>) {
-            Self::loop_check3(test_values, num_samples, |a, b, c| {
+        pub fn test_mul_is_associative(num_samples: Option<usize>) {
+            let test_values = R::get_positive_test_values();
+            Self::loop_check3(&test_values, num_samples, |a, b, c| {
                 assert_eq!(
                     &(a * b) * c,
                     a * &(b * c),
@@ -364,8 +374,9 @@ pub(crate) mod test {
             })
         }
 
-        pub fn test_mul_is_distributive(test_values: &[R], num_samples: Option<usize>) {
-            Self::loop_check3(test_values, num_samples, |a, b, c| {
+        pub fn test_mul_is_distributive(num_samples: Option<usize>) {
+            let test_values = R::get_positive_test_values();
+            Self::loop_check3(&test_values, num_samples, |a, b, c| {
                 assert_eq!(
                     a * &(b + c),
                     &(a * b) + &(a * c),
@@ -374,33 +385,38 @@ pub(crate) mod test {
             })
         }
 
-        pub fn test_invert(test_values: &[R]) {
-            Self::loop_check1(test_values, |a| {
+        pub fn test_invert() {
+            let test_values = R::get_positive_test_values();
+            Self::loop_check1(&test_values, |a| {
                 assert_eq!(R::one() / (R::one() / a), *a, "1/(1/a) != a for {a}");
             });
         }
 
         #[allow(clippy::eq_op)]
-        pub fn test_div_self(test_values: &[R]) {
-            Self::loop_check1(test_values, |a| {
+        pub fn test_div_self() {
+            let test_values = R::get_positive_test_values();
+            Self::loop_check1(&test_values, |a| {
                 assert_eq!(a / a, R::one(), "a / a != 1 for {a}");
             });
         }
 
-        pub fn test_mul_div(test_values: &[R]) {
-            Self::loop_check2(test_values, |a, b| {
+        pub fn test_mul_div() {
+            let test_values = R::get_positive_test_values();
+            Self::loop_check2(&test_values, |a, b| {
                 assert_eq!(&(a * b) / b, *a, "(a * b) / b != a for {a}, {b}");
             });
         }
 
-        pub fn test_div_mul(test_values: &[R]) {
-            Self::loop_check2(test_values, |a, b| {
+        pub fn test_div_mul() {
+            let test_values = R::get_positive_test_values();
+            Self::loop_check2(&test_values, |a, b| {
                 assert_eq!(&(a / b) * b, *a, "(a / b) * b != a for {a}, {b}");
             });
         }
 
-        pub fn test_mul_by_int(test_values: &[R]) {
-            Self::loop_check1_i1(test_values, |a, b| {
+        pub fn test_mul_by_int() {
+            let test_values = R::get_positive_test_values();
+            Self::loop_check1_i1(&test_values, |a, b| {
                 assert_eq!(
                     a * &b,
                     a * &R::from_int(b.clone()),
@@ -409,8 +425,9 @@ pub(crate) mod test {
             })
         }
 
-        pub fn test_div_by_int(test_values: &[R]) {
-            Self::loop_check1_i1(test_values, |a, b| {
+        pub fn test_div_by_int() {
+            let test_values = R::get_positive_test_values();
+            Self::loop_check1_i1(&test_values, |a, b| {
                 if !b.is_zero() {
                     assert_eq!(
                         a / &b,
@@ -421,8 +438,9 @@ pub(crate) mod test {
             })
         }
 
-        pub fn test_mul_by_int_is_associative(test_values: &[R], num_samples: Option<usize>) {
-            Self::loop_check1_i2(test_values, num_samples, |a, b, c| {
+        pub fn test_mul_by_int_is_associative(num_samples: Option<usize>) {
+            let test_values = R::get_positive_test_values();
+            Self::loop_check1_i2(&test_values, num_samples, |a, b, c| {
                 assert_eq!(
                     &(a * &b) * &c,
                     a * &(b.clone() * c.clone()),
@@ -431,8 +449,9 @@ pub(crate) mod test {
             })
         }
 
-        pub fn test_mul_by_int_is_distributive(test_values: &[R], num_samples: Option<usize>) {
-            Self::loop_check2_i1(test_values, num_samples, |a: &R, b: &R, c: I| {
+        pub fn test_mul_by_int_is_distributive(num_samples: Option<usize>) {
+            let test_values = R::get_positive_test_values();
+            Self::loop_check2_i1(&test_values, num_samples, |a: &R, b: &R, c: I| {
                 assert_eq!(
                     &(a + b) * &c,
                     &(a * &c) + &(b * &c),
@@ -441,8 +460,9 @@ pub(crate) mod test {
             })
         }
 
-        pub fn test_div_by_int_is_associative(test_values: &[R], num_samples: Option<usize>) {
-            Self::loop_check1_i2(test_values, num_samples, |a, b, c| {
+        pub fn test_div_by_int_is_associative(num_samples: Option<usize>) {
+            let test_values = R::get_positive_test_values();
+            Self::loop_check1_i2(&test_values, num_samples, |a, b, c| {
                 if !b.is_zero() && !c.is_zero() {
                     assert_eq!(
                         &(a / &b) / &c,
@@ -453,8 +473,9 @@ pub(crate) mod test {
             })
         }
 
-        pub fn test_div_by_int_is_distributive(test_values: &[R], num_samples: Option<usize>) {
-            Self::loop_check2_i1(test_values, num_samples, |a: &R, b: &R, c: I| {
+        pub fn test_div_by_int_is_distributive(num_samples: Option<usize>) {
+            let test_values = R::get_positive_test_values();
+            Self::loop_check2_i1(&test_values, num_samples, |a: &R, b: &R, c: I| {
                 if !c.is_zero() {
                     assert_eq!(
                         &(a + b) / &c,
@@ -465,8 +486,10 @@ pub(crate) mod test {
             })
         }
 
-        pub fn test_references(test_values: &[R]) {
-            Self::loop_check2(test_values, |a, b| {
+        pub fn test_references() {
+            let test_values = R::get_positive_test_values();
+
+            Self::loop_check2(&test_values, |a, b| {
                 assert_eq!(
                     a + b,
                     a.clone() + b.clone(),
@@ -493,7 +516,7 @@ pub(crate) mod test {
                 assert_eq!(a / b, a.clone() / b, "&a / &b != a / &b for {a}, {b}");
             });
 
-            Self::loop_check1_i1(test_values, |a, b| {
+            Self::loop_check1_i1(&test_values, |a, b| {
                 if !b.is_zero() {
                     assert_eq!(
                         a * &b,
@@ -509,8 +532,10 @@ pub(crate) mod test {
             });
         }
 
-        pub fn test_assign(test_values: &[R]) {
-            Self::loop_check2(test_values, |a, b| {
+        pub fn test_assign() {
+            let test_values = R::get_positive_test_values();
+
+            Self::loop_check2(&test_values, |a, b| {
                 let mut c = a.clone();
                 c += b.clone();
                 assert_eq!(c, a + b, "a += b != a + b for {a}, {b}");
@@ -532,7 +557,7 @@ pub(crate) mod test {
                 assert_eq!(c, a * b, "a *= &b != a * b for {a}, {b}");
             });
 
-            Self::loop_check1_i1(test_values, |a, b| {
+            Self::loop_check1_i1(&test_values, |a, b| {
                 if !b.is_zero() {
                     let mut c = a.clone();
                     c /= &b;
@@ -541,8 +566,9 @@ pub(crate) mod test {
             });
         }
 
-        pub fn test_sum(test_values: &[R], num_samples: Option<usize>) {
-            Self::loop_check3(test_values, num_samples, |a, b, c| {
+        pub fn test_sum(num_samples: Option<usize>) {
+            let test_values = R::get_positive_test_values();
+            Self::loop_check3(&test_values, num_samples, |a, b, c| {
                 assert_eq!(
                     [a.clone(), b.clone(), c.clone()].into_iter().sum::<R>(),
                     &(a + b) + c,
@@ -556,8 +582,9 @@ pub(crate) mod test {
             });
         }
 
-        pub fn test_product(test_values: &[R], num_samples: Option<usize>) {
-            Self::loop_check3(test_values, num_samples, |a, b, c| {
+        pub fn test_product(num_samples: Option<usize>) {
+            let test_values = R::get_positive_test_values();
+            Self::loop_check3(&test_values, num_samples, |a, b, c| {
                 assert_eq!(
                     [a.clone(), b.clone(), c.clone()].into_iter().product::<R>(),
                     &(a * b) * c,
