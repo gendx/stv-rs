@@ -171,3 +171,139 @@ fn remove_quotes(x: &str) -> &str {
     assert_eq!(*x.as_bytes().last().unwrap(), b'"');
     &x[1..x.len() - 1]
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use std::io::Cursor;
+
+    #[test]
+    fn test_remove_quotes() {
+        assert_eq!(remove_quotes("\"foo\""), "foo");
+        assert_eq!(remove_quotes("\"Hello world\""), "Hello world");
+    }
+
+    #[test]
+    #[should_panic(expected = "assertion failed: x.len() >= 2")]
+    fn test_remove_quotes_empty() {
+        remove_quotes("");
+    }
+
+    #[test]
+    #[should_panic(expected = "assertion failed: x.len() >= 2")]
+    fn test_remove_quotes_short() {
+        remove_quotes("\"");
+    }
+
+    #[test]
+    #[should_panic(expected = "assertion failed: `(left == right)`\n  left: `102`,\n right: `34`")]
+    fn test_remove_quotes_no_quotes() {
+        remove_quotes("foo");
+    }
+
+    #[test]
+    #[should_panic(expected = "assertion failed: `(left == right)`\n  left: `225`,\n right: `34`")]
+    fn test_remove_quotes_mid_utf8() {
+        remove_quotes("\u{1234}foo\"");
+    }
+
+    #[test]
+    fn test_parse_election() {
+        let file = r#"5 2
+[nick apple banana cherry date eggplant]
+3 apple cherry eggplant date banana 0
+3 date=eggplant banana=cherry=apple 0
+42 cherry 0
+123 banana date 0
+0
+"Apple"
+"Banana"
+"Cherry"
+"Date"
+"Eggplant"
+"Vegetable contest"
+"#;
+        assert_eq!(
+            parse_election(Cursor::new(file)).unwrap(),
+            Election {
+                title: "Vegetable contest".to_owned(),
+                num_candidates: 5,
+                num_seats: 2,
+                num_ballots: 171,
+                candidates: vec![
+                    Candidate {
+                        nickname: "apple".to_owned(),
+                        name: "Apple".to_owned(),
+                        is_withdrawn: false,
+                    },
+                    Candidate {
+                        nickname: "banana".to_owned(),
+                        name: "Banana".to_owned(),
+                        is_withdrawn: false,
+                    },
+                    Candidate {
+                        nickname: "cherry".to_owned(),
+                        name: "Cherry".to_owned(),
+                        is_withdrawn: false,
+                    },
+                    Candidate {
+                        nickname: "date".to_owned(),
+                        name: "Date".to_owned(),
+                        is_withdrawn: false,
+                    },
+                    Candidate {
+                        nickname: "eggplant".to_owned(),
+                        name: "Eggplant".to_owned(),
+                        is_withdrawn: false,
+                    },
+                ],
+                ballots: vec![
+                    Ballot {
+                        count: 3,
+                        order: vec![vec![0], vec![2], vec![4], vec![3], vec![1]],
+                    },
+                    Ballot {
+                        count: 3,
+                        order: vec![vec![3, 4], vec![1, 2, 0]],
+                    },
+                    Ballot {
+                        count: 42,
+                        order: vec![vec![2]],
+                    },
+                    Ballot {
+                        count: 123,
+                        order: vec![vec![1], vec![3]],
+                    },
+                ]
+            }
+        );
+    }
+
+    #[test]
+    #[should_panic(expected = "assertion failed: `(left == right)`\n  left: `2`,\n right: `1`")]
+    fn test_parse_election_repeated_candidate() {
+        let file = r#"2 1
+[nick apple banana]
+1 apple apple 0
+0
+"Apple"
+"Banana"
+"Vegetable contest"
+"#;
+        let _ = parse_election(Cursor::new(file));
+    }
+
+    #[test]
+    #[should_panic(expected = "called `Option::unwrap()` on a `None` value")]
+    fn test_parse_election_unknown_nickname() {
+        let file = r#"2 1
+[nick apple banana]
+1 appppppple 0
+0
+"appppppple"
+"bananaaaaa"
+"Vegetable contest"
+"#;
+        let _ = parse_election(Cursor::new(file));
+    }
+}

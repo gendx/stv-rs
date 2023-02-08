@@ -13,6 +13,7 @@
 // limitations under the License.
 
 /// Election input, representing a parsed ballot file.
+#[derive(Debug, PartialEq, Eq)]
 pub struct Election {
     /// Name of the election.
     pub title: String,
@@ -29,6 +30,7 @@ pub struct Election {
 }
 
 /// Candidate in an election.
+#[derive(Debug, PartialEq, Eq)]
 pub struct Candidate {
     /// Nickname, used for parsing ballots.
     pub nickname: String,
@@ -39,6 +41,7 @@ pub struct Candidate {
 }
 
 /// Ballot cast in the election.
+#[derive(Debug, PartialEq, Eq)]
 pub struct Ballot {
     /// Number of electors that have cast this ballot.
     pub count: usize,
