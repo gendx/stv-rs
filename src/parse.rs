@@ -39,37 +39,34 @@ pub fn parse_election(input: impl BufRead) -> Result<Election, Box<dyn std::erro
     // Parse the options
     let mut nicknames = None;
     let mut withdrawn: HashSet<String> = HashSet::new();
-    loop {
-        if let Some(line) = lines.peek() {
-            let line = line.as_ref().unwrap();
-            if re_option.is_match(line) {
-                let mut items = line[1..line.len() - 1].split(' ');
-                let title = items.next().unwrap();
-
-                // TODO: parse ties.
-                match title {
-                    "nick" => {
-                        let values = items.map(|x| x.to_owned()).collect::<Vec<String>>();
-                        info!("Nicknames: {values:?}");
-                        nicknames = Some(values);
-                    }
-                    "withdrawn" => {
-                        withdrawn = items.map(|x| x.to_owned()).collect::<HashSet<String>>();
-                        info!("Withdrawn: {withdrawn:?}");
-                    }
-                    "tie" => {
-                        let values = items.collect::<Vec<_>>();
-                        info!("Tie-break order: {values:?}");
-                    }
-                    _ => warn!("Unknown option: {title}"),
-                }
-
-                lines.next();
-                continue;
-            }
+    while let Some(line) = lines.peek() {
+        let line = line.as_ref().unwrap();
+        if !re_option.is_match(line) {
             break;
         }
-        break;
+
+        let mut items = line[1..line.len() - 1].split(' ');
+        let title = items.next().unwrap();
+
+        // TODO: parse ties.
+        match title {
+            "nick" => {
+                let values = items.map(|x| x.to_owned()).collect::<Vec<String>>();
+                info!("Nicknames: {values:?}");
+                nicknames = Some(values);
+            }
+            "withdrawn" => {
+                withdrawn = items.map(|x| x.to_owned()).collect::<HashSet<String>>();
+                info!("Withdrawn: {withdrawn:?}");
+            }
+            "tie" => {
+                let values = items.collect::<Vec<_>>();
+                info!("Tie-break order: {values:?}");
+            }
+            _ => warn!("Unknown option: {title}"),
+        }
+
+        lines.next();
     }
 
     let nicknames: Vec<String> = nicknames.unwrap();
@@ -269,6 +266,75 @@ mod test {
                     Ballot {
                         count: 42,
                         order: vec![vec![2]],
+                    },
+                    Ballot {
+                        count: 123,
+                        order: vec![vec![1], vec![3]],
+                    },
+                ]
+            }
+        );
+    }
+
+    #[test]
+    fn test_parse_withdrawn() {
+        let file = r#"5 2
+[nick apple banana cherry date eggplant]
+[withdrawn cherry eggplant]
+3 apple cherry eggplant date banana 0
+3 date=eggplant banana=cherry=apple 0
+42 cherry 0
+123 banana date 0
+0
+"Apple"
+"Banana"
+"Cherry"
+"Date"
+"Eggplant"
+"Vegetable contest"
+"#;
+        assert_eq!(
+            parse_election(Cursor::new(file)).unwrap(),
+            Election {
+                title: "Vegetable contest".to_owned(),
+                num_candidates: 5,
+                num_seats: 2,
+                num_ballots: 129,
+                candidates: vec![
+                    Candidate {
+                        nickname: "apple".to_owned(),
+                        name: "Apple".to_owned(),
+                        is_withdrawn: false,
+                    },
+                    Candidate {
+                        nickname: "banana".to_owned(),
+                        name: "Banana".to_owned(),
+                        is_withdrawn: false,
+                    },
+                    Candidate {
+                        nickname: "cherry".to_owned(),
+                        name: "Cherry".to_owned(),
+                        is_withdrawn: true,
+                    },
+                    Candidate {
+                        nickname: "date".to_owned(),
+                        name: "Date".to_owned(),
+                        is_withdrawn: false,
+                    },
+                    Candidate {
+                        nickname: "eggplant".to_owned(),
+                        name: "Eggplant".to_owned(),
+                        is_withdrawn: true,
+                    },
+                ],
+                ballots: vec![
+                    Ballot {
+                        count: 3,
+                        order: vec![vec![0], vec![3], vec![1]],
+                    },
+                    Ballot {
+                        count: 3,
+                        order: vec![vec![3], vec![1, 0]],
                     },
                     Ballot {
                         count: 123,
