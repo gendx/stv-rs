@@ -30,6 +30,13 @@ use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd)]
 pub struct FixedDecimal9(i64);
 
+#[cfg(test)]
+impl FixedDecimal9 {
+    pub(crate) fn new(x: i64) -> Self {
+        FixedDecimal9(x)
+    }
+}
+
 impl Display for FixedDecimal9 {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
         let sign = if self.0 < 0 { "-" } else { "" };

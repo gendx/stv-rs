@@ -85,6 +85,13 @@ pub struct State<'e, I, R> {
     _phantom: PhantomData<I>,
 }
 
+#[cfg(test)]
+impl<'e, I, R> State<'e, I, R> {
+    fn builder() -> test::StateBuilder<'e, I, R> {
+        test::StateBuilder::default()
+    }
+}
+
 impl<I, R> State<'_, I, R>
 where
     I: Integer + Send + Sync,
@@ -477,15 +484,20 @@ Election: {}
     fn print_action(&self, action: &str, count: &VoteCount<I, R>, print_full_count: bool) {
         println!("Action: {action}");
         if print_full_count {
-            self.print_candidate_counts(count);
+            self.write_candidate_counts(io::stdout().lock(), count)
+                .unwrap();
         }
         count
             .write_stats(io::stdout().lock(), &self.threshold, &self.surplus)
             .unwrap();
     }
 
-    /// Prints current candidate counts to stdout.
-    fn print_candidate_counts(&self, count: &VoteCount<I, R>) {
+    /// Writes current candidate counts to the given output.
+    fn write_candidate_counts(
+        &self,
+        mut out: impl io::Write,
+        count: &VoteCount<I, R>,
+    ) -> io::Result<()> {
         // Sort candidates: elected first, then candidates and lastly non-elected.
         let mut droop_sorted_candidates: Vec<usize> = (0..self.num_candidates()).collect();
         droop_sorted_candidates.sort_by_key(|&i| match self.statuses[i] {
@@ -513,26 +525,29 @@ Election: {}
                 Status::NotElected => "Defeated:",
                 Status::Withdrawn => continue,
             };
-            println!(
+            writeln!(
+                &mut out,
                 "\t{status} {} ({})",
                 self.election.candidates[i].name, count.sum[i]
-            );
+            )?;
         }
 
         // Candidates beyond the first defeated one with a zero count must all be
         // defeated and with a zero count.
         if let Some(split) = split {
-            print!("\tDefeated: ");
+            write!(&mut out, "\tDefeated: ")?;
             for (rank, &i) in droop_sorted_candidates[split..].iter().enumerate() {
                 assert_eq!(self.statuses[i], Status::NotElected);
                 assert_eq!(count.sum[i], R::zero());
                 if rank != 0 {
-                    print!(", ");
+                    write!(&mut out, ", ")?;
                 }
-                print!("{}", self.election.candidates[i].name);
+                write!(&mut out, "{}", self.election.candidates[i].name)?;
             }
-            println!(" ({})", R::zero());
+            writeln!(&mut out, " ({})", R::zero())?;
         }
+
+        Ok(())
     }
 
     /// Displays a debug output of the current vote counts.
@@ -573,5 +588,261 @@ Election: {}
                 self.election.candidates[id].nickname
             );
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use crate::arithmetic::fixed::FixedDecimal9;
+    use crate::types::Candidate;
+    use log::Level::Debug;
+    use logtest::Logger;
+    use std::borrow::Borrow;
+
+    pub struct StateBuilder<'e, I, R> {
+        election: Option<&'e Election>,
+        statuses: Option<Vec<Status>>,
+        keep_factors: Option<Vec<R>>,
+        threshold: Option<R>,
+        surplus: Option<R>,
+        omega: Option<R>,
+        parallel: Option<bool>,
+        _phantom: PhantomData<I>,
+    }
+
+    impl<'e, I, R> Default for StateBuilder<'e, I, R> {
+        fn default() -> Self {
+            StateBuilder {
+                election: None,
+                statuses: None,
+                keep_factors: None,
+                threshold: None,
+                surplus: None,
+                omega: None,
+                parallel: None,
+                _phantom: PhantomData,
+            }
+        }
+    }
+
+    impl<'e, I, R> StateBuilder<'e, I, R>
+    where
+        R: Clone,
+    {
+        fn election(mut self, election: &'e Election) -> Self {
+            self.election = Some(election);
+            self
+        }
+
+        fn statuses(mut self, statuses: impl Borrow<[Status]>) -> Self {
+            self.statuses = Some(statuses.borrow().to_owned());
+            self
+        }
+
+        fn keep_factors(mut self, keep_factors: impl Borrow<[R]>) -> Self {
+            self.keep_factors = Some(keep_factors.borrow().to_owned());
+            self
+        }
+
+        fn threshold(mut self, threshold: R) -> Self {
+            self.threshold = Some(threshold);
+            self
+        }
+
+        fn surplus(mut self, surplus: R) -> Self {
+            self.surplus = Some(surplus);
+            self
+        }
+
+        fn omega(mut self, omega: R) -> Self {
+            self.omega = Some(omega);
+            self
+        }
+
+        fn parallel(mut self, parallel: bool) -> Self {
+            self.parallel = Some(parallel);
+            self
+        }
+
+        fn build(self) -> State<'e, I, R> {
+            let election = self.election.unwrap();
+            let statuses = self.statuses.unwrap();
+            let elected = statuses
+                .iter()
+                .enumerate()
+                .filter_map(|(i, status)| {
+                    if let Status::Elected = status {
+                        Some(i)
+                    } else {
+                        None
+                    }
+                })
+                .collect::<Vec<_>>();
+            let not_elected = statuses
+                .iter()
+                .enumerate()
+                .filter_map(|(i, status)| {
+                    if let Status::NotElected = status {
+                        Some(i)
+                    } else {
+                        None
+                    }
+                })
+                .collect::<Vec<_>>();
+            let to_elect = election.num_seats - elected.len();
+            State {
+                election,
+                statuses,
+                elected,
+                not_elected,
+                to_elect,
+                keep_factors: self.keep_factors.unwrap(),
+                threshold: self.threshold.unwrap(),
+                surplus: self.surplus.unwrap(),
+                omega: self.omega.unwrap(),
+                parallel: self.parallel.unwrap(),
+                _phantom: PhantomData,
+            }
+        }
+    }
+
+    fn check_logs(logger: Logger, expected: &str) {
+        let mut report = String::new();
+        for record in logger {
+            assert_eq!(record.target(), "stv_rs::meek");
+            assert_eq!(record.level(), Debug);
+            assert!(record.key_values().is_empty());
+            report.push_str(record.args());
+            report.push('\n');
+        }
+
+        assert_eq!(report, expected);
+    }
+
+    fn make_test_election() -> Election {
+        Election::builder()
+            .title("Vegetable contest")
+            .num_seats(3)
+            .candidates([
+                Candidate::new("apple", false),
+                Candidate::new("banana", true),
+                Candidate::new("cherry", false),
+                Candidate::new("date", false),
+                Candidate::new("eggplant", false),
+                Candidate::new("fig", true),
+                Candidate::new("grape", false),
+                Candidate::new("hazelnut", false),
+                Candidate::new("jalapeno", false),
+            ])
+            .num_ballots(6)
+            .build()
+    }
+
+    fn make_test_state(election: &Election) -> State<i64, FixedDecimal9> {
+        State::builder()
+            .election(election)
+            .statuses([
+                Status::Candidate,
+                Status::Withdrawn,
+                Status::Elected,
+                Status::NotElected,
+                Status::Candidate,
+                Status::NotElected,
+                Status::Elected,
+                Status::NotElected,
+                Status::NotElected,
+            ])
+            .keep_factors([
+                FixedDecimal9::from_usize(1),
+                FixedDecimal9::from_usize(0),
+                FixedDecimal9::ratio(1, 2),
+                FixedDecimal9::from_usize(0),
+                FixedDecimal9::from_usize(1),
+                FixedDecimal9::from_usize(0),
+                FixedDecimal9::ratio(2, 3),
+                FixedDecimal9::from_usize(0),
+                FixedDecimal9::from_usize(0),
+            ])
+            .threshold(FixedDecimal9::ratio(3, 2))
+            .surplus(FixedDecimal9::ratio(1, 10))
+            .omega(FixedDecimal9::ratio(1, 1_000_000))
+            .parallel(false)
+            .build()
+    }
+
+    fn make_test_count() -> VoteCount<i64, FixedDecimal9> {
+        VoteCount::new(
+            [
+                FixedDecimal9::ratio(7, 9),
+                FixedDecimal9::from_usize(0),
+                FixedDecimal9::ratio(5, 3),
+                FixedDecimal9::ratio(1, 10),
+                FixedDecimal9::ratio(7, 8),
+                FixedDecimal9::from_usize(0),
+                FixedDecimal9::ratio(11, 6),
+                FixedDecimal9::ratio(2, 10),
+                FixedDecimal9::from_usize(0),
+            ],
+            FixedDecimal9::new(547222224),
+        )
+    }
+
+    #[test]
+    fn test_debug_count() {
+        let logger = Logger::start();
+
+        let election = make_test_election();
+        let state = make_test_state(&election);
+        let count = make_test_count();
+        state.debug_count(&count);
+
+        check_logs(
+            logger,
+            r"Sums:
+    [0] grape (Elected) ~ 1.833333333
+    [1] cherry (Elected) ~ 1.666666666
+    [2] eggplant (Candidate) ~ 0.875
+    [3] apple (Candidate) ~ 0.777777777
+    [4] hazelnut (NotElected) ~ 0.2
+    [5] date (NotElected) ~ 0.1
+    [6] jalapeno (NotElected) ~ 0
+    [7] fig (NotElected) ~ 0
+    [8] banana (Withdrawn) ~ 0
+    @exhausted ~ 0.547222224
+Sum = 5.452777776
+Total = 6.000000000
+Elected:
+    [0] cherry
+    [1] grape
+Not elected:
+    [8] date
+    [7] fig
+    [6] hazelnut
+    [5] jalapeno
+",
+        );
+    }
+
+    #[test]
+    fn test_write_candidate_counts() {
+        let election = make_test_election();
+        let state = make_test_state(&election);
+        let count = make_test_count();
+
+        let mut buf = Vec::new();
+        state.write_candidate_counts(&mut buf, &count).unwrap();
+
+        assert_eq!(
+            std::str::from_utf8(&buf).unwrap(),
+            r"	Elected:  Cherry (1.666666666)
+	Elected:  Grape (1.833333333)
+	Hopeful:  Apple (0.777777777)
+	Hopeful:  Eggplant (0.875000000)
+	Defeated: Date (0.100000000)
+	Defeated: Hazelnut (0.200000000)
+	Defeated: Fig, Jalapeno (0.000000000)
+"
+        );
     }
 }

@@ -222,57 +222,24 @@ mod test {
 "#;
         assert_eq!(
             parse_election(Cursor::new(file)).unwrap(),
-            Election {
-                title: "Vegetable contest".to_owned(),
-                num_candidates: 5,
-                num_seats: 2,
-                num_ballots: 171,
-                candidates: vec![
-                    Candidate {
-                        nickname: "apple".to_owned(),
-                        name: "Apple".to_owned(),
-                        is_withdrawn: false,
-                    },
-                    Candidate {
-                        nickname: "banana".to_owned(),
-                        name: "Banana".to_owned(),
-                        is_withdrawn: false,
-                    },
-                    Candidate {
-                        nickname: "cherry".to_owned(),
-                        name: "Cherry".to_owned(),
-                        is_withdrawn: false,
-                    },
-                    Candidate {
-                        nickname: "date".to_owned(),
-                        name: "Date".to_owned(),
-                        is_withdrawn: false,
-                    },
-                    Candidate {
-                        nickname: "eggplant".to_owned(),
-                        name: "Eggplant".to_owned(),
-                        is_withdrawn: false,
-                    },
-                ],
-                ballots: vec![
-                    Ballot {
-                        count: 3,
-                        order: vec![vec![0], vec![2], vec![4], vec![3], vec![1]],
-                    },
-                    Ballot {
-                        count: 3,
-                        order: vec![vec![3, 4], vec![1, 2, 0]],
-                    },
-                    Ballot {
-                        count: 42,
-                        order: vec![vec![2]],
-                    },
-                    Ballot {
-                        count: 123,
-                        order: vec![vec![1], vec![3]],
-                    },
-                ]
-            }
+            Election::builder()
+                .title("Vegetable contest")
+                .num_seats(2)
+                .candidates([
+                    Candidate::new("apple", false),
+                    Candidate::new("banana", false),
+                    Candidate::new("cherry", false),
+                    Candidate::new("date", false),
+                    Candidate::new("eggplant", false),
+                ])
+                .ballots(vec![
+                    Ballot::new(3, [vec![0], vec![2], vec![4], vec![3], vec![1]]),
+                    Ballot::new(3, [vec![3, 4], vec![1, 2, 0]]),
+                    Ballot::new(42, [vec![2]]),
+                    Ballot::new(123, [vec![1], vec![3]]),
+                ])
+                .check_num_ballots(171)
+                .build()
         );
     }
 
@@ -295,53 +262,23 @@ mod test {
 "#;
         assert_eq!(
             parse_election(Cursor::new(file)).unwrap(),
-            Election {
-                title: "Vegetable contest".to_owned(),
-                num_candidates: 5,
-                num_seats: 2,
-                num_ballots: 129,
-                candidates: vec![
-                    Candidate {
-                        nickname: "apple".to_owned(),
-                        name: "Apple".to_owned(),
-                        is_withdrawn: false,
-                    },
-                    Candidate {
-                        nickname: "banana".to_owned(),
-                        name: "Banana".to_owned(),
-                        is_withdrawn: false,
-                    },
-                    Candidate {
-                        nickname: "cherry".to_owned(),
-                        name: "Cherry".to_owned(),
-                        is_withdrawn: true,
-                    },
-                    Candidate {
-                        nickname: "date".to_owned(),
-                        name: "Date".to_owned(),
-                        is_withdrawn: false,
-                    },
-                    Candidate {
-                        nickname: "eggplant".to_owned(),
-                        name: "Eggplant".to_owned(),
-                        is_withdrawn: true,
-                    },
-                ],
-                ballots: vec![
-                    Ballot {
-                        count: 3,
-                        order: vec![vec![0], vec![3], vec![1]],
-                    },
-                    Ballot {
-                        count: 3,
-                        order: vec![vec![3], vec![1, 0]],
-                    },
-                    Ballot {
-                        count: 123,
-                        order: vec![vec![1], vec![3]],
-                    },
-                ]
-            }
+            Election::builder()
+                .title("Vegetable contest")
+                .num_seats(2)
+                .candidates([
+                    Candidate::new("apple", false),
+                    Candidate::new("banana", false),
+                    Candidate::new("cherry", true),
+                    Candidate::new("date", false),
+                    Candidate::new("eggplant", true),
+                ])
+                .ballots(vec![
+                    Ballot::new(3, [vec![0], vec![3], vec![1]]),
+                    Ballot::new(3, [vec![3], vec![1, 0]]),
+                    Ballot::new(123, [vec![1], vec![3]]),
+                ])
+                .check_num_ballots(129)
+                .build()
         );
     }
 

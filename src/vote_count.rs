@@ -19,6 +19,8 @@ use crate::arithmetic::{Integer, Rational};
 use crate::types::{Ballot, Election};
 use log::{debug, trace, warn};
 use rayon::prelude::*;
+#[cfg(test)]
+use std::borrow::Borrow;
 use std::io;
 use std::marker::PhantomData;
 use std::ops::{Add, Div, Mul, Sub};
@@ -30,6 +32,20 @@ pub struct VoteCount<I, R> {
     /// Exhausted voting power.
     pub exhausted: R,
     _phantom: PhantomData<I>,
+}
+
+#[cfg(test)]
+impl<I, R> VoteCount<I, R>
+where
+    R: Clone,
+{
+    pub(crate) fn new(sum: impl Borrow<[R]>, exhausted: R) -> Self {
+        VoteCount {
+            sum: sum.borrow().to_owned(),
+            exhausted,
+            _phantom: PhantomData,
+        }
+    }
 }
 
 struct VoteAccumulator<I, R> {

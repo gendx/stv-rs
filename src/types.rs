@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#[cfg(test)]
+use std::borrow::Borrow;
+
 /// Election input, representing a parsed ballot file.
 #[derive(Debug, PartialEq, Eq)]
 pub struct Election {
@@ -29,8 +32,74 @@ pub struct Election {
     pub ballots: Vec<Ballot>,
 }
 
+#[cfg(test)]
+impl Election {
+    pub(crate) fn builder() -> ElectionBuilder {
+        ElectionBuilder::default()
+    }
+}
+
+#[cfg(test)]
+#[derive(Default)]
+pub(crate) struct ElectionBuilder {
+    title: Option<String>,
+    num_seats: Option<usize>,
+    num_ballots: Option<usize>,
+    candidates: Vec<Candidate>,
+    ballots: Vec<Ballot>,
+}
+
+#[cfg(test)]
+impl ElectionBuilder {
+    pub(crate) fn build(self) -> Election {
+        let num_ballots = self
+            .num_ballots
+            .unwrap_or_else(|| self.ballots.iter().map(|b| b.count).sum());
+        Election {
+            title: self.title.unwrap(),
+            num_candidates: self.candidates.len(),
+            num_seats: self.num_seats.unwrap(),
+            num_ballots,
+            candidates: self.candidates,
+            ballots: self.ballots,
+        }
+    }
+
+    pub(crate) fn title(mut self, title: &str) -> Self {
+        self.title = Some(title.to_owned());
+        self
+    }
+
+    pub(crate) fn num_seats(mut self, num_seats: usize) -> Self {
+        self.num_seats = Some(num_seats);
+        self
+    }
+
+    pub(crate) fn num_ballots(mut self, num_ballots: usize) -> Self {
+        self.num_ballots = Some(num_ballots);
+        self
+    }
+
+    pub(crate) fn check_num_ballots(mut self, num_ballots: usize) -> Self {
+        assert_eq!(num_ballots, self.ballots.iter().map(|b| b.count).sum());
+        self.num_ballots = Some(num_ballots);
+        self
+    }
+
+    pub(crate) fn candidates(mut self, candidates: impl Borrow<[Candidate]>) -> Self {
+        self.candidates = candidates.borrow().to_owned();
+        self
+    }
+
+    pub(crate) fn ballots(mut self, ballots: impl Borrow<[Ballot]>) -> Self {
+        self.ballots = ballots.borrow().to_owned();
+        self
+    }
+}
+
 /// Candidate in an election.
 #[derive(Debug, PartialEq, Eq)]
+#[cfg_attr(test, derive(Clone))]
 pub struct Candidate {
     /// Nickname, used for parsing ballots.
     pub nickname: String,
@@ -40,8 +109,25 @@ pub struct Candidate {
     pub is_withdrawn: bool,
 }
 
+#[cfg(test)]
+impl Candidate {
+    pub(crate) fn new(nickname: &str, is_withdrawn: bool) -> Self {
+        let mut name = nickname.as_bytes().to_owned();
+        if let Some(x) = name.first_mut() {
+            *x = x.to_ascii_uppercase();
+        }
+        let name = String::from_utf8(name).unwrap();
+        Candidate {
+            nickname: nickname.to_owned(),
+            name,
+            is_withdrawn,
+        }
+    }
+}
+
 /// Ballot cast in the election.
 #[derive(Debug, PartialEq, Eq)]
+#[cfg_attr(test, derive(Clone))]
 pub struct Ballot {
     /// Number of electors that have cast this ballot.
     pub count: usize,
@@ -49,6 +135,16 @@ pub struct Ballot {
     /// ranking of candidates, from most preferred to least preferred. The inner
     /// [`Vec`] represents candidates ranked equally at a given order.
     pub order: Vec<Vec<usize>>,
+}
+
+#[cfg(test)]
+impl Ballot {
+    pub(crate) fn new(count: usize, order: impl Borrow<[Vec<usize>]>) -> Self {
+        Ballot {
+            count,
+            order: order.borrow().to_owned(),
+        }
+    }
 }
 
 impl Ballot {
