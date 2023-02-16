@@ -26,6 +26,7 @@ use std::marker::PhantomData;
 use std::ops::{Add, Div, Mul, Sub};
 
 /// Result of a vote count.
+#[cfg_attr(test, derive(Debug, PartialEq))]
 pub struct VoteCount<I, R> {
     /// Sum of votes for each candidate.
     pub sum: Vec<R>,
@@ -118,7 +119,7 @@ where
     /// Writes statistics about this vote count to the given output.
     pub fn write_stats(
         &self,
-        mut out: impl io::Write,
+        out: &mut impl io::Write,
         threshold: &R,
         surplus: &R,
     ) -> io::Result<()> {

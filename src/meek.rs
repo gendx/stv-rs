@@ -106,20 +106,8 @@ where
     for<'a> &'a R: Div<&'a R, Output = R>,
     for<'a> &'a R: Div<&'a I, Output = R>,
 {
-    /// Runs an election according to Meek's rules. This aims to produce
-    /// reproducible results w.r.t. Droop.py.
-    pub fn stv_droop(
-        election: &Election,
-        package_name: &str,
-        omega_exponent: usize,
-        parallel: bool,
-    ) -> ElectionResult {
-        info!(
-            "Parallel vote counting is {}",
-            if parallel { "enabled" } else { "disabled" }
-        );
-
-        let mut state = State {
+    fn new(election: &Election, omega_exponent: usize, parallel: bool) -> State<'_, I, R> {
+        State {
             election,
             statuses: election
                 .candidates
@@ -141,12 +129,30 @@ where
             omega: R::one() / &(0..omega_exponent).map(|_| R::from_usize(10)).product(),
             parallel,
             _phantom: PhantomData,
-        };
+        }
+    }
+
+    /// Runs an election according to Meek's rules. This aims to produce
+    /// reproducible results w.r.t. Droop.py.
+    pub fn stv_droop(
+        election: &Election,
+        package_name: &str,
+        omega_exponent: usize,
+        parallel: bool,
+    ) -> ElectionResult {
+        info!(
+            "Parallel vote counting is {}",
+            if parallel { "enabled" } else { "disabled" }
+        );
+
+        let mut state = Self::new(election, omega_exponent, parallel);
 
         let beginning = Instant::now();
         let mut timestamp = beginning;
 
-        let mut count = state.start_election(package_name, omega_exponent);
+        let mut count = state
+            .start_election(&mut io::stdout().lock(), package_name, omega_exponent)
+            .unwrap();
 
         for round in 1.. {
             if state.election_completed(round) {
@@ -164,9 +170,13 @@ where
             timestamp = now;
         }
 
-        state.handle_remaining_candidates(&mut count);
+        state
+            .handle_remaining_candidates(&mut io::stdout().lock(), &mut count)
+            .unwrap();
 
-        state.print_action("Count Complete", &count, true);
+        state
+            .write_action(&mut io::stdout().lock(), "Count Complete", &count, true)
+            .unwrap();
 
         let now = Instant::now();
         info!("Total elapsed time: {:?}", now.duration_since(beginning));
@@ -208,8 +218,14 @@ where
     }
 
     /// Performs the initial counting to start the election.
-    fn start_election(&self, package_name: &str, omega_exponent: usize) -> VoteCount<I, R> {
-        println!(
+    fn start_election(
+        &self,
+        out: &mut impl io::Write,
+        package_name: &str,
+        omega_exponent: usize,
+    ) -> io::Result<VoteCount<I, R>> {
+        writeln!(
+            out,
             r"
 Election: {}
 
@@ -227,10 +243,11 @@ Election: {}
             self.election.num_ballots,
             self.threshold,
             self.omega,
-        );
+        )?;
 
         for candidate in &self.election.candidates {
-            println!(
+            writeln!(
+                out,
                 "\tAdd {}: {}",
                 if candidate.is_withdrawn {
                     "withdrawn"
@@ -238,16 +255,16 @@ Election: {}
                     "eligible"
                 },
                 candidate.name
-            );
+            )?;
         }
 
         let mut count = self.count_votes();
         // Droop somehow doesn't report exhausted count on the initial count.
         count.exhausted = R::zero();
 
-        self.print_action("Begin Count", &count, true);
+        self.write_action(out, "Begin Count", &count, true)?;
 
-        count
+        Ok(count)
     }
 
     /// Returns true if the election is complete.
@@ -294,7 +311,13 @@ Election: {}
     /// candidate.
     fn election_round(&mut self, count: &mut VoteCount<I, R>, round: usize) {
         let iteration = self.iterate_droop(count, round);
-        self.print_action(&format!("Iterate ({iteration})"), count, false);
+        self.write_action(
+            &mut io::stdout().lock(),
+            &format!("Iterate ({iteration})"),
+            count,
+            false,
+        )
+        .unwrap();
 
         if let DroopIteration::Elected = iteration {
             debug!("Iteration returned Elected, continuing the loop");
@@ -317,7 +340,8 @@ Election: {}
                 }
                 DroopIteration::Elected => unreachable!(),
             };
-            self.print_action(&message, count, true);
+            self.write_action(&mut io::stdout().lock(), &message, count, true)
+                .unwrap();
 
             self.keep_factors[not_elected] = R::zero();
             count.sum[not_elected] = R::zero();
@@ -370,7 +394,13 @@ Election: {}
                             assert!(self.to_elect > 0);
                             info!("Elected in round {round}: {}", candidate.nickname);
                             self.elect_candidate(i);
-                            self.print_action(&format!("Elect: {}", candidate.name), count, true);
+                            self.write_action(
+                                &mut io::stdout().lock(),
+                                &format!("Elect: {}", candidate.name),
+                                count,
+                                true,
+                            )
+                            .unwrap();
                             status = Some(DroopIteration::Elected);
                         }
                     }
@@ -424,26 +454,37 @@ Election: {}
 
     /// Elects or defeat all remaining candidates, once a quorum is
     /// defeated or elected (respectively).
-    fn handle_remaining_candidates(&mut self, count: &mut VoteCount<I, R>) {
+    fn handle_remaining_candidates(
+        &mut self,
+        out: &mut impl io::Write,
+        count: &mut VoteCount<I, R>,
+    ) -> io::Result<()> {
         debug!("Checking remaining candidates");
         for (i, candidate) in self.election.candidates.iter().enumerate() {
             if self.statuses[i] == Status::Candidate {
                 if self.elected.len() < self.election.num_seats {
                     self.elect_candidate(i);
-                    self.print_action(&format!("Elect remaining: {}", candidate.name), count, true);
+                    self.write_action(
+                        out,
+                        &format!("Elect remaining: {}", candidate.name),
+                        count,
+                        true,
+                    )?;
                 } else {
                     self.defeat_candidate(i);
-                    self.print_action(
+                    self.write_action(
+                        out,
                         &format!("Defeat remaining: {}", candidate.name),
                         count,
                         true,
-                    );
+                    )?;
                     self.keep_factors[i] = R::zero();
                     count.sum[i] = R::zero();
                 }
                 *count = self.count_votes();
             }
         }
+        Ok(())
     }
 
     /// Returns the next candidate to defeat.
@@ -480,22 +521,26 @@ Election: {}
         low_candidates[0]
     }
 
-    /// Prints an action to stdout.
-    fn print_action(&self, action: &str, count: &VoteCount<I, R>, print_full_count: bool) {
-        println!("Action: {action}");
+    /// Writes an action to the given output.
+    fn write_action(
+        &self,
+        out: &mut impl io::Write,
+        action: &str,
+        count: &VoteCount<I, R>,
+        print_full_count: bool,
+    ) -> io::Result<()> {
+        writeln!(out, "Action: {action}")?;
         if print_full_count {
-            self.write_candidate_counts(io::stdout().lock(), count)
-                .unwrap();
+            self.write_candidate_counts(out, count)?;
         }
-        count
-            .write_stats(io::stdout().lock(), &self.threshold, &self.surplus)
-            .unwrap();
+        count.write_stats(out, &self.threshold, &self.surplus)?;
+        Ok(())
     }
 
     /// Writes current candidate counts to the given output.
     fn write_candidate_counts(
         &self,
-        mut out: impl io::Write,
+        out: &mut impl io::Write,
         count: &VoteCount<I, R>,
     ) -> io::Result<()> {
         // Sort candidates: elected first, then candidates and lastly non-elected.
@@ -526,7 +571,7 @@ Election: {}
                 Status::Withdrawn => continue,
             };
             writeln!(
-                &mut out,
+                out,
                 "\t{status} {} ({})",
                 self.election.candidates[i].name, count.sum[i]
             )?;
@@ -535,16 +580,16 @@ Election: {}
         // Candidates beyond the first defeated one with a zero count must all be
         // defeated and with a zero count.
         if let Some(split) = split {
-            write!(&mut out, "\tDefeated: ")?;
+            write!(out, "\tDefeated: ")?;
             for (rank, &i) in droop_sorted_candidates[split..].iter().enumerate() {
                 assert_eq!(self.statuses[i], Status::NotElected);
                 assert_eq!(count.sum[i], R::zero());
                 if rank != 0 {
-                    write!(&mut out, ", ")?;
+                    write!(out, ", ")?;
                 }
-                write!(&mut out, "{}", self.election.candidates[i].name)?;
+                write!(out, "{}", self.election.candidates[i].name)?;
             }
-            writeln!(&mut out, " ({})", R::zero())?;
+            writeln!(out, " ({})", R::zero())?;
         }
 
         Ok(())
@@ -595,7 +640,7 @@ Election: {}
 mod test {
     use super::*;
     use crate::arithmetic::fixed::FixedDecimal9;
-    use crate::types::Candidate;
+    use crate::types::{Ballot, Candidate};
     use log::Level::Debug;
     use logtest::Logger;
     use std::borrow::Borrow;
@@ -789,6 +834,228 @@ mod test {
     }
 
     #[test]
+    fn test_start_election() {
+        let election = Election::builder()
+            .title("Vegetable contest")
+            .num_seats(3)
+            .candidates([
+                Candidate::new("apple", false),
+                Candidate::new("banana", true),
+                Candidate::new("cherry", false),
+                Candidate::new("date", false),
+                Candidate::new("eggplant", false),
+                Candidate::new("fig", true),
+                Candidate::new("grape", false),
+                Candidate::new("hazelnut", false),
+                Candidate::new("jalapeno", false),
+            ])
+            .ballots([
+                Ballot::new(1, [vec![0]]),
+                Ballot::new(2, [vec![2]]),
+                Ballot::new(3, [vec![3]]),
+                Ballot::new(4, [vec![4]]),
+                Ballot::new(5, [vec![6]]),
+                Ballot::new(6, [vec![7]]),
+                Ballot::new(7, [vec![8]]),
+            ])
+            .build();
+        let omega_exponent = 6;
+        let state = State::new(&election, omega_exponent, false);
+
+        let mut buf = Vec::new();
+        let count = state
+            .start_election(&mut buf, "STV-rs", omega_exponent)
+            .unwrap();
+
+        assert_eq!(
+            count,
+            VoteCount::new(
+                [
+                    FixedDecimal9::from_usize(1),
+                    FixedDecimal9::from_usize(0),
+                    FixedDecimal9::from_usize(2),
+                    FixedDecimal9::from_usize(3),
+                    FixedDecimal9::from_usize(4),
+                    FixedDecimal9::from_usize(0),
+                    FixedDecimal9::from_usize(5),
+                    FixedDecimal9::from_usize(6),
+                    FixedDecimal9::from_usize(7),
+                ],
+                FixedDecimal9::from_usize(0),
+            )
+        );
+        assert_eq!(
+            std::str::from_utf8(&buf).unwrap(),
+            r"
+Election: Vegetable contest
+
+	STV-rs
+	Rule: Meek Parametric (omega = 1/10^6)
+	Arithmetic: fixed-point decimal arithmetic (9 places)
+	Seats: 3
+	Ballots: 28
+	Quota: 7.000000001
+	Omega: 0.000001000
+
+	Add eligible: Apple
+	Add withdrawn: Banana
+	Add eligible: Cherry
+	Add eligible: Date
+	Add eligible: Eggplant
+	Add withdrawn: Fig
+	Add eligible: Grape
+	Add eligible: Hazelnut
+	Add eligible: Jalapeno
+Action: Begin Count
+	Hopeful:  Apple (1.000000000)
+	Hopeful:  Cherry (2.000000000)
+	Hopeful:  Date (3.000000000)
+	Hopeful:  Eggplant (4.000000000)
+	Hopeful:  Grape (5.000000000)
+	Hopeful:  Hazelnut (6.000000000)
+	Hopeful:  Jalapeno (7.000000000)
+	Quota: 7.000000001
+	Votes: 28.000000000
+	Residual: 0.000000000
+	Total: 28.000000000
+	Surplus: 0.000000000
+"
+        );
+    }
+
+    #[test]
+    fn test_handle_remaining_candidates_elected() {
+        let mut election = make_test_election();
+        election.num_seats = 4;
+        let mut state = make_test_state(&election);
+        let mut count = make_test_count();
+
+        let mut buf = Vec::new();
+        state
+            .handle_remaining_candidates(&mut buf, &mut count)
+            .unwrap();
+
+        assert_eq!(
+            state.statuses,
+            vec![
+                Status::Elected,
+                Status::Withdrawn,
+                Status::Elected,
+                Status::NotElected,
+                Status::Elected,
+                Status::NotElected,
+                Status::Elected,
+                Status::NotElected,
+                Status::NotElected,
+            ]
+        );
+        assert_eq!(
+            std::str::from_utf8(&buf).unwrap(),
+            r"Action: Elect remaining: Apple
+	Elected:  Apple (0.777777777)
+	Elected:  Cherry (1.666666666)
+	Elected:  Grape (1.833333333)
+	Hopeful:  Eggplant (0.875000000)
+	Defeated: Date (0.100000000)
+	Defeated: Hazelnut (0.200000000)
+	Defeated: Fig, Jalapeno (0.000000000)
+	Quota: 1.500000000
+	Votes: 5.452777776
+	Residual: 0.547222224
+	Total: 6.000000000
+	Surplus: 0.100000000
+Action: Elect remaining: Eggplant
+	Elected:  Apple (0.000000000)
+	Elected:  Cherry (0.000000000)
+	Elected:  Eggplant (0.000000000)
+	Elected:  Grape (0.000000000)
+	Defeated: Date, Fig, Hazelnut, Jalapeno (0.000000000)
+	Quota: 1.500000000
+	Votes: 0.000000000
+	Residual: 0.000000000
+	Total: 0.000000000
+	Surplus: 0.100000000
+"
+        );
+    }
+
+    #[test]
+    fn test_handle_remaining_candidates_defeated() {
+        let mut election = make_test_election();
+        election.num_seats = 2;
+        let mut state = make_test_state(&election);
+        let mut count = make_test_count();
+
+        let mut buf = Vec::new();
+        state
+            .handle_remaining_candidates(&mut buf, &mut count)
+            .unwrap();
+
+        assert_eq!(
+            state.statuses,
+            vec![
+                Status::NotElected,
+                Status::Withdrawn,
+                Status::Elected,
+                Status::NotElected,
+                Status::NotElected,
+                Status::NotElected,
+                Status::Elected,
+                Status::NotElected,
+                Status::NotElected,
+            ]
+        );
+        assert_eq!(
+            std::str::from_utf8(&buf).unwrap(),
+            r"Action: Defeat remaining: Apple
+	Elected:  Cherry (1.666666666)
+	Elected:  Grape (1.833333333)
+	Hopeful:  Eggplant (0.875000000)
+	Defeated: Apple (0.777777777)
+	Defeated: Date (0.100000000)
+	Defeated: Hazelnut (0.200000000)
+	Defeated: Fig, Jalapeno (0.000000000)
+	Quota: 1.500000000
+	Votes: 5.452777776
+	Residual: 0.547222224
+	Total: 6.000000000
+	Surplus: 0.100000000
+Action: Defeat remaining: Eggplant
+	Elected:  Cherry (0.000000000)
+	Elected:  Grape (0.000000000)
+	Defeated: Apple, Date, Eggplant, Fig, Hazelnut, Jalapeno (0.000000000)
+	Quota: 1.500000000
+	Votes: 0.000000000
+	Residual: 0.000000000
+	Total: 0.000000000
+	Surplus: 0.100000000
+"
+        );
+    }
+
+    #[test]
+    fn test_write_candidate_counts() {
+        let election = make_test_election();
+        let state = make_test_state(&election);
+        let count = make_test_count();
+
+        let mut buf = Vec::new();
+        state.write_candidate_counts(&mut buf, &count).unwrap();
+
+        assert_eq!(
+            std::str::from_utf8(&buf).unwrap(),
+            r"	Elected:  Cherry (1.666666666)
+	Elected:  Grape (1.833333333)
+	Hopeful:  Apple (0.777777777)
+	Hopeful:  Eggplant (0.875000000)
+	Defeated: Date (0.100000000)
+	Defeated: Hazelnut (0.200000000)
+	Defeated: Fig, Jalapeno (0.000000000)
+"
+        );
+    }
+
+    #[test]
     fn test_debug_count() {
         let logger = Logger::start();
 
@@ -821,28 +1088,6 @@ Not elected:
     [6] hazelnut
     [5] jalapeno
 ",
-        );
-    }
-
-    #[test]
-    fn test_write_candidate_counts() {
-        let election = make_test_election();
-        let state = make_test_state(&election);
-        let count = make_test_count();
-
-        let mut buf = Vec::new();
-        state.write_candidate_counts(&mut buf, &count).unwrap();
-
-        assert_eq!(
-            std::str::from_utf8(&buf).unwrap(),
-            r"	Elected:  Cherry (1.666666666)
-	Elected:  Grape (1.833333333)
-	Hopeful:  Apple (0.777777777)
-	Hopeful:  Eggplant (0.875000000)
-	Defeated: Date (0.100000000)
-	Defeated: Hazelnut (0.200000000)
-	Defeated: Fig, Jalapeno (0.000000000)
-"
         );
     }
 }
