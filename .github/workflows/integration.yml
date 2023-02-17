@@ -11,15 +11,11 @@ jobs:
       - uses: dtolnay/rust-toolchain@nightly
       - name: Build STV-rs
         run: cargo build --release
-      - name: Install Droop
-        run: git clone https://github.com/jklundell/droop
       - uses: actions/upload-artifact@v3
         with:
           name: build-artifacts
           path: |
             target/release/stv-rs
-            droop/
-            testdata/
           if-no-files-found: error
   integration_tests:
     needs: build
@@ -33,9 +29,13 @@ jobs:
       RUSTFLAGS: "-D warnings"
       CARGO_UNSTABLE_SPARSE_REGISTRY: true
     steps:
+      - uses: actions/checkout@v3
       - uses: actions/download-artifact@v3
         with:
           name: build-artifacts
+          path: target/release/
+      - name: Install Droop
+        run: git clone https://github.com/jklundell/droop
       - name: Check STV-rs output
         run: |
           chmod +x target/release/stv-rs
