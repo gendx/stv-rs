@@ -472,6 +472,22 @@ mod test {
         };
     }
 
+    #[cfg(feature = "benchmarks")]
+    macro_rules! all_numeric_benches {
+        ( $typei:ty, $typer:ty ) => {
+            numeric_benches!(
+                $typei,
+                $typer,
+                bench_process_ballot_rec_chain,
+                bench_process_ballot_rec_pairs_05,
+                bench_process_ballot_rec_pairs_10,
+                bench_process_ballot_rec_tens_2,
+                bench_process_ballot_rec_tens_3,
+                bench_process_ballot_rec_tens_4,
+            );
+        };
+    }
+
     macro_rules! all_numeric_tests {
         ( $mod:ident, $typei:ty, $typer:ty ) => {
             mod $mod {
@@ -494,13 +510,7 @@ mod test {
                 );
 
                 #[cfg(feature = "benchmarks")]
-                numeric_benches!(
-                    $typei,
-                    $typer,
-                    bench_process_ballot_rec_chain,
-                    bench_process_ballot_rec_pairs,
-                    bench_process_ballot_rec_tens,
-                );
+                all_numeric_benches!($typei, $typer);
             }
         };
     }
@@ -510,6 +520,11 @@ mod test {
     all_numeric_tests!(approx_rational, BigInt, ApproxRational);
     all_numeric_tests!(fixed, i64, FixedDecimal9);
     all_numeric_tests!(fixed_big, BigInt, BigFixedDecimal9);
+
+    #[cfg(feature = "benchmarks")]
+    mod float64 {
+        all_numeric_benches!(f64, f64);
+    }
 
     pub struct NumericTests<I, R> {
         _phantomi: PhantomData<I>,
@@ -591,7 +606,7 @@ mod test {
         }
 
         fn process_ballot_rec(
-            ballot: impl std::borrow::Borrow<Ballot>,
+            ballot: impl Borrow<Ballot>,
             keep_factors: &[R],
         ) -> (Vec<R>, R, usize) {
             let num_candidates = keep_factors.len();
@@ -875,35 +890,62 @@ mod test {
                 count: 1,
                 order: (0..10).map(|i| vec![i]).collect(),
             };
-            let keep_factors: Vec<R> = (1..=10).map(|i| R::ratio(1, i)).collect();
+            let keep_factors: Vec<R> = (1..=10).map(|i| R::ratio(1, i + 1)).collect();
             bencher.iter(|| Self::process_ballot_rec(black_box(&ballot), black_box(&keep_factors)))
         }
 
         #[cfg(feature = "benchmarks")]
-        fn bench_process_ballot_rec_pairs(bencher: &mut Bencher) {
+        fn bench_process_ballot_rec_pairs_05(bencher: &mut Bencher) {
+            Self::bench_process_ballot_rec_pairs(bencher, 5);
+        }
+
+        #[cfg(feature = "benchmarks")]
+        fn bench_process_ballot_rec_pairs_10(bencher: &mut Bencher) {
+            Self::bench_process_ballot_rec_pairs(bencher, 10);
+        }
+
+        #[cfg(feature = "benchmarks")]
+        fn bench_process_ballot_rec_pairs(bencher: &mut Bencher, layers: usize) {
+            let n = layers * 2;
             let ballot = Ballot {
                 count: 1,
-                order: (0..10)
+                order: (0..n)
                     .collect::<Vec<_>>()
                     .chunks(2)
                     .map(|chunk| chunk.to_vec())
                     .collect(),
             };
-            let keep_factors: Vec<R> = (1..=10).map(|i| R::ratio(1, i)).collect();
+            let keep_factors: Vec<R> = (1..=n).map(|i| R::ratio(1, i + 1)).collect();
             bencher.iter(|| Self::process_ballot_rec(black_box(&ballot), black_box(&keep_factors)))
         }
 
         #[cfg(feature = "benchmarks")]
-        fn bench_process_ballot_rec_tens(bencher: &mut Bencher) {
+        fn bench_process_ballot_rec_tens_2(bencher: &mut Bencher) {
+            Self::bench_process_ballot_rec_tens(bencher, 2);
+        }
+
+        #[cfg(feature = "benchmarks")]
+        fn bench_process_ballot_rec_tens_3(bencher: &mut Bencher) {
+            Self::bench_process_ballot_rec_tens(bencher, 3);
+        }
+
+        #[cfg(feature = "benchmarks")]
+        fn bench_process_ballot_rec_tens_4(bencher: &mut Bencher) {
+            Self::bench_process_ballot_rec_tens(bencher, 4);
+        }
+
+        #[cfg(feature = "benchmarks")]
+        fn bench_process_ballot_rec_tens(bencher: &mut Bencher, layers: usize) {
+            let n = layers * 10;
             let ballot = Ballot {
                 count: 1,
-                order: (0..30)
+                order: (0..n)
                     .collect::<Vec<_>>()
                     .chunks(10)
                     .map(|chunk| chunk.to_vec())
                     .collect(),
             };
-            let keep_factors: Vec<R> = (1..=30).map(|i| R::ratio(1, i)).collect();
+            let keep_factors: Vec<R> = (1..=n).map(|i| R::ratio(1, i + 1)).collect();
             bencher.iter(|| Self::process_ballot_rec(black_box(&ballot), black_box(&keep_factors)))
         }
     }
