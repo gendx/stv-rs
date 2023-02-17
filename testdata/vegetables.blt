@@ -1,0 +1,23 @@
+9 4
+[nick apple banana cherry date eggplant fig grape hazelnut jalapeno]
+[withdrawn banana fig]
+1 apple banana 0
+2 banana cherry 0
+3 cherry date 0
+4 date eggplant 0
+5 eggplant fig 0
+6 fig grape 0
+7 grape hazelnut 0
+8 hazelnut jalapeno 0
+9 jalapeno apple 0
+0
+"Apple"
+"Banana"
+"Cherry"
+"Date"
+"Eggplant"
+"Fig"
+"Grape"
+"Hazelnut"
+"Jalapeno"
+"Vegetable contest"

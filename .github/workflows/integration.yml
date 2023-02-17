@@ -1,0 +1,46 @@
+on: [push, pull_request]
+name: Integration tests
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      RUSTFLAGS: "-D warnings"
+      CARGO_UNSTABLE_SPARSE_REGISTRY: true
+    steps:
+      - uses: actions/checkout@v2
+      - uses: dtolnay/rust-toolchain@nightly
+      - name: Build STV-rs
+        run: cargo build --release
+      - name: Install Droop
+        run: git clone https://github.com/jklundell/droop
+      - uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts
+          path: |
+            target/release/stv-rs
+            droop/
+            testdata/
+          if-no-files-found: error
+  integration_tests:
+    needs: build
+    strategy:
+      matrix:
+        file:
+          - vegetables
+      fail-fast: false
+    runs-on: ubuntu-latest
+    env:
+      RUSTFLAGS: "-D warnings"
+      CARGO_UNSTABLE_SPARSE_REGISTRY: true
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+      - name: Check STV-rs output
+        run: |
+          chmod +x target/release/stv-rs
+          target/release/stv-rs --arithmetic fixed9 < testdata/${{ matrix.file }}.blt | diff testdata/${{ matrix.file }}.fixed9.log -
+      - name: Check Droop output
+        run: |
+          sed -i "s/Implementation: STV-rs/Droop package: droop v0.14/g" testdata/${{ matrix.file }}.fixed9.log
+          python3 droop/Droop.py meek fixed precision=9 omega=6 defeat_batch=none testdata/${{ matrix.file }}.blt | diff testdata/${{ matrix.file }}.fixed9.log -
