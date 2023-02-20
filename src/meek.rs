@@ -653,8 +653,8 @@ mod test {
     use super::*;
     use crate::arithmetic::fixed::FixedDecimal9;
     use crate::types::{Ballot, Candidate};
+    use crate::util::log_tester::ThreadLocalLogger;
     use log::Level::Debug;
-    use logtest::Logger;
     use num::traits::{One, Zero};
     use std::borrow::Borrow;
 
@@ -765,13 +765,12 @@ mod test {
         }
     }
 
-    fn check_logs(logger: Logger, expected: &str) {
+    fn check_logs(logger: ThreadLocalLogger, expected: &str) {
         let mut report = String::new();
-        for record in logger {
-            assert_eq!(record.target(), "stv_rs::meek");
-            assert_eq!(record.level(), Debug);
-            assert!(record.key_values().is_empty());
-            report.push_str(record.args());
+        for record in logger.into_iter() {
+            assert_eq!(record.target, "stv_rs::meek");
+            assert_eq!(record.level, Debug);
+            report.push_str(&record.message);
             report.push('\n');
         }
 
@@ -1168,7 +1167,7 @@ Action: Defeat remaining: Eggplant
 
     #[test]
     fn test_debug_count() {
-        let logger = Logger::start();
+        let logger = ThreadLocalLogger::start();
 
         let election = make_fake_election();
         let state = make_fake_state(&election);

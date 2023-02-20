@@ -18,6 +18,7 @@
 #![deny(missing_docs)]
 #![forbid(unsafe_code)]
 #![cfg_attr(all(test, feature = "benchmarks"), feature(test))]
+#![cfg_attr(test, feature(local_key_cell_methods))]
 
 #[cfg(all(test, feature = "benchmarks"))]
 extern crate test;
@@ -26,4 +27,6 @@ pub mod arithmetic;
 pub mod meek;
 pub mod parse;
 mod types;
+#[cfg(test)]
+mod util;
 mod vote_count;
