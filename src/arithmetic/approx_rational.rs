@@ -290,8 +290,13 @@ mod test {
         test_sub_add,
         test_one_is_mul_neutral,
         test_mul_is_commutative,
+        test_mul_up_is_commutative,
+        test_mul_up_integers,
+        test_mul_up_wrt_mul,
         test_invert,
         test_div_self,
+        test_div_up_self,
+        test_div_up_wrt_div,
         test_mul_div,
         test_div_mul,
         test_mul_by_int,
@@ -323,6 +328,14 @@ mod test {
         bench_mul,
         bench_div,
     );
+
+    #[test]
+    fn test_description() {
+        assert_eq!(
+            ApproxRational::description(),
+            "exact rational arithmetic with rounding of keep factors (6 decimal places)"
+        );
+    }
 
     #[test]
     fn test_display() {

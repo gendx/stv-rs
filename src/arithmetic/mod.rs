@@ -385,6 +385,40 @@ pub(crate) mod test {
             })
         }
 
+        pub fn test_mul_up_is_commutative() {
+            let test_values = R::get_positive_test_values();
+            Self::loop_check2(&test_values, |a, b| {
+                assert_eq!(
+                    R::mul_up(a, b),
+                    R::mul_up(b, a),
+                    "mul_up(a, b) != mul_up(b, a) for {a}, {b}"
+                );
+            })
+        }
+
+        pub fn test_mul_up_integers() {
+            Self::loop_check_i2(|a, b| {
+                assert_eq!(
+                    R::mul_up(&R::from_int(a.clone()), &R::from_int(b.clone())),
+                    R::from_int(a.clone() * b.clone()),
+                    "mul_up(a, b) != a * b for {a}, {b}"
+                );
+            })
+        }
+
+        pub fn test_mul_up_wrt_mul() {
+            let test_values = R::get_positive_test_values();
+            Self::loop_check2(&test_values, |a, b| {
+                let mul = a * b;
+                let mul_up = R::mul_up(a, b);
+                assert!(mul_up >= mul, "mul_up(a, b) < a * b for {a}, {b}");
+                assert!(
+                    mul_up <= mul + R::epsilon(),
+                    "mul_up(a, b) > a * b + epsilon for {a}, {b}"
+                );
+            })
+        }
+
         pub fn test_invert() {
             let test_values = R::get_positive_test_values();
             Self::loop_check1(&test_values, |a| {
@@ -398,6 +432,26 @@ pub(crate) mod test {
             Self::loop_check1(&test_values, |a| {
                 assert_eq!(a / a, R::one(), "a / a != 1 for {a}");
             });
+        }
+
+        pub fn test_div_up_self() {
+            let test_values = R::get_positive_test_values();
+            Self::loop_check1(&test_values, |a| {
+                assert_eq!(R::div_up(a, a), R::one(), "div_up(a, a) != 1 for {a}");
+            });
+        }
+
+        pub fn test_div_up_wrt_div() {
+            let test_values = R::get_positive_test_values();
+            Self::loop_check2(&test_values, |a, b| {
+                let mul = a / b;
+                let div_up = R::div_up(a, b);
+                assert!(div_up >= mul, "div_up(a, b) < a / b for {a}, {b}");
+                assert!(
+                    div_up <= mul + R::epsilon(),
+                    "div_up(a, b) > a / b + epsilon for {a}, {b}"
+                );
+            })
         }
 
         pub fn test_mul_div() {
@@ -645,6 +699,16 @@ pub(crate) mod test {
         fn loop_check1_i1(test_values: &[R], f: impl Fn(&R, I)) {
             for a in test_values {
                 for bb in 0..100 {
+                    let b = I::from_usize(bb);
+                    f(a, b);
+                }
+            }
+        }
+
+        fn loop_check_i2(f: impl Fn(I, I)) {
+            for aa in 0..100 {
+                for bb in 0..100 {
+                    let a = I::from_usize(aa);
                     let b = I::from_usize(bb);
                     f(a, b);
                 }

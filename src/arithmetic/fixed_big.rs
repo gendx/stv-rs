@@ -322,10 +322,15 @@ mod test {
         test_sub_add,
         test_one_is_mul_neutral,
         test_mul_is_commutative,
+        test_mul_up_is_commutative,
+        test_mul_up_integers,
+        test_mul_up_wrt_mul,
         test_invert => fail(r"assertion failed: `(left == right)`
   left: `BigFixedDecimal9(2147483649)`,
  right: `BigFixedDecimal9(2147483648)`: 1/(1/a) != a for 2.147483648"),
         test_div_self,
+        test_div_up_self,
+        test_div_up_wrt_div,
         test_mul_div => fail(r"assertion failed: `(left == right)`
   left: `BigFixedDecimal9(0)`,
  right: `BigFixedDecimal9(1)`: (a * b) / b != a for 0.000000001, 0.000000001"),
@@ -367,6 +372,14 @@ mod test {
         bench_mul,
         bench_div,
     );
+
+    #[test]
+    fn test_description() {
+        assert_eq!(
+            BigFixedDecimal9::description(),
+            "fixed-point decimal arithmetic (9 places)"
+        );
+    }
 
     #[test]
     fn test_display() {

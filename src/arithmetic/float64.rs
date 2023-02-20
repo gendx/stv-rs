@@ -108,10 +108,15 @@ mod test {
  right: `1.1920928955078125e-7`: (a - b) + b != a for 0.00000011920928955078125, 2147483646"),
         test_one_is_mul_neutral,
         test_mul_is_commutative,
+        test_mul_up_is_commutative,
+        test_mul_up_integers,
+        test_mul_up_wrt_mul,
         test_invert => fail(r"assertion failed: `(left == right)`
   left: `2147483631.0000002`,
  right: `2147483631.0`: 1/(1/a) != a for 2147483631"),
         test_div_self,
+        test_div_up_self,
+        test_div_up_wrt_div,
         test_mul_div => fail(r"assertion failed: `(left == right)`
   left: `2147483646.0000002`,
  right: `2147483646.0`: (a * b) / b != a for 2147483646, 0.000000000465661315280157"),
@@ -154,6 +159,11 @@ mod test {
     );
 
     numeric_benchmarks!(f64, f64, bench_add, bench_sub, bench_mul, bench_div,);
+
+    #[test]
+    fn test_description() {
+        assert_eq!(f64::description(), "64-bit floating-point arithmetic");
+    }
 
     #[test]
     fn test_display_test_values() {
