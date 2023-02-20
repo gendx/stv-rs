@@ -656,6 +656,7 @@ mod test {
     use crate::util::log_tester::ThreadLocalLogger;
     use log::Level::Debug;
     use num::traits::{One, Zero};
+    use num::BigRational;
     use std::borrow::Borrow;
 
     pub struct StateBuilder<'e, I, R> {
@@ -1029,6 +1030,92 @@ Action: Elect: Grape
 	Residual: 0.000000000
 	Total: 8.999999999
 	Surplus: 0.000000000
+"
+        );
+    }
+
+    #[test]
+    fn test_elect_candidates_exact() {
+        let election = Election::builder()
+            .title("Vegetable contest")
+            .num_seats(4)
+            .candidates([
+                Candidate::new("apple", false),
+                Candidate::new("banana", true),
+                Candidate::new("cherry", false),
+                Candidate::new("date", false),
+                Candidate::new("eggplant", false),
+                Candidate::new("fig", false),
+                Candidate::new("grape", false),
+            ])
+            .build();
+        let mut state = State::builder()
+            .election(&election)
+            .statuses([
+                Status::Candidate,
+                Status::Withdrawn,
+                Status::Elected,
+                Status::NotElected,
+                Status::Candidate,
+                Status::Candidate,
+                Status::Candidate,
+            ])
+            .keep_factors([
+                BigRational::zero(),
+                BigRational::zero(),
+                BigRational::zero(),
+                BigRational::zero(),
+                BigRational::zero(),
+                BigRational::zero(),
+                BigRational::zero(),
+            ])
+            .threshold(BigRational::ratio(3, 2))
+            .surplus(BigRational::zero())
+            .omega(BigRational::zero())
+            .parallel(false)
+            .build();
+        let count = VoteCount::new(
+            [
+                BigRational::from_usize(1),
+                BigRational::zero(),
+                BigRational::from_usize(2),
+                BigRational::zero(),
+                BigRational::from_usize(3),
+                BigRational::ratio(1_499_999_999, 1_000_000_000),
+                BigRational::ratio(3, 2),
+            ],
+            BigRational::zero(),
+        );
+
+        let mut buf = Vec::new();
+        state.elect_candidates(&mut buf, &count, 42).unwrap();
+
+        assert_eq!(
+            state.statuses,
+            vec![
+                Status::Candidate,
+                Status::Withdrawn,
+                Status::Elected,
+                Status::NotElected,
+                Status::Elected,
+                Status::Candidate,
+                Status::Candidate,
+            ]
+        );
+        assert_eq!(
+            std::str::from_utf8(&buf).unwrap(),
+            r"Action: Elect: Eggplant
+	Elected:  Cherry (2)
+	Elected:  Eggplant (3)
+	Hopeful:  Apple (1)
+	Hopeful:  Fig (1499999999/1000000000)
+	Hopeful:  Grape (3/2)
+	Defeated: Date (0)
+	Quota: 3/2
+	Votes: 8999999999/1000000000
+	Residual: 0
+	Total: 8999999999/1000000000
+	Surplus: 0
 "
         );
     }
