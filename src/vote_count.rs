@@ -498,6 +498,8 @@ mod test {
                     $typer,
                     test_write_stats,
                     test_threshold,
+                    test_threshold_exhausted,
+                    test_surplus,
                     test_process_ballot_rec_first,
                     test_process_ballot_rec_chain,
                     test_process_ballot_rec_defeated,
@@ -585,6 +587,42 @@ mod test {
                         ballots: Vec::new(),
                     };
 
+                    let vote_count = VoteCount {
+                        sum: Vec::new(),
+                        exhausted: R::zero(),
+                        _phantom: PhantomData,
+                    };
+                    assert_eq!(
+                        vote_count.threshold(&election),
+                        R::ratio(num_ballots, num_seats + 1) + R::epsilon()
+                    );
+
+                    let exhausted = std::cmp::min(num_ballots, 42);
+                    let vote_count = VoteCount {
+                        sum: Vec::new(),
+                        exhausted: R::from_usize(exhausted),
+                        _phantom: PhantomData,
+                    };
+                    assert_eq!(
+                        vote_count.threshold(&election),
+                        R::ratio(num_ballots - exhausted, num_seats + 1) + R::epsilon()
+                    );
+                }
+            }
+        }
+
+        fn test_threshold_exhausted() {
+            for num_seats in 0..10 {
+                for num_ballots in 0..100 {
+                    let election = Election {
+                        title: String::new(),
+                        num_candidates: 0,
+                        num_seats,
+                        num_ballots,
+                        candidates: Vec::new(),
+                        ballots: Vec::new(),
+                    };
+
                     assert_eq!(
                         VoteCount::threshold_exhausted(
                             &election,
@@ -603,6 +641,39 @@ mod test {
                     );
                 }
             }
+        }
+
+        fn test_surplus() {
+            let vote_count = VoteCount {
+                sum: vec![
+                    R::ratio(14, 100),
+                    R::ratio(28, 100),
+                    R::ratio(57, 100),
+                    R::ratio(42, 100),
+                    R::ratio(85, 100),
+                    R::ratio(71, 100),
+                ],
+                exhausted: R::zero(),
+                _phantom: PhantomData,
+            };
+
+            assert_eq!(
+                vote_count.surplus(&R::ratio(10, 100), &[0]),
+                R::ratio(4, 100)
+            );
+
+            assert_eq!(
+                vote_count.surplus(&R::ratio(10, 100), &[0, 1, 2, 3, 4, 5]),
+                R::ratio(237, 100)
+            );
+            assert_eq!(
+                vote_count.surplus(&R::ratio(40, 100), &[2, 3, 4, 5]),
+                R::ratio(95, 100)
+            );
+            assert_eq!(
+                vote_count.surplus(&R::ratio(40, 100), &[0, 1, 2, 3, 4, 5]),
+                R::ratio(57, 100)
+            );
         }
 
         fn process_ballot_rec(
