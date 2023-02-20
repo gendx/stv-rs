@@ -155,11 +155,16 @@ where
             .unwrap();
 
         for round in 1.. {
-            if state.election_completed(round) {
+            if state
+                .election_completed(&mut io::stdout().lock(), round)
+                .unwrap()
+            {
                 break;
             }
 
-            state.election_round(&mut count, round);
+            state
+                .election_round(&mut io::stdout().lock(), &mut count, round)
+                .unwrap();
 
             let now = Instant::now();
             debug!(
@@ -268,7 +273,7 @@ Election: {}
     }
 
     /// Returns true if the election is complete.
-    fn election_completed(&self, round: usize) -> bool {
+    fn election_completed(&self, stdout: &mut impl io::Write, round: usize) -> io::Result<bool> {
         let candidate_count = self
             .statuses
             .iter()
@@ -281,9 +286,9 @@ Election: {}
         assert!(candidate_count >= self.to_elect);
         if self.to_elect == 0 || candidate_count == self.to_elect {
             info!("Count is now complete!");
-            return true;
+            return Ok(true);
         }
-        println!("Round {round}:");
+        writeln!(stdout, "Round {round}:")?;
 
         debug!("Weights:");
         for (i, candidate) in self.election.candidates.iter().enumerate() {
@@ -301,23 +306,22 @@ Election: {}
             .all(|&status| status != Status::Candidate)
         {
             debug!("Election done!");
-            return true;
+            return Ok(true);
         }
 
-        false
+        Ok(false)
     }
 
     /// Runs one election round, which either elects or defeats exactly one
     /// candidate.
-    fn election_round(&mut self, count: &mut VoteCount<I, R>, round: usize) {
-        let iteration = self.iterate_droop(count, round);
-        self.write_action(
-            &mut io::stdout().lock(),
-            &format!("Iterate ({iteration})"),
-            count,
-            false,
-        )
-        .unwrap();
+    fn election_round(
+        &mut self,
+        stdout: &mut impl io::Write,
+        count: &mut VoteCount<I, R>,
+        round: usize,
+    ) -> io::Result<()> {
+        let iteration = self.iterate_droop(stdout, count, round)?;
+        self.write_action(stdout, &format!("Iterate ({iteration})"), count, false)?;
 
         if let DroopIteration::Elected = iteration {
             debug!("Iteration returned Elected, continuing the loop");
@@ -340,8 +344,7 @@ Election: {}
                 }
                 DroopIteration::Elected => unreachable!(),
             };
-            self.write_action(&mut io::stdout().lock(), &message, count, true)
-                .unwrap();
+            self.write_action(stdout, &message, count, true)?;
 
             self.keep_factors[not_elected] = R::zero();
             count.sum[not_elected] = R::zero();
@@ -350,36 +353,41 @@ Election: {}
         }
 
         self.debug_count(count);
+
+        Ok(())
     }
 
     /// Iterates the vote counting process until either a candidate is elected,
     /// the surplus becomes lower than omega, or the count has stabilized.
-    fn iterate_droop(&mut self, count: &mut VoteCount<I, R>, round: usize) -> DroopIteration {
+    fn iterate_droop(
+        &mut self,
+        stdout: &mut impl io::Write,
+        count: &mut VoteCount<I, R>,
+        round: usize,
+    ) -> io::Result<DroopIteration> {
         let mut last_surplus = R::from_usize(self.election.num_ballots);
 
         loop {
             *count = self.count_votes();
             self.threshold = count.threshold(self.election);
 
-            let has_elected = self
-                .elect_candidates(&mut io::stdout().lock(), count, round)
-                .unwrap();
+            let has_elected = self.elect_candidates(stdout, count, round)?;
 
             self.surplus = count.surplus(&self.threshold, &self.elected);
 
             if has_elected {
                 debug!("Returning from iterate_droop (Elected)");
-                return DroopIteration::Elected;
+                return Ok(DroopIteration::Elected);
             }
 
             if self.surplus <= self.omega {
                 debug!("Returning from iterate_droop (Omega)");
-                return DroopIteration::Omega;
+                return Ok(DroopIteration::Omega);
             }
 
             if self.surplus >= last_surplus {
                 debug!("Returning from iterate_droop (Stable)");
-                return DroopIteration::Stable;
+                return Ok(DroopIteration::Stable);
             }
 
             last_surplus = self.surplus.clone();
@@ -654,7 +662,7 @@ mod test {
     use crate::arithmetic::fixed::FixedDecimal9;
     use crate::types::{Ballot, Candidate};
     use crate::util::log_tester::ThreadLocalLogger;
-    use log::Level::Debug;
+    use log::Level::{self, Debug, Info};
     use num::traits::{One, Zero};
     use num::BigRational;
     use std::borrow::Borrow;
@@ -766,7 +774,8 @@ mod test {
         }
     }
 
-    fn check_logs(logger: ThreadLocalLogger, expected: &str) {
+    #[track_caller]
+    fn check_logs_debug(logger: ThreadLocalLogger, expected: &str) {
         let mut report = String::new();
         for record in logger.into_iter() {
             assert_eq!(record.target, "stv_rs::meek");
@@ -776,6 +785,25 @@ mod test {
         }
 
         assert_eq!(report, expected);
+    }
+
+    #[track_caller]
+    fn check_logs<'a>(
+        logger: ThreadLocalLogger,
+        expected: impl IntoIterator<Item = (Level, &'a str)>,
+    ) {
+        let mut report = Vec::new();
+        for record in logger.into_iter() {
+            assert_eq!(record.target, "stv_rs::meek");
+            report.push((record.level, record.message));
+        }
+
+        let expected_report = expected
+            .into_iter()
+            .map(|(level, msg)| (level, msg.to_owned()))
+            .collect::<Vec<_>>();
+
+        assert_eq!(report, expected_report);
     }
 
     fn make_fake_election() -> Election {
@@ -933,6 +961,136 @@ Action: Begin Count
 	Total: 28.000000000
 	Surplus: 0.000000000
 "
+        );
+    }
+
+    #[test]
+    fn test_election_completed() {
+        fn make_election(num_seats: usize) -> Election {
+            Election::builder()
+                .title("Vegetable contest")
+                .num_seats(num_seats)
+                .candidates([
+                    Candidate::new("apple", false),
+                    Candidate::new("banana", true),
+                    Candidate::new("cherry", false),
+                    Candidate::new("date", false),
+                    Candidate::new("eggplant", false),
+                ])
+                .build()
+        }
+
+        fn make_state(election: &Election, statuses: [Status; 5]) -> State<'_, i64, FixedDecimal9> {
+            State::builder()
+                .election(election)
+                .statuses(statuses)
+                .keep_factors([
+                    FixedDecimal9::zero(),
+                    FixedDecimal9::zero(),
+                    FixedDecimal9::zero(),
+                    FixedDecimal9::zero(),
+                    FixedDecimal9::zero(),
+                ])
+                .threshold(FixedDecimal9::zero())
+                .surplus(FixedDecimal9::zero())
+                .omega(FixedDecimal9::zero())
+                .parallel(false)
+                .build()
+        }
+
+        // All remaining candidates should be defeated.
+        let logger = ThreadLocalLogger::start();
+        let election = make_election(1);
+        let state = make_state(
+            &election,
+            [
+                Status::Candidate,
+                Status::Withdrawn,
+                Status::Elected,
+                Status::NotElected,
+                Status::Candidate,
+            ],
+        );
+
+        let mut buf = Vec::new();
+        let completed = state.election_completed(&mut buf, 42).unwrap();
+
+        assert!(completed);
+        assert!(buf.is_empty());
+        check_logs(
+            logger,
+            [
+                (
+                    Debug,
+                    "Checking if count is complete: candidates=2, to_elect=0",
+                ),
+                (Info, "Count is now complete!"),
+            ],
+        );
+
+        // All remaining candidates should be elected.
+        let logger = ThreadLocalLogger::start();
+        let election = make_election(3);
+        let state = make_state(
+            &election,
+            [
+                Status::Candidate,
+                Status::Withdrawn,
+                Status::Elected,
+                Status::NotElected,
+                Status::Candidate,
+            ],
+        );
+
+        let mut buf = Vec::new();
+        let completed = state.election_completed(&mut buf, 42).unwrap();
+
+        assert!(completed);
+        assert!(buf.is_empty());
+        check_logs(
+            logger,
+            [
+                (
+                    Debug,
+                    "Checking if count is complete: candidates=2, to_elect=2",
+                ),
+                (Info, "Count is now complete!"),
+            ],
+        );
+
+        // The election is not completed yet.
+        let logger = ThreadLocalLogger::start();
+        let election = make_election(2);
+        let state = make_state(
+            &election,
+            [
+                Status::Candidate,
+                Status::Withdrawn,
+                Status::Elected,
+                Status::NotElected,
+                Status::Candidate,
+            ],
+        );
+
+        let mut buf = Vec::new();
+        let completed = state.election_completed(&mut buf, 42).unwrap();
+
+        assert!(!completed);
+        assert_eq!(std::str::from_utf8(&buf).unwrap(), "Round 42:\n");
+        check_logs(
+            logger,
+            [
+                (
+                    Debug,
+                    "Checking if count is complete: candidates=2, to_elect=1",
+                ),
+                (Debug, "Weights:"),
+                (Debug, "    [0] apple (Candidate) ~ 0"),
+                (Debug, "    [1] banana (Withdrawn) ~ 0"),
+                (Debug, "    [2] cherry (Elected) ~ 0"),
+                (Debug, "    [3] date (NotElected) ~ 0"),
+                (Debug, "    [4] eggplant (Candidate) ~ 0"),
+            ],
         );
     }
 
@@ -1231,6 +1389,61 @@ Action: Defeat remaining: Eggplant
     }
 
     #[test]
+    fn test_next_defeated_candidate() {
+        let logger = ThreadLocalLogger::start();
+
+        let election = Election::builder()
+            .title("Vegetable contest")
+            .num_seats(2)
+            .candidates([
+                Candidate::new("apple", false),
+                Candidate::new("banana", false),
+                Candidate::new("cherry", false),
+                Candidate::new("date", false),
+            ])
+            .build();
+        let state = State::builder()
+            .election(&election)
+            .statuses([
+                Status::Elected,
+                Status::Candidate,
+                Status::NotElected,
+                Status::Candidate,
+            ])
+            .keep_factors([
+                FixedDecimal9::zero(),
+                FixedDecimal9::zero(),
+                FixedDecimal9::zero(),
+                FixedDecimal9::zero(),
+            ])
+            .threshold(FixedDecimal9::zero())
+            .surplus(FixedDecimal9::ratio(1, 10))
+            .omega(FixedDecimal9::zero())
+            .parallel(false)
+            .build();
+        let count = VoteCount::new(
+            [
+                FixedDecimal9::from_usize(1),
+                FixedDecimal9::ratio(3, 10),
+                FixedDecimal9::zero(),
+                FixedDecimal9::ratio(5, 10),
+            ],
+            FixedDecimal9::zero(),
+        );
+
+        let next = state.next_defeated_candidate(&count);
+
+        assert_eq!(next, 1);
+        check_logs_debug(
+            logger,
+            r"Lowest vote: 0.300000000 ~ 0.3
+Low threshold: 0.400000000 ~ 0.4
+Low candidates: [1]
+",
+        );
+    }
+
+    #[test]
     fn test_write_candidate_counts() {
         let election = make_fake_election();
         let state = make_fake_state(&election);
@@ -1261,7 +1474,7 @@ Action: Defeat remaining: Eggplant
         let count = make_fake_count();
         state.debug_count(&count);
 
-        check_logs(
+        check_logs_debug(
             logger,
             r"Sums:
     [0] grape (Elected) ~ 1.833333333

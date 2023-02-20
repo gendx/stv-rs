@@ -33,7 +33,8 @@ pub mod log_tester {
 
     impl ThreadLocalLogger {
         pub fn start() -> Self {
-            log::set_logger(&LoggerImpl).unwrap();
+            // set_logger only succeeds the first time, but the error isn't a problem.
+            let _ = log::set_logger(&LoggerImpl);
             log::set_max_level(LevelFilter::Trace);
             let old = ACTIVE.replace(true);
             assert!(!old);
