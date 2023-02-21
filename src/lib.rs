@@ -26,7 +26,7 @@ extern crate test;
 pub mod arithmetic;
 pub mod meek;
 pub mod parse;
-mod types;
+pub mod types;
 #[cfg(test)]
 mod util;
 mod vote_count;
