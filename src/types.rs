@@ -168,6 +168,7 @@ impl Ballot {
 }
 
 /// An election result.
+#[derive(Debug, PartialEq, Eq)]
 pub struct ElectionResult {
     /// List of elected candidates, by election order.
     pub elected: Vec<usize>,

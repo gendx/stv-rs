@@ -19,6 +19,7 @@
 
 use clap::Parser;
 use num::{BigInt, BigRational};
+use std::io;
 use stv_rs::{
     arithmetic::{ApproxRational, BigFixedDecimal9, FixedDecimal9},
     meek::State,
@@ -63,39 +64,45 @@ enum Arithmetic {
 
 impl Cli {
     /// Run the given election based on the command-line parameters.
-    fn run(self, election: &Election) {
+    fn run(self, election: &Election) -> io::Result<()> {
         match self.arithmetic {
             Arithmetic::Fixed9 => State::<i64, FixedDecimal9>::stv_droop(
+                &mut io::stdout().lock(),
                 election,
                 &self.package_name,
                 self.omega_exponent,
                 self.parallel,
-            ),
+            )?,
             Arithmetic::Bigfixed9 => State::<BigInt, BigFixedDecimal9>::stv_droop(
+                &mut io::stdout().lock(),
                 election,
                 &self.package_name,
                 self.omega_exponent,
                 self.parallel,
-            ),
+            )?,
             Arithmetic::Exact => State::<BigInt, BigRational>::stv_droop(
+                &mut io::stdout().lock(),
                 election,
                 &self.package_name,
                 self.omega_exponent,
                 self.parallel,
-            ),
+            )?,
             Arithmetic::Approx => State::<BigInt, ApproxRational>::stv_droop(
+                &mut io::stdout().lock(),
                 election,
                 &self.package_name,
                 self.omega_exponent,
                 self.parallel,
-            ),
+            )?,
             Arithmetic::Float64 => State::<f64, f64>::stv_droop(
+                &mut io::stdout().lock(),
                 election,
                 &self.package_name,
                 self.omega_exponent,
                 self.parallel,
-            ),
+            )?,
         };
+        Ok(())
     }
 }
 
@@ -104,9 +111,9 @@ fn main() {
 
     let cli = Cli::parse();
 
-    let election = parse_election(std::io::stdin().lock()).unwrap();
+    let election = parse_election(io::stdin().lock()).unwrap();
 
-    cli.run(&election);
+    cli.run(&election).unwrap();
 }
 
 #[cfg(test)]

@@ -136,11 +136,12 @@ where
     /// Runs an election according to Meek's rules. This aims to produce
     /// reproducible results w.r.t. Droop.py.
     pub fn stv_droop(
+        stdout: &mut impl io::Write,
         election: &Election,
         package_name: &str,
         omega_exponent: usize,
         parallel: bool,
-    ) -> ElectionResult {
+    ) -> io::Result<ElectionResult> {
         info!(
             "Parallel vote counting is {}",
             if parallel { "enabled" } else { "disabled" }
@@ -151,21 +152,14 @@ where
         let beginning = Instant::now();
         let mut timestamp = beginning;
 
-        let mut count = state
-            .start_election(&mut io::stdout().lock(), package_name, omega_exponent)
-            .unwrap();
+        let mut count = state.start_election(stdout, package_name, omega_exponent)?;
 
         for round in 1.. {
-            if state
-                .election_completed(&mut io::stdout().lock(), round)
-                .unwrap()
-            {
+            if state.election_completed(stdout, round)? {
                 break;
             }
 
-            state
-                .election_round(&mut io::stdout().lock(), &mut count, round)
-                .unwrap();
+            state.election_round(stdout, &mut count, round)?;
 
             let now = Instant::now();
             debug!(
@@ -176,13 +170,9 @@ where
             timestamp = now;
         }
 
-        state
-            .handle_remaining_candidates(&mut io::stdout().lock(), &mut count)
-            .unwrap();
+        state.handle_remaining_candidates(stdout, &mut count)?;
 
-        state
-            .write_action(&mut io::stdout().lock(), "Count Complete", &count, true)
-            .unwrap();
+        state.write_action(stdout, "Count Complete", &count, true)?;
 
         let now = Instant::now();
         info!("Total elapsed time: {:?}", now.duration_since(beginning));
@@ -192,9 +182,9 @@ where
             not_elected: state.not_elected,
         };
 
-        println!();
+        writeln!(stdout)?;
 
-        result
+        Ok(result)
     }
 
     /// Elects a candidate, and updates the state accordingly.
@@ -873,6 +863,215 @@ mod test {
             ],
             FixedDecimal9::new(547222224),
         )
+    }
+
+    #[test]
+    fn test_stv_droop() {
+        let election = Election::builder()
+            .title("Vegetable contest")
+            .num_seats(5)
+            .candidates([
+                Candidate::new("apple", false),
+                Candidate::new("banana", true),
+                Candidate::new("cherry", false),
+                Candidate::new("date", false),
+                Candidate::new("eggplant", false),
+                Candidate::new("fig", true),
+                Candidate::new("grape", false),
+                Candidate::new("hazelnut", false),
+                Candidate::new("jalapeno", false),
+            ])
+            .ballots([
+                Ballot::new(1, [vec![0]]),
+                Ballot::new(2, [vec![2]]),
+                Ballot::new(3, [vec![3]]),
+                Ballot::new(4, [vec![4]]),
+                Ballot::new(5, [vec![6]]),
+                Ballot::new(6, [vec![7]]),
+                Ballot::new(7, [vec![8]]),
+            ])
+            .build();
+
+        let mut buf = Vec::new();
+        let result =
+            State::<i64, FixedDecimal9>::stv_droop(&mut buf, &election, "package name", 6, false)
+                .unwrap();
+        assert_eq!(
+            result,
+            ElectionResult {
+                elected: vec![6, 7, 8, 4, 3],
+                not_elected: vec![0, 2]
+            }
+        );
+        assert_eq!(
+            std::str::from_utf8(&buf).unwrap(),
+            r"
+Election: Vegetable contest
+
+	package name
+	Rule: Meek Parametric (omega = 1/10^6)
+	Arithmetic: fixed-point decimal arithmetic (9 places)
+	Seats: 5
+	Ballots: 28
+	Quota: 4.666666667
+	Omega: 0.000001000
+
+	Add eligible: Apple
+	Add withdrawn: Banana
+	Add eligible: Cherry
+	Add eligible: Date
+	Add eligible: Eggplant
+	Add withdrawn: Fig
+	Add eligible: Grape
+	Add eligible: Hazelnut
+	Add eligible: Jalapeno
+Action: Begin Count
+	Hopeful:  Apple (1.000000000)
+	Hopeful:  Cherry (2.000000000)
+	Hopeful:  Date (3.000000000)
+	Hopeful:  Eggplant (4.000000000)
+	Hopeful:  Grape (5.000000000)
+	Hopeful:  Hazelnut (6.000000000)
+	Hopeful:  Jalapeno (7.000000000)
+	Quota: 4.666666667
+	Votes: 28.000000000
+	Residual: 0.000000000
+	Total: 28.000000000
+	Surplus: 0.000000000
+Round 1:
+Action: Elect: Grape
+	Elected:  Grape (5.000000000)
+	Hopeful:  Apple (1.000000000)
+	Hopeful:  Cherry (2.000000000)
+	Hopeful:  Date (3.000000000)
+	Hopeful:  Eggplant (4.000000000)
+	Hopeful:  Hazelnut (6.000000000)
+	Hopeful:  Jalapeno (7.000000000)
+	Quota: 4.666666667
+	Votes: 28.000000000
+	Residual: 0.000000000
+	Total: 28.000000000
+	Surplus: 0.000000000
+Action: Elect: Hazelnut
+	Elected:  Grape (5.000000000)
+	Elected:  Hazelnut (6.000000000)
+	Hopeful:  Apple (1.000000000)
+	Hopeful:  Cherry (2.000000000)
+	Hopeful:  Date (3.000000000)
+	Hopeful:  Eggplant (4.000000000)
+	Hopeful:  Jalapeno (7.000000000)
+	Quota: 4.666666667
+	Votes: 28.000000000
+	Residual: 0.000000000
+	Total: 28.000000000
+	Surplus: 0.000000000
+Action: Elect: Jalapeno
+	Elected:  Grape (5.000000000)
+	Elected:  Hazelnut (6.000000000)
+	Elected:  Jalapeno (7.000000000)
+	Hopeful:  Apple (1.000000000)
+	Hopeful:  Cherry (2.000000000)
+	Hopeful:  Date (3.000000000)
+	Hopeful:  Eggplant (4.000000000)
+	Quota: 4.666666667
+	Votes: 28.000000000
+	Residual: 0.000000000
+	Total: 28.000000000
+	Surplus: 0.000000000
+Action: Iterate (elected)
+	Quota: 4.666666667
+	Votes: 28.000000000
+	Residual: 0.000000000
+	Total: 28.000000000
+	Surplus: 3.999999999
+Round 2:
+Action: Elect: Eggplant
+	Elected:  Eggplant (4.000000000)
+	Elected:  Grape (4.000000005)
+	Elected:  Hazelnut (4.000000008)
+	Elected:  Jalapeno (4.000000004)
+	Hopeful:  Apple (1.000000000)
+	Hopeful:  Cherry (2.000000000)
+	Hopeful:  Date (3.000000000)
+	Quota: 3.666666670
+	Votes: 22.000000017
+	Residual: 5.999999983
+	Total: 28.000000000
+	Surplus: 2.000000001
+Action: Iterate (elected)
+	Quota: 3.666666670
+	Votes: 22.000000017
+	Residual: 5.999999983
+	Total: 28.000000000
+	Surplus: 1.333333337
+Round 3:
+Action: Iterate (omega)
+	Quota: 3.000000464
+	Votes: 18.000002783
+	Residual: 9.999997217
+	Total: 28.000000000
+	Surplus: 0.000000927
+Action: Defeat (surplus 0.000000927 < omega): Apple
+	Elected:  Eggplant (3.000000696)
+	Elected:  Grape (3.000000695)
+	Elected:  Hazelnut (3.000000696)
+	Elected:  Jalapeno (3.000000696)
+	Hopeful:  Cherry (2.000000000)
+	Hopeful:  Date (3.000000000)
+	Defeated: Apple (1.000000000)
+	Quota: 3.000000464
+	Votes: 18.000002783
+	Residual: 9.999997217
+	Total: 28.000000000
+	Surplus: 0.000000927
+Round 4:
+Action: Elect: Date
+	Elected:  Date (3.000000000)
+	Elected:  Eggplant (3.000000696)
+	Elected:  Grape (3.000000695)
+	Elected:  Hazelnut (3.000000696)
+	Elected:  Jalapeno (3.000000696)
+	Hopeful:  Cherry (2.000000000)
+	Defeated: Apple (0.000000000)
+	Quota: 2.833333798
+	Votes: 17.000002783
+	Residual: 10.999997217
+	Total: 28.000000000
+	Surplus: 0.000000927
+Action: Iterate (elected)
+	Quota: 2.833333798
+	Votes: 17.000002783
+	Residual: 10.999997217
+	Total: 28.000000000
+	Surplus: 0.833333793
+Action: Defeat remaining: Cherry
+	Elected:  Date (3.000000000)
+	Elected:  Eggplant (3.000000696)
+	Elected:  Grape (3.000000695)
+	Elected:  Hazelnut (3.000000696)
+	Elected:  Jalapeno (3.000000696)
+	Defeated: Cherry (2.000000000)
+	Defeated: Apple (0.000000000)
+	Quota: 2.833333798
+	Votes: 17.000002783
+	Residual: 10.999997217
+	Total: 28.000000000
+	Surplus: 0.833333793
+Action: Count Complete
+	Elected:  Date (3.000000000)
+	Elected:  Eggplant (3.000000696)
+	Elected:  Grape (3.000000695)
+	Elected:  Hazelnut (3.000000696)
+	Elected:  Jalapeno (3.000000696)
+	Defeated: Apple, Cherry (0.000000000)
+	Quota: 2.833333798
+	Votes: 15.000002783
+	Residual: 12.999997217
+	Total: 28.000000000
+	Surplus: 0.833333793
+
+"
+        );
     }
 
     #[test]
