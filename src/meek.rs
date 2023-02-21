@@ -39,6 +39,7 @@ enum Status {
 }
 
 /// Result of a Droop iteration.
+#[derive(Debug, PartialEq, Eq)]
 enum DroopIteration {
     /// A candidate was elected in this iteration.
     Elected,
@@ -1086,6 +1087,246 @@ Action: Begin Count
                 (Debug, "    [4] eggplant (Candidate) ~ 0"),
             ],
         );
+    }
+
+    #[test]
+    fn test_iterate_droop() {
+        fn make_election(ballots: impl Borrow<[Ballot]>) -> Election {
+            Election::builder()
+                .title("Vegetable contest")
+                .num_seats(2)
+                .candidates([
+                    Candidate::new("apple", false),
+                    Candidate::new("banana", false),
+                    Candidate::new("cherry", false),
+                    Candidate::new("date", false),
+                ])
+                .ballots(ballots)
+                .build()
+        }
+
+        fn make_state(
+            election: &Election,
+            statuses: impl Borrow<[Status]>,
+        ) -> State<'_, i64, FixedDecimal9> {
+            State::builder()
+                .election(election)
+                .statuses(statuses)
+                .keep_factors([FixedDecimal9::one(); 4])
+                .threshold(FixedDecimal9::zero())
+                .surplus(FixedDecimal9::zero())
+                .omega(FixedDecimal9::ratio(1, 1_000_000))
+                .parallel(false)
+                .build()
+        }
+
+        fn make_count() -> VoteCount<i64, FixedDecimal9> {
+            VoteCount::new([FixedDecimal9::zero(); 4], FixedDecimal9::zero())
+        }
+
+        // No ballot.
+        let election = make_election([]);
+        let mut state = make_state(&election, [Status::Candidate; 4]);
+        let mut count = make_count();
+
+        let mut buf = Vec::new();
+        let iteration = state.iterate_droop(&mut buf, &mut count, 42).unwrap();
+        assert_eq!(iteration, DroopIteration::Omega);
+        // TODO: Use expectations rather than assertions.
+        assert_eq!(
+            (
+                state.threshold,
+                state.surplus,
+                state.statuses,
+                state.keep_factors
+            ),
+            (
+                FixedDecimal9::epsilon(),
+                FixedDecimal9::zero(),
+                vec![Status::Candidate; 4],
+                vec![FixedDecimal9::one(); 4]
+            )
+        );
+        assert_eq!(
+            count,
+            VoteCount::new([FixedDecimal9::zero(); 4], FixedDecimal9::zero())
+        );
+        assert!(buf.is_empty());
+
+        // One candidate is elected.
+        let election = make_election([Ballot::new(1, [vec![1]])]);
+        let mut state = make_state(&election, [Status::Candidate; 4]);
+        let mut count = make_count();
+
+        let mut buf = Vec::new();
+        let iteration = state.iterate_droop(&mut buf, &mut count, 42).unwrap();
+        assert_eq!(iteration, DroopIteration::Elected);
+        assert_eq!(
+            (
+                state.threshold,
+                state.surplus,
+                state.statuses,
+                state.keep_factors
+            ),
+            (
+                FixedDecimal9::ratio(1, 3) + FixedDecimal9::epsilon(),
+                FixedDecimal9::ratio(2, 3),
+                vec![
+                    Status::Candidate,
+                    Status::Elected,
+                    Status::Candidate,
+                    Status::Candidate,
+                ],
+                vec![FixedDecimal9::one(); 4]
+            )
+        );
+        assert_eq!(
+            count,
+            VoteCount::new(
+                [
+                    FixedDecimal9::zero(),
+                    FixedDecimal9::one(),
+                    FixedDecimal9::zero(),
+                    FixedDecimal9::zero(),
+                ],
+                FixedDecimal9::zero(),
+            )
+        );
+        assert_eq!(
+            std::str::from_utf8(&buf).unwrap(),
+            r"Action: Elect: Banana
+	Elected:  Banana (1.000000000)
+	Hopeful:  Apple (0.000000000)
+	Hopeful:  Cherry (0.000000000)
+	Hopeful:  Date (0.000000000)
+	Quota: 0.333333334
+	Votes: 1.000000000
+	Residual: 0.000000000
+	Total: 1.000000000
+	Surplus: 0.000000000
+"
+        );
+
+        // Second candidate is elected.
+        let election = make_election([Ballot::new(3, [vec![1]]), Ballot::new(1, [vec![3]])]);
+        let mut state = make_state(
+            &election,
+            [
+                Status::Candidate,
+                Status::Elected,
+                Status::Candidate,
+                Status::Candidate,
+            ],
+        );
+        let mut count = make_count();
+
+        let mut buf = Vec::new();
+        let iteration = state.iterate_droop(&mut buf, &mut count, 42).unwrap();
+        assert_eq!(iteration, DroopIteration::Elected);
+        assert_eq!(
+            (
+                state.threshold,
+                state.surplus,
+                state.statuses,
+                state.keep_factors
+            ),
+            (
+                FixedDecimal9::new(777_777_779),
+                FixedDecimal9::new(777_777_777),
+                vec![
+                    Status::Candidate,
+                    Status::Elected,
+                    Status::Candidate,
+                    Status::Elected,
+                ],
+                vec![
+                    FixedDecimal9::one(),
+                    FixedDecimal9::new(444_444_445),
+                    FixedDecimal9::one(),
+                    FixedDecimal9::one(),
+                ]
+            )
+        );
+        assert_eq!(
+            count,
+            VoteCount::new(
+                [
+                    FixedDecimal9::zero(),
+                    FixedDecimal9::new(1_333_333_335),
+                    FixedDecimal9::zero(),
+                    FixedDecimal9::one(),
+                ],
+                FixedDecimal9::new(1_666_666_665),
+            )
+        );
+        assert_eq!(
+            std::str::from_utf8(&buf).unwrap(),
+            r"Action: Elect: Date
+	Elected:  Banana (1.333333335)
+	Elected:  Date (1.000000000)
+	Hopeful:  Apple (0.000000000)
+	Hopeful:  Cherry (0.000000000)
+	Quota: 0.777777779
+	Votes: 2.333333335
+	Residual: 1.666666665
+	Total: 4.000000000
+	Surplus: 1.666666666
+"
+        );
+
+        // Iteration stabilizes.
+        let election = make_election([Ballot::new(1, [vec![1]])]);
+        let mut state = make_state(
+            &election,
+            [
+                Status::Candidate,
+                Status::Elected,
+                Status::Candidate,
+                Status::Candidate,
+            ],
+        );
+        let mut count = make_count();
+
+        let mut buf = Vec::new();
+        let iteration = state.iterate_droop(&mut buf, &mut count, 42).unwrap();
+        assert_eq!(iteration, DroopIteration::Stable);
+        assert_eq!(
+            (
+                state.threshold,
+                state.surplus,
+                state.statuses,
+                state.keep_factors
+            ),
+            (
+                FixedDecimal9::new(17_438),
+                FixedDecimal9::new(34_875),
+                vec![
+                    Status::Candidate,
+                    Status::Elected,
+                    Status::Candidate,
+                    Status::Candidate,
+                ],
+                vec![
+                    FixedDecimal9::one(),
+                    FixedDecimal9::new(52_313),
+                    FixedDecimal9::one(),
+                    FixedDecimal9::one(),
+                ]
+            )
+        );
+        assert_eq!(
+            count,
+            VoteCount::new(
+                [
+                    FixedDecimal9::zero(),
+                    FixedDecimal9::new(52_313),
+                    FixedDecimal9::zero(),
+                    FixedDecimal9::zero(),
+                ],
+                FixedDecimal9::new(999_947_687),
+            )
+        );
+        assert!(buf.is_empty());
     }
 
     #[test]
