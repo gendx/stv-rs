@@ -1090,6 +1090,257 @@ Action: Begin Count
     }
 
     #[test]
+    fn test_election_round() {
+        fn make_election(ballots: impl Borrow<[Ballot]>) -> Election {
+            Election::builder()
+                .title("Vegetable contest")
+                .num_seats(2)
+                .candidates([
+                    Candidate::new("apple", false),
+                    Candidate::new("banana", false),
+                    Candidate::new("cherry", false),
+                    Candidate::new("date", false),
+                ])
+                .ballots(ballots)
+                .build()
+        }
+
+        fn make_state(
+            election: &Election,
+            statuses: impl Borrow<[Status]>,
+        ) -> State<'_, i64, FixedDecimal9> {
+            State::builder()
+                .election(election)
+                .statuses(statuses)
+                .keep_factors([FixedDecimal9::one(); 4])
+                .threshold(FixedDecimal9::zero())
+                .surplus(FixedDecimal9::zero())
+                .omega(FixedDecimal9::ratio(1, 1_000_000))
+                .parallel(false)
+                .build()
+        }
+
+        fn make_count() -> VoteCount<i64, FixedDecimal9> {
+            VoteCount::new([FixedDecimal9::zero(); 4], FixedDecimal9::zero())
+        }
+
+        // TODO: test with no ballot (requires tie-breaker implementation).
+
+        // One candidate is elected.
+        let election = make_election([Ballot::new(1, [vec![1]])]);
+        let mut state = make_state(&election, [Status::Candidate; 4]);
+        let mut count = make_count();
+
+        let mut buf = Vec::new();
+        state.election_round(&mut buf, &mut count, 42).unwrap();
+        assert_eq!(
+            (
+                state.threshold,
+                state.surplus,
+                state.statuses,
+                state.keep_factors
+            ),
+            (
+                FixedDecimal9::ratio(1, 3) + FixedDecimal9::epsilon(),
+                FixedDecimal9::ratio(2, 3),
+                vec![
+                    Status::Candidate,
+                    Status::Elected,
+                    Status::Candidate,
+                    Status::Candidate,
+                ],
+                vec![FixedDecimal9::one(); 4]
+            )
+        );
+        assert_eq!(
+            count,
+            VoteCount::new(
+                [
+                    FixedDecimal9::zero(),
+                    FixedDecimal9::one(),
+                    FixedDecimal9::zero(),
+                    FixedDecimal9::zero(),
+                ],
+                FixedDecimal9::zero(),
+            )
+        );
+        assert_eq!(
+            std::str::from_utf8(&buf).unwrap(),
+            r"Action: Elect: Banana
+	Elected:  Banana (1.000000000)
+	Hopeful:  Apple (0.000000000)
+	Hopeful:  Cherry (0.000000000)
+	Hopeful:  Date (0.000000000)
+	Quota: 0.333333334
+	Votes: 1.000000000
+	Residual: 0.000000000
+	Total: 1.000000000
+	Surplus: 0.000000000
+Action: Iterate (elected)
+	Quota: 0.333333334
+	Votes: 1.000000000
+	Residual: 0.000000000
+	Total: 1.000000000
+	Surplus: 0.666666666
+"
+        );
+
+        // Omega threshold.
+        let election = make_election([
+            Ballot::new(100, [vec![1]]),
+            Ballot::new(1, [vec![0]]),
+            Ballot::new(2, [vec![2]]),
+            Ballot::new(3, [vec![3]]),
+        ]);
+        let mut state = make_state(
+            &election,
+            [
+                Status::Candidate,
+                Status::Elected,
+                Status::Candidate,
+                Status::Candidate,
+            ],
+        );
+        let mut count = make_count();
+
+        let mut buf = Vec::new();
+        state.election_round(&mut buf, &mut count, 42).unwrap();
+        assert_eq!(
+            (
+                state.threshold,
+                state.surplus,
+                state.statuses,
+                state.keep_factors
+            ),
+            (
+                FixedDecimal9::new(3_000_000_301),
+                FixedDecimal9::new(599),
+                vec![
+                    Status::NotElected,
+                    Status::Elected,
+                    Status::Candidate,
+                    Status::Candidate,
+                ],
+                vec![
+                    FixedDecimal9::zero(),
+                    FixedDecimal9::new(30_000_009),
+                    FixedDecimal9::one(),
+                    FixedDecimal9::one(),
+                ]
+            )
+        );
+        assert_eq!(
+            count,
+            VoteCount::new(
+                [
+                    FixedDecimal9::zero(),
+                    FixedDecimal9::new(3_000_000_900),
+                    FixedDecimal9::from_usize(2),
+                    FixedDecimal9::from_usize(3),
+                ],
+                FixedDecimal9::new(97_999_999_100),
+            )
+        );
+        assert_eq!(
+            std::str::from_utf8(&buf).unwrap(),
+            r"Action: Iterate (omega)
+	Quota: 3.000000301
+	Votes: 9.000000900
+	Residual: 96.999999100
+	Total: 106.000000000
+	Surplus: 0.000000599
+Action: Defeat (surplus 0.000000599 < omega): Apple
+	Elected:  Banana (3.000000900)
+	Hopeful:  Cherry (2.000000000)
+	Hopeful:  Date (3.000000000)
+	Defeated: Apple (1.000000000)
+	Quota: 3.000000301
+	Votes: 9.000000900
+	Residual: 96.999999100
+	Total: 106.000000000
+	Surplus: 0.000000599
+"
+        );
+
+        // Stable iteration.
+        let election = make_election([
+            Ballot::new(100_000, [vec![1]]),
+            Ballot::new(1, [vec![0]]),
+            Ballot::new(2, [vec![2]]),
+            Ballot::new(3, [vec![3]]),
+        ]);
+        let mut state = make_state(
+            &election,
+            [
+                Status::Candidate,
+                Status::Elected,
+                Status::Candidate,
+                Status::Candidate,
+            ],
+        );
+        let mut count = make_count();
+
+        let mut buf = Vec::new();
+        state.election_round(&mut buf, &mut count, 42).unwrap();
+        assert_eq!(
+            (
+                state.threshold,
+                state.surplus,
+                state.statuses,
+                state.keep_factors
+            ),
+            (
+                FixedDecimal9::new(3_000_033_334),
+                FixedDecimal9::new(66_666),
+                vec![
+                    Status::NotElected,
+                    Status::Elected,
+                    Status::Candidate,
+                    Status::Candidate,
+                ],
+                vec![
+                    FixedDecimal9::zero(),
+                    FixedDecimal9::new(30_001),
+                    FixedDecimal9::one(),
+                    FixedDecimal9::one(),
+                ]
+            )
+        );
+        assert_eq!(
+            count,
+            VoteCount::new(
+                [
+                    FixedDecimal9::zero(),
+                    FixedDecimal9::new(3_000_100_000),
+                    FixedDecimal9::from_usize(2),
+                    FixedDecimal9::from_usize(3),
+                ],
+                FixedDecimal9::new(99_997_999_900_000),
+            )
+        );
+        assert_eq!(
+            std::str::from_utf8(&buf).unwrap(),
+            r"Action: Iterate (stable)
+	Quota: 3.000033334
+	Votes: 9.000100000
+	Residual: 99996.999900000
+	Total: 100006.000000000
+	Surplus: 0.000066666
+Action: Defeat (stable surplus 0.000066666): Apple
+	Elected:  Banana (3.000100000)
+	Hopeful:  Cherry (2.000000000)
+	Hopeful:  Date (3.000000000)
+	Defeated: Apple (1.000000000)
+	Quota: 3.000033334
+	Votes: 9.000100000
+	Residual: 99996.999900000
+	Total: 100006.000000000
+	Surplus: 0.000066666
+"
+        );
+    }
+
+    #[test]
     fn test_iterate_droop() {
         fn make_election(ballots: impl Borrow<[Ballot]>) -> Election {
             Election::builder()
