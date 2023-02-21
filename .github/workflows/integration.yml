@@ -22,6 +22,8 @@ jobs:
     strategy:
       matrix:
         file:
+          - tie_break_explicit
+          - tie_break_implicit
           - vegetables
       fail-fast: false
     runs-on: ubuntu-latest

@@ -578,14 +578,11 @@ mod test {
         fn test_threshold() {
             for num_seats in 0..10 {
                 for num_ballots in 0..100 {
-                    let election = Election {
-                        title: String::new(),
-                        num_candidates: 0,
-                        num_seats,
-                        num_ballots,
-                        candidates: Vec::new(),
-                        ballots: Vec::new(),
-                    };
+                    let election = Election::builder()
+                        .title("")
+                        .num_seats(num_seats)
+                        .num_ballots(num_ballots)
+                        .build();
 
                     let vote_count = VoteCount {
                         sum: Vec::new(),
@@ -614,14 +611,11 @@ mod test {
         fn test_threshold_exhausted() {
             for num_seats in 0..10 {
                 for num_ballots in 0..100 {
-                    let election = Election {
-                        title: String::new(),
-                        num_candidates: 0,
-                        num_seats,
-                        num_ballots,
-                        candidates: Vec::new(),
-                        ballots: Vec::new(),
-                    };
+                    let election = Election::builder()
+                        .title("")
+                        .num_seats(num_seats)
+                        .num_ballots(num_ballots)
+                        .build();
 
                     assert_eq!(
                         VoteCount::threshold_exhausted(

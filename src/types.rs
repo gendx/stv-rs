@@ -16,6 +16,7 @@
 
 #[cfg(test)]
 use std::borrow::Borrow;
+use std::collections::HashMap;
 
 /// Election input, representing a parsed ballot file.
 #[derive(Debug, PartialEq, Eq)]
@@ -32,6 +33,9 @@ pub struct Election {
     pub candidates: Vec<Candidate>,
     /// Ballots that were cast in this election.
     pub ballots: Vec<Ballot>,
+    /// Tie-break order of candidates, mapping each candidate ID to its order
+    /// in the tie break.
+    pub tie_order: HashMap<usize, usize>,
 }
 
 #[cfg(test)]
@@ -49,6 +53,7 @@ pub(crate) struct ElectionBuilder {
     num_ballots: Option<usize>,
     candidates: Vec<Candidate>,
     ballots: Vec<Ballot>,
+    tie_order: Option<HashMap<usize, usize>>,
 }
 
 #[cfg(test)]
@@ -57,13 +62,17 @@ impl ElectionBuilder {
         let num_ballots = self
             .num_ballots
             .unwrap_or_else(|| self.ballots.iter().map(|b| b.count).sum());
+        let num_candidates = self.candidates.len();
         Election {
             title: self.title.unwrap(),
-            num_candidates: self.candidates.len(),
+            num_candidates,
             num_seats: self.num_seats.unwrap(),
             num_ballots,
             candidates: self.candidates,
             ballots: self.ballots,
+            tie_order: self
+                .tie_order
+                .unwrap_or_else(|| (0..num_candidates).map(|i| (i, i)).collect()),
         }
     }
 
@@ -95,6 +104,17 @@ impl ElectionBuilder {
 
     pub(crate) fn ballots(mut self, ballots: impl Borrow<[Ballot]>) -> Self {
         self.ballots = ballots.borrow().to_owned();
+        self
+    }
+
+    pub(crate) fn tie_order(mut self, order: impl Borrow<[usize]>) -> Self {
+        assert_eq!(order.borrow().len(), self.candidates.len());
+        let mut tie_order = HashMap::new();
+        for (i, &c) in order.borrow().iter().enumerate() {
+            assert!(c < self.candidates.len());
+            assert!(tie_order.insert(c, i).is_none());
+        }
+        self.tie_order = Some(tie_order);
         self
     }
 }

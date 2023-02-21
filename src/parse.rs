@@ -39,6 +39,7 @@ pub fn parse_election(input: impl BufRead) -> Result<Election, Box<dyn std::erro
     // Parse the options
     let mut nicknames = None;
     let mut withdrawn: HashSet<String> = HashSet::new();
+    let mut tie = None;
     while let Some(line) = lines.peek() {
         let line = line.as_ref().unwrap();
         if !re_option.is_match(line) {
@@ -48,7 +49,6 @@ pub fn parse_election(input: impl BufRead) -> Result<Election, Box<dyn std::erro
         let mut items = line[1..line.len() - 1].split(' ');
         let title = items.next().unwrap();
 
-        // TODO: parse ties.
         match title {
             "nick" => {
                 let values = items.map(|x| x.to_owned()).collect::<Vec<String>>();
@@ -60,8 +60,9 @@ pub fn parse_election(input: impl BufRead) -> Result<Election, Box<dyn std::erro
                 info!("Withdrawn: {withdrawn:?}");
             }
             "tie" => {
-                let values = items.collect::<Vec<_>>();
+                let values = items.map(|x| x.to_owned()).collect::<Vec<String>>();
                 info!("Tie-break order: {values:?}");
+                tie = Some(values);
             }
             _ => warn!("Unknown option: {title}"),
         }
@@ -78,6 +79,29 @@ pub fn parse_election(input: impl BufRead) -> Result<Election, Box<dyn std::erro
         .enumerate()
         .map(|(i, c)| (c.as_str(), i))
         .collect();
+
+    let tie_order: HashMap<usize, usize> = {
+        match tie {
+            None => (0..num_candidates).map(|i| (i, i)).collect(),
+            Some(tie) => {
+                assert_eq!(
+                    tie.len(),
+                    num_candidates,
+                    "Tie-break order must mention all candidates"
+                );
+                let mut tie_order = HashMap::new();
+                for (i, c) in tie.iter().enumerate() {
+                    let id = *hash_nicknames.get(c.as_str()).unwrap();
+                    assert!(
+                        tie_order.insert(id, i).is_none(),
+                        "Candidate mentioned twice in tie order: {}",
+                        c
+                    );
+                }
+                tie_order
+            }
+        }
+    };
 
     let mut ballots = Vec::new();
     loop {
@@ -155,6 +179,7 @@ pub fn parse_election(input: impl BufRead) -> Result<Election, Box<dyn std::erro
         num_ballots,
         candidates,
         ballots,
+        tie_order,
     })
 }
 
@@ -208,6 +233,7 @@ mod test {
     fn test_parse_election() {
         let file = r#"5 2
 [nick apple banana cherry date eggplant]
+[tie cherry apple eggplant banana date]
 3 apple cherry eggplant date banana 0
 3 date=eggplant banana=cherry=apple 0
 42 cherry 0
@@ -239,6 +265,7 @@ mod test {
                     Ballot::new(123, [vec![1], vec![3]]),
                 ])
                 .check_num_ballots(171)
+                .tie_order([2, 0, 4, 1, 3])
                 .build()
         );
     }
@@ -283,8 +310,40 @@ mod test {
     }
 
     #[test]
+    #[should_panic(
+        expected = "assertion failed: `(left == right)`\n  left: `1`,\n right: `2`: Tie-break order must mention all candidates"
+    )]
+    fn test_parse_tie_not_all_candidates() {
+        let file = r#"2 1
+[nick apple banana]
+[tie banana]
+1 apple 0
+0
+"Apple"
+"Banana"
+"Vegetable contest"
+"#;
+        let _ = parse_election(Cursor::new(file));
+    }
+
+    #[test]
+    #[should_panic(expected = "Candidate mentioned twice in tie order: banana")]
+    fn test_parse_tie_repeated_candidate() {
+        let file = r#"2 1
+[nick apple banana]
+[tie banana banana]
+1 apple 0
+0
+"Apple"
+"Banana"
+"Vegetable contest"
+"#;
+        let _ = parse_election(Cursor::new(file));
+    }
+
+    #[test]
     #[should_panic(expected = "assertion failed: `(left == right)`\n  left: `2`,\n right: `1`")]
-    fn test_parse_election_repeated_candidate() {
+    fn test_parse_ballot_repeated_candidate() {
         let file = r#"2 1
 [nick apple banana]
 1 apple apple 0
@@ -298,7 +357,7 @@ mod test {
 
     #[test]
     #[should_panic(expected = "called `Option::unwrap()` on a `None` value")]
-    fn test_parse_election_unknown_nickname() {
+    fn test_parse_ballot_unknown_nickname() {
         let file = r#"2 1
 [nick apple banana]
 1 appppppple 0

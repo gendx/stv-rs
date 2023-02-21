@@ -317,7 +317,7 @@ Election: {}
         if let DroopIteration::Elected = iteration {
             debug!("Iteration returned Elected, continuing the loop");
         } else {
-            let not_elected = self.next_defeated_candidate(count);
+            let not_elected = self.next_defeated_candidate(stdout, count)?;
 
             self.defeat_candidate(not_elected);
             let message = match iteration {
@@ -377,6 +377,7 @@ Election: {}
             }
 
             if self.surplus >= last_surplus {
+                writeln!(stdout, "\tStable state detected ({})", self.surplus)?;
                 debug!("Returning from iterate_droop (Stable)");
                 return Ok(DroopIteration::Stable);
             }
@@ -499,7 +500,11 @@ Election: {}
     }
 
     /// Returns the next candidate to defeat.
-    fn next_defeated_candidate(&self, count: &VoteCount<I, R>) -> usize {
+    fn next_defeated_candidate(
+        &self,
+        stdout: &mut impl io::Write,
+        count: &VoteCount<I, R>,
+    ) -> io::Result<usize> {
         let min_sum = count
             .sum
             .iter()
@@ -526,10 +531,36 @@ Election: {}
             .collect::<Vec<_>>();
         debug!("Low candidates: {low_candidates:?}");
 
-        // TODO: Break ties.
-        assert_eq!(low_candidates.len(), 1);
+        if low_candidates.len() == 1 {
+            return Ok(low_candidates[0]);
+        }
 
-        low_candidates[0]
+        let defeated = *low_candidates
+            .iter()
+            .min_by_key(|c| self.election.tie_order.get(c).unwrap())
+            .unwrap();
+
+        let low_candidates_list: String = low_candidates
+            .into_iter()
+            .map(|c| &self.election.candidates[c].name)
+            .fold(String::new(), |mut s, c| {
+                if !s.is_empty() {
+                    s.push_str(", ");
+                }
+                s.push_str(c);
+                s
+            });
+        self.write_action(
+            stdout,
+            &format!(
+                "Break tie (defeat): [{}] -> {}",
+                low_candidates_list, self.election.candidates[defeated].name
+            ),
+            count,
+            false,
+        )?;
+
+        Ok(defeated)
     }
 
     /// Writes an action to the given output.
@@ -1323,7 +1354,67 @@ Action: Begin Count
             VoteCount::new([FixedDecimal9::zero(); 4], FixedDecimal9::zero())
         }
 
-        // TODO: test with no ballot (requires tie-breaker implementation).
+        // No ballot.
+        let election = make_election([]);
+        let mut state = make_state(&election, [Status::Candidate; 4]);
+        let mut count = make_count();
+
+        let mut buf = Vec::new();
+        state.election_round(&mut buf, &mut count, 42).unwrap();
+        assert_eq!(
+            (
+                state.threshold,
+                state.surplus,
+                state.statuses,
+                state.keep_factors
+            ),
+            (
+                FixedDecimal9::epsilon(),
+                FixedDecimal9::zero(),
+                vec![
+                    Status::NotElected,
+                    Status::Candidate,
+                    Status::Candidate,
+                    Status::Candidate,
+                ],
+                vec![
+                    FixedDecimal9::zero(),
+                    FixedDecimal9::one(),
+                    FixedDecimal9::one(),
+                    FixedDecimal9::one(),
+                ]
+            )
+        );
+        assert_eq!(
+            count,
+            VoteCount::new([FixedDecimal9::zero(); 4], FixedDecimal9::zero())
+        );
+        assert_eq!(
+            std::str::from_utf8(&buf).unwrap(),
+            r"Action: Iterate (omega)
+	Quota: 0.000000001
+	Votes: 0.000000000
+	Residual: 0.000000000
+	Total: 0.000000000
+	Surplus: 0.000000000
+Action: Break tie (defeat): [Apple, Banana, Cherry, Date] -> Apple
+	Quota: 0.000000001
+	Votes: 0.000000000
+	Residual: 0.000000000
+	Total: 0.000000000
+	Surplus: 0.000000000
+Action: Defeat (surplus 0.000000000 < omega): Apple
+	Hopeful:  Banana (0.000000000)
+	Hopeful:  Cherry (0.000000000)
+	Hopeful:  Date (0.000000000)
+	Defeated: Apple (0.000000000)
+	Quota: 0.000000001
+	Votes: 0.000000000
+	Residual: 0.000000000
+	Total: 0.000000000
+	Surplus: 0.000000000
+"
+        );
 
         // One candidate is elected.
         let election = make_election([Ballot::new(1, [vec![1]])]);
@@ -1519,7 +1610,8 @@ Action: Defeat (surplus 0.000000599 < omega): Apple
         );
         assert_eq!(
             std::str::from_utf8(&buf).unwrap(),
-            r"Action: Iterate (stable)
+            r"	Stable state detected (0.000066666)
+Action: Iterate (stable)
 	Quota: 3.000033334
 	Votes: 9.000100000
 	Residual: 99996.999900000
@@ -1776,7 +1868,11 @@ Action: Defeat (stable surplus 0.000066666): Apple
                 FixedDecimal9::new(999_947_687),
             )
         );
-        assert!(buf.is_empty());
+        assert_eq!(
+            std::str::from_utf8(&buf).unwrap(),
+            r"	Stable state detected (0.000034875)
+"
+        );
     }
 
     #[test]
@@ -2067,8 +2163,6 @@ Action: Defeat remaining: Eggplant
 
     #[test]
     fn test_next_defeated_candidate() {
-        let logger = ThreadLocalLogger::start();
-
         let election = Election::builder()
             .title("Vegetable contest")
             .num_seats(2)
@@ -2093,6 +2187,8 @@ Action: Defeat remaining: Eggplant
             .omega(FixedDecimal9::zero())
             .parallel(false)
             .build();
+
+        // One defeated candidate.
         let count = VoteCount::new(
             [
                 FixedDecimal9::from_usize(1),
@@ -2103,7 +2199,9 @@ Action: Defeat remaining: Eggplant
             FixedDecimal9::zero(),
         );
 
-        let next = state.next_defeated_candidate(&count);
+        let logger = ThreadLocalLogger::start();
+        let mut buf = Vec::new();
+        let next = state.next_defeated_candidate(&mut buf, &count).unwrap();
 
         assert_eq!(next, 1);
         check_logs_debug(
@@ -2112,6 +2210,41 @@ Action: Defeat remaining: Eggplant
 Low threshold: 0.400000000 ~ 0.4
 Low candidates: [1]
 ",
+        );
+        assert!(buf.is_empty());
+
+        // Tie break.
+        let count = VoteCount::new(
+            [
+                FixedDecimal9::from_usize(1),
+                FixedDecimal9::ratio(3, 10),
+                FixedDecimal9::zero(),
+                FixedDecimal9::ratio(3, 10),
+            ],
+            FixedDecimal9::zero(),
+        );
+
+        let logger = ThreadLocalLogger::start();
+        let mut buf = Vec::new();
+        let next = state.next_defeated_candidate(&mut buf, &count).unwrap();
+
+        assert_eq!(next, 1);
+        check_logs_debug(
+            logger,
+            r"Lowest vote: 0.300000000 ~ 0.3
+Low threshold: 0.400000000 ~ 0.4
+Low candidates: [1, 3]
+",
+        );
+        assert_eq!(
+            std::str::from_utf8(&buf).unwrap(),
+            r"Action: Break tie (defeat): [Banana, Date] -> Banana
+	Quota: 0.000000000
+	Votes: 1.600000000
+	Residual: 0.000000000
+	Total: 1.600000000
+	Surplus: 0.100000000
+"
         );
     }
 
