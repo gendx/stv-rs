@@ -27,7 +27,7 @@ use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
 /// A fixed-point decimal arithmetic for 9 decimal places. This type represents
 /// a number `x` by the integer `x * 10^9`, backed by a [`i64`].
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd)]
 pub struct FixedDecimal9(i64);
 
 #[cfg(test)]

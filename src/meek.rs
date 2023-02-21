@@ -984,13 +984,7 @@ Action: Begin Count
             State::builder()
                 .election(election)
                 .statuses(statuses)
-                .keep_factors([
-                    FixedDecimal9::zero(),
-                    FixedDecimal9::zero(),
-                    FixedDecimal9::zero(),
-                    FixedDecimal9::zero(),
-                    FixedDecimal9::zero(),
-                ])
+                .keep_factors([FixedDecimal9::zero(); 5])
                 .threshold(FixedDecimal9::zero())
                 .surplus(FixedDecimal9::zero())
                 .omega(FixedDecimal9::zero())
@@ -1120,15 +1114,7 @@ Action: Begin Count
                 Status::Candidate,
                 Status::Candidate,
             ])
-            .keep_factors([
-                FixedDecimal9::zero(),
-                FixedDecimal9::zero(),
-                FixedDecimal9::zero(),
-                FixedDecimal9::zero(),
-                FixedDecimal9::zero(),
-                FixedDecimal9::zero(),
-                FixedDecimal9::zero(),
-            ])
+            .keep_factors([FixedDecimal9::zero(); 7])
             .threshold(FixedDecimal9::ratio(3, 2))
             .surplus(FixedDecimal9::zero())
             .omega(FixedDecimal9::zero())
@@ -1410,12 +1396,7 @@ Action: Defeat remaining: Eggplant
                 Status::NotElected,
                 Status::Candidate,
             ])
-            .keep_factors([
-                FixedDecimal9::zero(),
-                FixedDecimal9::zero(),
-                FixedDecimal9::zero(),
-                FixedDecimal9::zero(),
-            ])
+            .keep_factors([FixedDecimal9::zero(); 4])
             .threshold(FixedDecimal9::zero())
             .surplus(FixedDecimal9::ratio(1, 10))
             .omega(FixedDecimal9::zero())
