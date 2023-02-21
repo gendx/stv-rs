@@ -5,7 +5,7 @@
 ![Test Status](https://github.com/gendx/stv-rs/workflows/Tests/badge.svg)
 [![Minimum Rust 1.67](https://img.shields.io/badge/rust-1.67%2B-orange.svg)](https://github.com/rust-lang/rust/blob/master/RELEASES.md#version-1670-2023-01-26)
 [![Codecov](https://codecov.io/gh/gendx/stv-rs/branch/main/graph/badge.svg?token=JB5S8MYBZ0)](https://codecov.io/gh/gendx/stv-rs)
-[![Lines of Code](https://tokei.rs/b1/github/gendx/stv-rs?category=code)](https://github.com/gendx/stv-rs)
+![Lines of Code](https://tokei.rs/b1/github/gendx/stv-rs?category=code)
 
 This program is an implementation of
 [Single Transferable Vote](https://en.wikipedia.org/wiki/Single_transferable_vote)
