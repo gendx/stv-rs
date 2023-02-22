@@ -94,8 +94,7 @@ pub fn parse_election(input: impl BufRead) -> Result<Election, Box<dyn std::erro
                     let id = *hash_nicknames.get(c.as_str()).unwrap();
                     assert!(
                         tie_order.insert(id, i).is_none(),
-                        "Candidate mentioned twice in tie order: {}",
-                        c
+                        "Candidate mentioned twice in tie order: {c}",
                     );
                 }
                 tie_order
