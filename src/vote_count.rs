@@ -475,6 +475,14 @@ mod test {
             numeric_benches!(
                 $typei,
                 $typer,
+                bench_count_votes_serial_16,
+                bench_count_votes_serial_32,
+                bench_count_votes_serial_64,
+                bench_count_votes_serial_128,
+                bench_count_votes_parallel_16,
+                bench_count_votes_parallel_32,
+                bench_count_votes_parallel_64,
+                bench_count_votes_parallel_128,
                 bench_process_ballot_rec_chain,
                 bench_process_ballot_rec_pairs_05,
                 bench_process_ballot_rec_pairs_10,
@@ -1001,6 +1009,57 @@ mod test {
                     assert_eq!(left_unused_power, right_unused_power);
                 }
             }
+        }
+
+        fn bench_count_votes_serial_16(bencher: &mut Bencher) {
+            Self::bench_count_votes(bencher, 16, false);
+        }
+
+        fn bench_count_votes_serial_32(bencher: &mut Bencher) {
+            Self::bench_count_votes(bencher, 32, false);
+        }
+
+        fn bench_count_votes_serial_64(bencher: &mut Bencher) {
+            Self::bench_count_votes(bencher, 64, false);
+        }
+
+        fn bench_count_votes_serial_128(bencher: &mut Bencher) {
+            Self::bench_count_votes(bencher, 128, false);
+        }
+
+        fn bench_count_votes_parallel_16(bencher: &mut Bencher) {
+            Self::bench_count_votes(bencher, 16, true);
+        }
+
+        fn bench_count_votes_parallel_32(bencher: &mut Bencher) {
+            Self::bench_count_votes(bencher, 32, true);
+        }
+
+        fn bench_count_votes_parallel_64(bencher: &mut Bencher) {
+            Self::bench_count_votes(bencher, 64, true);
+        }
+
+        fn bench_count_votes_parallel_128(bencher: &mut Bencher) {
+            Self::bench_count_votes(bencher, 128, true);
+        }
+
+        fn bench_count_votes(bencher: &mut Bencher, n: usize, parallel: bool) {
+            let ballots = Self::fake_ballots(n);
+            let keep_factors = Self::fake_keep_factors(n);
+            let election = Election::builder()
+                .title("")
+                .candidates(Self::fake_candidates(n))
+                .num_seats(0)
+                .ballots(ballots)
+                .build();
+
+            bencher.iter(|| {
+                VoteCount::<I, R>::count_votes(
+                    black_box(&election),
+                    black_box(&keep_factors),
+                    parallel,
+                )
+            });
         }
 
         fn bench_process_ballot_rec_chain(bencher: &mut Bencher) {
