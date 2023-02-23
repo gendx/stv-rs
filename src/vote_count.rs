@@ -441,10 +441,11 @@ where
 mod test {
     use super::*;
     use crate::arithmetic::{ApproxRational, BigFixedDecimal9, FixedDecimal9};
+    use crate::types::Candidate;
     use ::test::Bencher;
     use num::rational::Ratio;
     use num::{BigInt, BigRational};
-    use std::fmt::Display;
+    use std::fmt::{Debug, Display};
     use std::hint::black_box;
 
     macro_rules! numeric_tests {
@@ -484,39 +485,56 @@ mod test {
         };
     }
 
+    macro_rules! base_numeric_tests {
+        ( $typei:ty, $typer:ty ) => {
+            numeric_tests!(
+                $typei,
+                $typer,
+                test_write_stats,
+                test_threshold,
+                test_threshold_exhausted,
+                test_surplus,
+                test_process_ballot_rec_first,
+                test_process_ballot_rec_chain,
+                test_process_ballot_rec_defeated,
+                test_process_ballot_rec_tie_first,
+                test_process_ballot_rec_tie_chain,
+                test_process_ballot_rec_tie_defeated,
+                test_process_ballot_rec_ties,
+                test_process_ballot_multiplier,
+                test_increment_candidate_ballot_multiplier,
+            );
+        };
+    }
+
+    macro_rules! advanced_numeric_tests {
+        ( $typei:ty, $typer:ty ) => {
+            numeric_tests!($typei, $typer, test_count_votes_parallel_is_consistent,);
+        };
+    }
+
     macro_rules! all_numeric_tests {
         ( $mod:ident, $typei:ty, $typer:ty ) => {
             mod $mod {
                 use super::*;
 
-                numeric_tests!(
-                    $typei,
-                    $typer,
-                    test_write_stats,
-                    test_threshold,
-                    test_threshold_exhausted,
-                    test_surplus,
-                    test_process_ballot_rec_first,
-                    test_process_ballot_rec_chain,
-                    test_process_ballot_rec_defeated,
-                    test_process_ballot_rec_tie_first,
-                    test_process_ballot_rec_tie_chain,
-                    test_process_ballot_rec_tie_defeated,
-                    test_process_ballot_rec_ties,
-                    test_process_ballot_multiplier,
-                    test_increment_candidate_ballot_multiplier,
-                );
-
+                base_numeric_tests!($typei, $typer);
+                advanced_numeric_tests!($typei, $typer);
                 all_numeric_benches!($typei, $typer);
             }
         };
     }
 
-    all_numeric_tests!(ratio_i64, i64, Ratio<i64>);
     all_numeric_tests!(exact, BigInt, BigRational);
     all_numeric_tests!(approx_rational, BigInt, ApproxRational);
     all_numeric_tests!(fixed, i64, FixedDecimal9);
     all_numeric_tests!(fixed_big, BigInt, BigFixedDecimal9);
+
+    mod ratio_i64 {
+        use super::*;
+        base_numeric_tests!(i64, Ratio<i64>);
+        all_numeric_benches!(i64, Ratio<i64>);
+    }
 
     mod float64 {
         all_numeric_benches!(f64, f64);
@@ -529,7 +547,7 @@ mod test {
 
     impl<I, R> NumericTests<I, R>
     where
-        I: Integer + Send + Sync + Display,
+        I: Integer + Send + Sync + Display + Debug + PartialEq,
         for<'a> &'a I: Add<&'a I, Output = I>,
         for<'a> &'a I: Sub<&'a I, Output = I>,
         for<'a> &'a I: Mul<&'a I, Output = I>,
@@ -662,6 +680,48 @@ mod test {
                 vote_count.surplus(&R::ratio(40, 100), &[0, 1, 2, 3, 4, 5]),
                 R::ratio(57, 100)
             );
+        }
+
+        fn fake_ballots(n: usize) -> Vec<Ballot> {
+            let mut ballots = Vec::new();
+            for i in 0..n {
+                ballots.push(Ballot::new(1, [vec![i]]));
+                for j in 0..i {
+                    ballots.push(Ballot::new(1, [vec![i], vec![j]]));
+                }
+            }
+            ballots
+        }
+
+        fn fake_keep_factors(n: usize) -> Vec<R> {
+            (1..=n).map(|i| R::ratio(1, i + 1)).collect()
+        }
+
+        fn fake_candidates(n: usize) -> Vec<Candidate> {
+            (0..n)
+                .map(|i| Candidate::new(format!("candidate{i}"), false))
+                .collect()
+        }
+
+        fn test_count_votes_parallel_is_consistent() {
+            for n in [1, 2, 4, 8, 16, 32, 64, 128] {
+                let ballots = Self::fake_ballots(n);
+                let keep_factors = Self::fake_keep_factors(n);
+                let election = Election::builder()
+                    .title("")
+                    .candidates(Self::fake_candidates(n))
+                    .num_seats(0)
+                    .ballots(ballots)
+                    .build();
+
+                let vote_count = VoteCount::<I, R>::count_votes(&election, &keep_factors, false);
+                let vote_count_parallel =
+                    VoteCount::<I, R>::count_votes(&election, &keep_factors, true);
+                assert_eq!(
+                    vote_count, vote_count_parallel,
+                    "Mismatch with {n} candidates"
+                );
+            }
         }
 
         fn process_ballot_rec(
@@ -885,11 +945,11 @@ mod test {
         }
 
         fn test_increment_candidate_ballot_multiplier() {
-            let fake_ballot = Ballot {
+            let empty_ballot = Ballot {
                 count: 0,
                 order: vec![],
             };
-            let fake_keep_factors = vec![];
+            let empty_keep_factors = vec![];
 
             for used_power in R::get_positive_test_values() {
                 for ballot_count in 1..=30 {
@@ -898,10 +958,10 @@ mod test {
                         let mut sum = vec![R::zero()];
                         let mut unused_power = R::zero();
                         let mut ballot_counter = BallotCounter {
-                            ballot: &fake_ballot,
+                            ballot: &empty_ballot,
                             sum: &mut sum,
                             unused_power: &mut unused_power,
-                            keep_factors: &fake_keep_factors,
+                            keep_factors: &empty_keep_factors,
                             fn_calls: &mut 0,
                             _phantom: PhantomData,
                         };
@@ -919,10 +979,10 @@ mod test {
                         let mut sum = vec![R::zero()];
                         let mut unused_power = R::zero();
                         let mut ballot_counter = BallotCounter {
-                            ballot: &fake_ballot,
+                            ballot: &empty_ballot,
                             sum: &mut sum,
                             unused_power: &mut unused_power,
-                            keep_factors: &fake_keep_factors,
+                            keep_factors: &empty_keep_factors,
                             fn_calls: &mut 0,
                             _phantom: PhantomData,
                         };
@@ -948,7 +1008,7 @@ mod test {
                 count: 1,
                 order: (0..10).map(|i| vec![i]).collect(),
             };
-            let keep_factors: Vec<R> = (1..=10).map(|i| R::ratio(1, i + 1)).collect();
+            let keep_factors = Self::fake_keep_factors(10);
             bencher.iter(|| Self::process_ballot_rec(black_box(&ballot), black_box(&keep_factors)))
         }
 
@@ -970,7 +1030,7 @@ mod test {
                     .map(|chunk| chunk.to_vec())
                     .collect(),
             };
-            let keep_factors: Vec<R> = (1..=n).map(|i| R::ratio(1, i + 1)).collect();
+            let keep_factors = Self::fake_keep_factors(n);
             bencher.iter(|| Self::process_ballot_rec(black_box(&ballot), black_box(&keep_factors)))
         }
 
@@ -996,7 +1056,7 @@ mod test {
                     .map(|chunk| chunk.to_vec())
                     .collect(),
             };
-            let keep_factors: Vec<R> = (1..=n).map(|i| R::ratio(1, i + 1)).collect();
+            let keep_factors = Self::fake_keep_factors(n);
             bencher.iter(|| Self::process_ballot_rec(black_box(&ballot), black_box(&keep_factors)))
         }
     }
