@@ -441,12 +441,10 @@ where
 mod test {
     use super::*;
     use crate::arithmetic::{ApproxRational, BigFixedDecimal9, FixedDecimal9};
-    #[cfg(feature = "benchmarks")]
     use ::test::Bencher;
     use num::rational::Ratio;
     use num::{BigInt, BigRational};
     use std::fmt::Display;
-    #[cfg(feature = "benchmarks")]
     use std::hint::black_box;
 
     macro_rules! numeric_tests {
@@ -460,7 +458,6 @@ mod test {
         };
     }
 
-    #[cfg(feature = "benchmarks")]
     macro_rules! numeric_benches {
         ( $typei:ty, $typer:ty, $($case:ident,)+ ) => {
             $(
@@ -472,7 +469,6 @@ mod test {
         };
     }
 
-    #[cfg(feature = "benchmarks")]
     macro_rules! all_numeric_benches {
         ( $typei:ty, $typer:ty ) => {
             numeric_benches!(
@@ -511,7 +507,6 @@ mod test {
                     test_increment_candidate_ballot_multiplier,
                 );
 
-                #[cfg(feature = "benchmarks")]
                 all_numeric_benches!($typei, $typer);
             }
         };
@@ -523,7 +518,6 @@ mod test {
     all_numeric_tests!(fixed, i64, FixedDecimal9);
     all_numeric_tests!(fixed_big, BigInt, BigFixedDecimal9);
 
-    #[cfg(feature = "benchmarks")]
     mod float64 {
         all_numeric_benches!(f64, f64);
     }
@@ -949,7 +943,6 @@ mod test {
             }
         }
 
-        #[cfg(feature = "benchmarks")]
         fn bench_process_ballot_rec_chain(bencher: &mut Bencher) {
             let ballot = Ballot {
                 count: 1,
@@ -959,17 +952,14 @@ mod test {
             bencher.iter(|| Self::process_ballot_rec(black_box(&ballot), black_box(&keep_factors)))
         }
 
-        #[cfg(feature = "benchmarks")]
         fn bench_process_ballot_rec_pairs_05(bencher: &mut Bencher) {
             Self::bench_process_ballot_rec_pairs(bencher, 5);
         }
 
-        #[cfg(feature = "benchmarks")]
         fn bench_process_ballot_rec_pairs_10(bencher: &mut Bencher) {
             Self::bench_process_ballot_rec_pairs(bencher, 10);
         }
 
-        #[cfg(feature = "benchmarks")]
         fn bench_process_ballot_rec_pairs(bencher: &mut Bencher, layers: usize) {
             let n = layers * 2;
             let ballot = Ballot {
@@ -984,22 +974,18 @@ mod test {
             bencher.iter(|| Self::process_ballot_rec(black_box(&ballot), black_box(&keep_factors)))
         }
 
-        #[cfg(feature = "benchmarks")]
         fn bench_process_ballot_rec_tens_2(bencher: &mut Bencher) {
             Self::bench_process_ballot_rec_tens(bencher, 2);
         }
 
-        #[cfg(feature = "benchmarks")]
         fn bench_process_ballot_rec_tens_3(bencher: &mut Bencher) {
             Self::bench_process_ballot_rec_tens(bencher, 3);
         }
 
-        #[cfg(feature = "benchmarks")]
         fn bench_process_ballot_rec_tens_4(bencher: &mut Bencher) {
             Self::bench_process_ballot_rec_tens(bencher, 4);
         }
 
-        #[cfg(feature = "benchmarks")]
         fn bench_process_ballot_rec_tens(bencher: &mut Bencher, layers: usize) {
             let n = layers * 10;
             let ballot = Ballot {

@@ -148,12 +148,10 @@ where
 #[cfg(test)]
 pub(crate) mod test {
     use super::*;
-    #[cfg(feature = "benchmarks")]
     use ::test::Bencher;
     use rand::distributions::{Distribution, Uniform};
     use rand::seq::SliceRandom;
     use rand::thread_rng;
-    #[cfg(feature = "benchmarks")]
     use std::hint::black_box;
     use std::marker::PhantomData;
 
@@ -205,7 +203,6 @@ pub(crate) mod test {
     macro_rules! numeric_benchmarks {
         ( $typei:ty, $typer:ty, ) => {};
         ( $typei:ty, $typer:ty, $case:ident, $( $others:tt )* ) => {
-            #[cfg(feature = "benchmarks")]
             #[bench]
             fn $case(b: &mut ::test::Bencher) {
                 $crate::arithmetic::test::NumericTests::<$typei, $typer>::$case(b);
@@ -647,28 +644,24 @@ pub(crate) mod test {
             });
         }
 
-        #[cfg(feature = "benchmarks")]
         pub fn bench_add(bencher: &mut Bencher) {
             let a = R::zero();
             let b = R::one();
             bencher.iter(|| black_box(&a) + black_box(&b));
         }
 
-        #[cfg(feature = "benchmarks")]
         pub fn bench_sub(bencher: &mut Bencher) {
             let a = R::zero();
             let b = R::one();
             bencher.iter(|| black_box(&a) - black_box(&b));
         }
 
-        #[cfg(feature = "benchmarks")]
         pub fn bench_mul(bencher: &mut Bencher) {
             let a = R::zero();
             let b = R::one();
             bencher.iter(|| black_box(&a) * black_box(&b));
         }
 
-        #[cfg(feature = "benchmarks")]
         pub fn bench_div(bencher: &mut Bencher) {
             let a = R::zero();
             let b = R::one();
