@@ -760,10 +760,7 @@ mod test {
         // First candidate takes it all.
         fn test_process_ballot_rec_first() {
             let (sum, unused_power, fn_calls) = Self::process_ballot_rec(
-                Ballot {
-                    count: 1,
-                    order: vec![vec![0], vec![1], vec![2]],
-                },
+                Ballot::new(1, [vec![0], vec![1], vec![2]]),
                 /* keep_factors = */ &[R::one(), R::one(), R::one()],
             );
 
@@ -775,10 +772,7 @@ mod test {
         // Chain of keep factors.
         fn test_process_ballot_rec_chain() {
             let (sum, unused_power, fn_calls) = Self::process_ballot_rec(
-                Ballot {
-                    count: 1,
-                    order: vec![vec![0], vec![1], vec![2]],
-                },
+                Ballot::new(1, [vec![0], vec![1], vec![2]]),
                 /* keep_factors = */ &[R::ratio(1, 2), R::ratio(2, 3), R::ratio(3, 4)],
             );
 
@@ -791,10 +785,7 @@ mod test {
         // Defeated candidate (keep factor is zero).
         fn test_process_ballot_rec_defeated() {
             let (sum, unused_power, fn_calls) = Self::process_ballot_rec(
-                Ballot {
-                    count: 1,
-                    order: vec![vec![0], vec![1], vec![2]],
-                },
+                Ballot::new(1, [vec![0], vec![1], vec![2]]),
                 /* keep_factors = */ &[R::zero(), R::ratio(2, 3), R::ratio(3, 4)],
             );
 
@@ -807,10 +798,7 @@ mod test {
         // Tie to start the ballot.
         fn test_process_ballot_rec_tie_first() {
             let (sum, unused_power, fn_calls) = Self::process_ballot_rec(
-                Ballot {
-                    count: 1,
-                    order: vec![vec![0, 1], vec![2]],
-                },
+                Ballot::new(1, [vec![0, 1], vec![2]]),
                 /* keep_factors = */ &[R::one(), R::one(), R::one()],
             );
 
@@ -822,10 +810,7 @@ mod test {
         // Tie with chaining.
         fn test_process_ballot_rec_tie_chain() {
             let (sum, unused_power, fn_calls) = Self::process_ballot_rec(
-                Ballot {
-                    count: 1,
-                    order: vec![vec![0, 1], vec![2]],
-                },
+                Ballot::new(1, [vec![0, 1], vec![2]]),
                 /* keep_factors = */ &[R::ratio(1, 2), R::ratio(2, 3), R::ratio(3, 4)],
             );
 
@@ -839,10 +824,7 @@ mod test {
         // Tie with defeated candidate.
         fn test_process_ballot_rec_tie_defeated() {
             let (sum, unused_power, fn_calls) = Self::process_ballot_rec(
-                Ballot {
-                    count: 1,
-                    order: vec![vec![0], vec![1, 2]],
-                },
+                Ballot::new(1, [vec![0], vec![1, 2]]),
                 /* keep_factors = */ &[R::zero(), R::ratio(2, 3), R::ratio(3, 4)],
             );
 
@@ -855,10 +837,7 @@ mod test {
         // Chain of multiple ties.
         fn test_process_ballot_rec_ties() {
             let (sum, unused_power, fn_calls) = Self::process_ballot_rec(
-                Ballot {
-                    count: 1,
-                    order: vec![vec![0, 1], vec![2, 3]],
-                },
+                Ballot::new(1, [vec![0, 1], vec![2, 3]]),
                 /* keep_factors = */
                 &[
                     R::ratio(1, 2),
@@ -916,10 +895,7 @@ mod test {
                         // Count the ballot once with a multiplier of ballot_count.
                         let left_vote_count = {
                             let mut vote_accumulator = VoteAccumulator::new(5);
-                            let ballot = Ballot {
-                                count: ballot_count,
-                                order: order.clone(),
-                            };
+                            let ballot = Ballot::new(ballot_count, order.clone());
                             VoteCount::process_ballot(
                                 &mut vote_accumulator,
                                 keep_factors,
@@ -932,10 +908,7 @@ mod test {
                         // Count the ballot ballot_count times with a multiplier of one each time.
                         let right_vote_count = {
                             let mut vote_accumulator = VoteAccumulator::new(5);
-                            let ballot = Ballot {
-                                count: 1,
-                                order: order.clone(),
-                            };
+                            let ballot = Ballot::new(1, order.clone());
                             for _ in 0..ballot_count {
                                 VoteCount::process_ballot(
                                     &mut vote_accumulator,
@@ -956,10 +929,7 @@ mod test {
         }
 
         fn test_increment_candidate_ballot_multiplier() {
-            let empty_ballot = Ballot {
-                count: 0,
-                order: vec![],
-            };
+            let empty_ballot = Ballot::new(0, []);
             let empty_keep_factors = vec![];
 
             for used_power in R::get_positive_test_values() {
