@@ -687,7 +687,6 @@ mod test {
     use log::Level::{self, Debug, Info};
     use num::traits::{One, Zero};
     use num::BigRational;
-    use std::borrow::Borrow;
 
     pub struct StateBuilder<'e, I, R> {
         election: Option<&'e Election>,
@@ -724,13 +723,13 @@ mod test {
             self
         }
 
-        fn statuses(mut self, statuses: impl Borrow<[Status]>) -> Self {
-            self.statuses = Some(statuses.borrow().to_owned());
+        fn statuses(mut self, statuses: impl Into<Vec<Status>>) -> Self {
+            self.statuses = Some(statuses.into());
             self
         }
 
-        fn keep_factors(mut self, keep_factors: impl Borrow<[R]>) -> Self {
-            self.keep_factors = Some(keep_factors.borrow().to_owned());
+        fn keep_factors(mut self, keep_factors: impl Into<Vec<R>>) -> Self {
+            self.keep_factors = Some(keep_factors.into());
             self
         }
 
@@ -1321,7 +1320,7 @@ Action: Begin Count
 
     #[test]
     fn test_election_round() {
-        fn make_election(ballots: impl Borrow<[Ballot]>) -> Election {
+        fn make_election(ballots: impl Into<Vec<Ballot>>) -> Election {
             Election::builder()
                 .title("Vegetable contest")
                 .num_seats(2)
@@ -1337,7 +1336,7 @@ Action: Begin Count
 
         fn make_state(
             election: &Election,
-            statuses: impl Borrow<[Status]>,
+            statuses: impl Into<Vec<Status>>,
         ) -> State<'_, i64, FixedDecimal9> {
             State::builder()
                 .election(election)
@@ -1633,7 +1632,7 @@ Action: Defeat (stable surplus 0.000066666): Apple
 
     #[test]
     fn test_iterate_droop() {
-        fn make_election(ballots: impl Borrow<[Ballot]>) -> Election {
+        fn make_election(ballots: impl Into<Vec<Ballot>>) -> Election {
             Election::builder()
                 .title("Vegetable contest")
                 .num_seats(2)
@@ -1649,7 +1648,7 @@ Action: Defeat (stable surplus 0.000066666): Apple
 
         fn make_state(
             election: &Election,
-            statuses: impl Borrow<[Status]>,
+            statuses: impl Into<Vec<Status>>,
         ) -> State<'_, i64, FixedDecimal9> {
             State::builder()
                 .election(election)

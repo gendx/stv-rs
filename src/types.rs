@@ -97,13 +97,13 @@ impl ElectionBuilder {
         self
     }
 
-    pub(crate) fn candidates(mut self, candidates: impl Borrow<[Candidate]>) -> Self {
-        self.candidates = candidates.borrow().to_owned();
+    pub(crate) fn candidates(mut self, candidates: impl Into<Vec<Candidate>>) -> Self {
+        self.candidates = candidates.into();
         self
     }
 
-    pub(crate) fn ballots(mut self, ballots: impl Borrow<[Ballot]>) -> Self {
-        self.ballots = ballots.borrow().to_owned();
+    pub(crate) fn ballots(mut self, ballots: impl Into<Vec<Ballot>>) -> Self {
+        self.ballots = ballots.into();
         self
     }
 
@@ -133,14 +133,15 @@ pub struct Candidate {
 
 #[cfg(test)]
 impl Candidate {
-    pub(crate) fn new(nickname: &str, is_withdrawn: bool) -> Self {
-        let mut name = nickname.as_bytes().to_owned();
+    pub(crate) fn new(nickname: impl Into<String>, is_withdrawn: bool) -> Self {
+        let nickname = nickname.into();
+        let mut name = nickname.clone().into_bytes();
         if let Some(x) = name.first_mut() {
             *x = x.to_ascii_uppercase();
         }
         let name = String::from_utf8(name).unwrap();
         Candidate {
-            nickname: nickname.to_owned(),
+            nickname,
             name,
             is_withdrawn,
         }
@@ -161,10 +162,10 @@ pub struct Ballot {
 
 #[cfg(test)]
 impl Ballot {
-    pub(crate) fn new(count: usize, order: impl Borrow<[Vec<usize>]>) -> Self {
+    pub(crate) fn new(count: usize, order: impl Into<Vec<Vec<usize>>>) -> Self {
         Ballot {
             count,
-            order: order.borrow().to_owned(),
+            order: order.into(),
         }
     }
 }

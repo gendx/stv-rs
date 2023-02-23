@@ -40,9 +40,9 @@ impl<I, R> VoteCount<I, R>
 where
     R: Clone,
 {
-    pub(crate) fn new(sum: impl Borrow<[R]>, exhausted: R) -> Self {
+    pub(crate) fn new(sum: impl Into<Vec<R>>, exhausted: R) -> Self {
         VoteCount {
-            sum: sum.borrow().to_owned(),
+            sum: sum.into(),
             exhausted,
             _phantom: PhantomData,
         }
