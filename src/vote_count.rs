@@ -49,6 +49,7 @@ where
     }
 }
 
+#[derive(Clone)]
 struct VoteAccumulator<I, R> {
     /// Sum of votes for each candidate.
     sum: Vec<R>,
@@ -164,11 +165,13 @@ where
             .ballots
             .par_iter()
             .enumerate()
-            .map(|(i, ballot)| {
-                let mut vote_accumulator = VoteAccumulator::new(election.num_candidates);
-                Self::process_ballot(&mut vote_accumulator, keep_factors, i, ballot);
-                vote_accumulator
-            })
+            .fold_with(
+                VoteAccumulator::new(election.num_candidates),
+                |mut vote_accumulator, (i, ballot)| {
+                    Self::process_ballot(&mut vote_accumulator, keep_factors, i, ballot);
+                    vote_accumulator
+                },
+            )
             .reduce(
                 || VoteAccumulator::new(election.num_candidates),
                 |a, b| a.reduce(b),
