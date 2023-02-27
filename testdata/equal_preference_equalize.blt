@@ -1,0 +1,11 @@
+3 2
+[nick apple banana cherry]
+3 apple 0
+1 apple banana cherry 0
+1 banana apple cherry 0
+1 cherry apple 0
+0
+"Apple"
+"Banana"
+"Cherry"
+"Example election with a ballot ranking two candidates equally, with equalized interpretation of ballots"
