@@ -34,7 +34,8 @@ struct Cli {
     #[arg(long, default_value = "Implementation: STV-rs")]
     package_name: String,
 
-    /// Base-10 logarithm of the "omega" value, i.e. `omega = 10^omega_exponent`.
+    /// Base-10 logarithm of the "omega" value, i.e. `omega =
+    /// 10^omega_exponent`.
     #[arg(long, default_value_t = 6)]
     omega_exponent: usize,
 
