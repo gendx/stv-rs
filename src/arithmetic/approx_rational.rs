@@ -231,8 +231,8 @@ impl Rational<BigInt> for ApproxRational {
         true
     }
 
-    fn description() -> &'static str {
-        "exact rational arithmetic with rounding of keep factors (6 decimal places)"
+    fn description() -> String {
+        "exact rational arithmetic with rounding of keep factors (6 decimal places)".to_owned()
     }
 
     fn ceil_precision(&mut self) {

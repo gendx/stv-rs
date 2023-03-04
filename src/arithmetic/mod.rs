@@ -127,7 +127,7 @@ where
 
     /// Description of the implemented arithmetic, e.g. "64-bit floating point
     /// arithmetic".
-    fn description() -> &'static str;
+    fn description() -> String;
 
     /// Optionally round up the current number, based on the implementation's
     /// precision. This can be useful with exact arithmetic, to avoid complexity
