@@ -129,7 +129,7 @@ where
 
     /// Description of the implemented arithmetic, e.g. "64-bit floating point
     /// arithmetic".
-    fn description() -> &'static str;
+    fn description() -> String;
 
     /// Multiplication, rounding up for types that perform a rounding on this
     /// operation.

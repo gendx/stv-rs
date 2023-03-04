@@ -90,8 +90,8 @@ where
         true
     }
 
-    fn description() -> &'static str {
-        "exact rational arithmetic"
+    fn description() -> String {
+        "exact rational arithmetic".to_owned()
     }
 
     fn div_up_as_keep_factor(&self, rhs: &Self) -> Self {

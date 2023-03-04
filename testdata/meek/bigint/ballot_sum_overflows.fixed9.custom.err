@@ -1,4 +1,4 @@
-thread '<unnamed>' panicked at /home/runner/work/stv-rs/stv-rs/src/arithmetic/fixed.rs:392:60:
+thread '<unnamed>' panicked at /home/runner/work/stv-rs/stv-rs/src/arithmetic/fixed.rs:395:59:
 called `Option::unwrap()` on a `None` value
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 [ERROR stv_rs::parallelism::thread_pool] [thread 0] Detected panic in this thread, notifying the main thread
