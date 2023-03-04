@@ -57,8 +57,8 @@ impl Rational<f64> for f64 {
         true
     }
 
-    fn description() -> &'static str {
-        "64-bit floating-point arithmetic"
+    fn description() -> String {
+        "64-bit floating-point arithmetic".to_owned()
     }
 
     #[cfg(test)]

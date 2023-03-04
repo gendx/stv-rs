@@ -61,9 +61,9 @@ struct Cli {
 /// Arithmetic for rational numbers.
 #[derive(clap::ValueEnum, Clone, Debug, PartialEq, Eq)]
 enum Arithmetic {
-    /// Fixed-point precisions with 9 decimals.
+    /// Fixed-point precision with 9 decimals.
     Fixed9,
-    /// Fixed-point precisions with 9 decimals, backed by a [`BigInt`].
+    /// Fixed-point precision with 9 decimals, backed by a [`BigInt`].
     Bigfixed9,
     /// Exact rational arithmetic.
     Exact,
