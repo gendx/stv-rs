@@ -13,8 +13,8 @@
 // limitations under the License.
 
 //! Module for fixed-point arithmetic, defined in terms of *decimal* places.
-//! For now, it only implements 9 decimal places (i.e. with a factor `10^-9`).
-//! This implementation is backed by a [`BigInt`].
+//! The implementation is generic over N decimal places (i.e. with a factor
+//! `10^-N`). This implementation is backed by a [`BigInt`].
 
 use super::{Rational, RationalRef};
 use num::bigint::Sign;
@@ -24,206 +24,215 @@ use std::fmt::{Debug, Display};
 use std::iter::{Product, Sum};
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
-/// A fixed-point decimal arithmetic for 9 decimal places. This type represents
-/// a number `x` by the integer `x * 10^9`, backed by a [`BigInt`].
+/// A fixed-point decimal arithmetic for N decimal places. This type represents
+/// a number `x` by the integer `x * 10^N`, backed by a [`BigInt`].
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd)]
-pub struct BigFixedDecimal9(BigInt);
+pub struct BigFixedDecimal<const N: u32>(BigInt);
 
-impl BigFixedDecimal9 {
-    const FACTOR: i64 = 1_000_000_000;
+/// A fixed-point decimal arithmetic for 9 decimal places. See
+/// [`BigFixedDecimal`].
+pub type BigFixedDecimal9 = BigFixedDecimal<9>;
+
+impl<const N: u32> BigFixedDecimal<N> {
+    const FACTOR: i64 = 10_i64.pow(N);
+
+    fn factor() -> BigInt {
+        if N <= 19 {
+            BigInt::from(Self::FACTOR)
+        } else {
+            BigInt::from(10).pow(N)
+        }
+    }
 }
 
-impl Display for BigFixedDecimal9 {
+impl<const N: u32> Display for BigFixedDecimal<N> {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
         let sign = match self.0.sign() {
             Sign::Plus | Sign::NoSign => "",
             Sign::Minus => "-",
         };
-        let (i, rem) = self.0.abs().div_rem(&BigInt::from(Self::FACTOR));
-        write!(f, "{sign}{i}.{rem:09}")
+        let (i, rem) = self.0.abs().div_rem(&Self::factor());
+        write!(f, "{sign}{i}.{rem:0width$}", width = N as usize)
     }
 }
 
-impl Zero for BigFixedDecimal9 {
+impl<const N: u32> Zero for BigFixedDecimal<N> {
     fn zero() -> Self {
-        BigFixedDecimal9(BigInt::zero())
+        BigFixedDecimal(BigInt::zero())
     }
     fn is_zero(&self) -> bool {
         self.0.is_zero()
     }
 }
-impl One for BigFixedDecimal9 {
+impl<const N: u32> One for BigFixedDecimal<N> {
     fn one() -> Self {
-        BigFixedDecimal9(BigInt::from(Self::FACTOR))
+        BigFixedDecimal(Self::factor())
     }
 }
 
-impl Add for BigFixedDecimal9 {
+impl<const N: u32> Add for BigFixedDecimal<N> {
     type Output = Self;
     fn add(self, rhs: Self) -> Self {
-        BigFixedDecimal9(self.0.add(rhs.0))
+        BigFixedDecimal(self.0.add(rhs.0))
     }
 }
-impl Sub for BigFixedDecimal9 {
+impl<const N: u32> Sub for BigFixedDecimal<N> {
     type Output = Self;
     fn sub(self, rhs: Self) -> Self {
-        BigFixedDecimal9(self.0.sub(rhs.0))
+        BigFixedDecimal(self.0.sub(rhs.0))
     }
 }
-impl Mul for BigFixedDecimal9 {
+impl<const N: u32> Mul for BigFixedDecimal<N> {
     type Output = Self;
     fn mul(self, rhs: Self) -> Self {
-        let ratio = BigRational::new(self.0.mul(rhs.0), BigInt::from(Self::FACTOR));
-        BigFixedDecimal9(ratio.floor().numer().clone())
+        let ratio = BigRational::new(self.0.mul(rhs.0), Self::factor());
+        BigFixedDecimal(ratio.floor().numer().clone())
     }
 }
-impl Mul<BigInt> for BigFixedDecimal9 {
+impl<const N: u32> Mul<BigInt> for BigFixedDecimal<N> {
     type Output = Self;
     fn mul(self, rhs: BigInt) -> Self {
-        BigFixedDecimal9(self.0.mul(rhs))
+        BigFixedDecimal(self.0.mul(rhs))
     }
 }
-impl Div for BigFixedDecimal9 {
+impl<const N: u32> Div for BigFixedDecimal<N> {
     type Output = Self;
     #[allow(clippy::suspicious_arithmetic_impl)]
     fn div(self, rhs: Self) -> Self {
-        let ratio = BigRational::new(self.0 * BigInt::from(Self::FACTOR), rhs.0);
-        BigFixedDecimal9(ratio.floor().numer().clone())
+        let ratio = BigRational::new(self.0 * Self::factor(), rhs.0);
+        BigFixedDecimal(ratio.floor().numer().clone())
     }
 }
-impl Div<BigInt> for BigFixedDecimal9 {
+impl<const N: u32> Div<BigInt> for BigFixedDecimal<N> {
     type Output = Self;
     fn div(self, rhs: BigInt) -> Self {
         let ratio = BigRational::new(self.0, rhs);
-        BigFixedDecimal9(ratio.floor().numer().clone())
+        BigFixedDecimal(ratio.floor().numer().clone())
     }
 }
 
-impl Add<&'_ Self> for BigFixedDecimal9 {
+impl<const N: u32> Add<&'_ Self> for BigFixedDecimal<N> {
     type Output = Self;
     fn add(self, rhs: &'_ Self) -> Self {
-        BigFixedDecimal9(self.0.add(&rhs.0))
+        BigFixedDecimal(self.0.add(&rhs.0))
     }
 }
-impl Sub<&'_ Self> for BigFixedDecimal9 {
+impl<const N: u32> Sub<&'_ Self> for BigFixedDecimal<N> {
     type Output = Self;
     fn sub(self, rhs: &'_ Self) -> Self {
-        BigFixedDecimal9(self.0.sub(&rhs.0))
+        BigFixedDecimal(self.0.sub(&rhs.0))
     }
 }
-impl Mul<&'_ Self> for BigFixedDecimal9 {
+impl<const N: u32> Mul<&'_ Self> for BigFixedDecimal<N> {
     type Output = Self;
     fn mul(self, rhs: &'_ Self) -> Self {
-        let ratio = BigRational::new(self.0.mul(&rhs.0), BigInt::from(Self::FACTOR));
-        BigFixedDecimal9(ratio.floor().numer().clone())
+        let ratio = BigRational::new(self.0.mul(&rhs.0), Self::factor());
+        BigFixedDecimal(ratio.floor().numer().clone())
     }
 }
-impl Div<&'_ Self> for BigFixedDecimal9 {
+impl<const N: u32> Div<&'_ Self> for BigFixedDecimal<N> {
     type Output = Self;
     #[allow(clippy::suspicious_arithmetic_impl)]
     fn div(self, rhs: &'_ Self) -> Self {
-        let ratio = BigRational::new(self.0 * BigInt::from(Self::FACTOR), rhs.0.clone());
-        BigFixedDecimal9(ratio.floor().numer().clone())
+        let ratio = BigRational::new(self.0 * Self::factor(), rhs.0.clone());
+        BigFixedDecimal(ratio.floor().numer().clone())
     }
 }
 
-impl Add<&'_ BigFixedDecimal9> for &'_ BigFixedDecimal9 {
-    type Output = BigFixedDecimal9;
-    fn add(self, rhs: &'_ BigFixedDecimal9) -> BigFixedDecimal9 {
-        BigFixedDecimal9((&self.0).add(&rhs.0))
+impl<const N: u32> Add<&'_ BigFixedDecimal<N>> for &'_ BigFixedDecimal<N> {
+    type Output = BigFixedDecimal<N>;
+    fn add(self, rhs: &'_ BigFixedDecimal<N>) -> BigFixedDecimal<N> {
+        BigFixedDecimal((&self.0).add(&rhs.0))
     }
 }
-impl Sub<&'_ BigFixedDecimal9> for &'_ BigFixedDecimal9 {
-    type Output = BigFixedDecimal9;
-    fn sub(self, rhs: &'_ BigFixedDecimal9) -> BigFixedDecimal9 {
-        BigFixedDecimal9((&self.0).sub(&rhs.0))
+impl<const N: u32> Sub<&'_ BigFixedDecimal<N>> for &'_ BigFixedDecimal<N> {
+    type Output = BigFixedDecimal<N>;
+    fn sub(self, rhs: &'_ BigFixedDecimal<N>) -> BigFixedDecimal<N> {
+        BigFixedDecimal((&self.0).sub(&rhs.0))
     }
 }
-impl Mul<&'_ BigFixedDecimal9> for &'_ BigFixedDecimal9 {
-    type Output = BigFixedDecimal9;
-    fn mul(self, rhs: &'_ BigFixedDecimal9) -> BigFixedDecimal9 {
-        let ratio = BigRational::new(
-            (&self.0).mul(&rhs.0),
-            BigInt::from(BigFixedDecimal9::FACTOR),
-        );
-        BigFixedDecimal9(ratio.floor().numer().clone())
+impl<const N: u32> Mul<&'_ BigFixedDecimal<N>> for &'_ BigFixedDecimal<N> {
+    type Output = BigFixedDecimal<N>;
+    fn mul(self, rhs: &'_ BigFixedDecimal<N>) -> BigFixedDecimal<N> {
+        let ratio = BigRational::new((&self.0).mul(&rhs.0), BigFixedDecimal::<N>::factor());
+        BigFixedDecimal(ratio.floor().numer().clone())
     }
 }
-impl Mul<&'_ BigInt> for &'_ BigFixedDecimal9 {
-    type Output = BigFixedDecimal9;
-    fn mul(self, rhs: &'_ BigInt) -> BigFixedDecimal9 {
-        BigFixedDecimal9((&self.0).mul(rhs))
+impl<const N: u32> Mul<&'_ BigInt> for &'_ BigFixedDecimal<N> {
+    type Output = BigFixedDecimal<N>;
+    fn mul(self, rhs: &'_ BigInt) -> BigFixedDecimal<N> {
+        BigFixedDecimal((&self.0).mul(rhs))
     }
 }
-impl Div<&'_ BigFixedDecimal9> for &'_ BigFixedDecimal9 {
-    type Output = BigFixedDecimal9;
+impl<const N: u32> Div<&'_ BigFixedDecimal<N>> for &'_ BigFixedDecimal<N> {
+    type Output = BigFixedDecimal<N>;
     #[allow(clippy::suspicious_arithmetic_impl)]
-    fn div(self, rhs: &'_ BigFixedDecimal9) -> BigFixedDecimal9 {
+    fn div(self, rhs: &'_ BigFixedDecimal<N>) -> BigFixedDecimal<N> {
         let ratio = BigRational::new(
-            self.0.clone() * BigInt::from(BigFixedDecimal9::FACTOR),
+            self.0.clone() * BigFixedDecimal::<N>::factor(),
             rhs.0.clone(),
         );
-        BigFixedDecimal9(ratio.floor().numer().clone())
+        BigFixedDecimal(ratio.floor().numer().clone())
     }
 }
-impl Div<&'_ BigInt> for &'_ BigFixedDecimal9 {
-    type Output = BigFixedDecimal9;
-    fn div(self, rhs: &'_ BigInt) -> BigFixedDecimal9 {
+impl<const N: u32> Div<&'_ BigInt> for &'_ BigFixedDecimal<N> {
+    type Output = BigFixedDecimal<N>;
+    fn div(self, rhs: &'_ BigInt) -> BigFixedDecimal<N> {
         let ratio = BigRational::new(self.0.clone(), rhs.clone());
-        BigFixedDecimal9(ratio.floor().numer().clone())
+        BigFixedDecimal(ratio.floor().numer().clone())
     }
 }
 
-impl AddAssign for BigFixedDecimal9 {
+impl<const N: u32> AddAssign for BigFixedDecimal<N> {
     fn add_assign(&mut self, rhs: Self) {
         self.0.add_assign(rhs.0)
     }
 }
-impl SubAssign for BigFixedDecimal9 {
+impl<const N: u32> SubAssign for BigFixedDecimal<N> {
     fn sub_assign(&mut self, rhs: Self) {
         self.0.sub_assign(rhs.0)
     }
 }
-impl MulAssign for BigFixedDecimal9 {
+impl<const N: u32> MulAssign for BigFixedDecimal<N> {
     fn mul_assign(&mut self, rhs: Self) {
-        let ratio = BigRational::new(self.0.clone().mul(rhs.0), BigInt::from(Self::FACTOR));
+        let ratio = BigRational::new(self.0.clone().mul(rhs.0), Self::factor());
         self.0.clone_from(ratio.floor().numer());
     }
 }
 
-impl AddAssign<&'_ Self> for BigFixedDecimal9 {
+impl<const N: u32> AddAssign<&'_ Self> for BigFixedDecimal<N> {
     fn add_assign(&mut self, rhs: &'_ Self) {
         self.0.add_assign(&rhs.0)
     }
 }
-impl SubAssign<&'_ Self> for BigFixedDecimal9 {
+impl<const N: u32> SubAssign<&'_ Self> for BigFixedDecimal<N> {
     fn sub_assign(&mut self, rhs: &'_ Self) {
         self.0.sub_assign(&rhs.0)
     }
 }
-impl MulAssign<&'_ Self> for BigFixedDecimal9 {
+impl<const N: u32> MulAssign<&'_ Self> for BigFixedDecimal<N> {
     fn mul_assign(&mut self, rhs: &'_ Self) {
-        let ratio = BigRational::new(self.0.clone().mul(&rhs.0), BigInt::from(Self::FACTOR));
+        let ratio = BigRational::new(self.0.clone().mul(&rhs.0), Self::factor());
         self.0.clone_from(ratio.floor().numer());
     }
 }
-impl DivAssign<&'_ BigInt> for BigFixedDecimal9 {
+impl<const N: u32> DivAssign<&'_ BigInt> for BigFixedDecimal<N> {
     fn div_assign(&mut self, rhs: &'_ BigInt) {
         let ratio = BigRational::new(self.0.clone(), rhs.clone());
         self.0.clone_from(ratio.floor().numer());
     }
 }
 
-impl Sum for BigFixedDecimal9 {
+impl<const N: u32> Sum for BigFixedDecimal<N> {
     fn sum<I>(iter: I) -> Self
     where
         I: Iterator<Item = Self>,
     {
-        BigFixedDecimal9(iter.map(|item| item.0).sum())
+        BigFixedDecimal(iter.map(|item| item.0).sum())
     }
 }
 
-impl Product for BigFixedDecimal9 {
+impl<const N: u32> Product for BigFixedDecimal<N> {
     fn product<I>(iter: I) -> Self
     where
         I: Iterator<Item = Self>,
@@ -232,63 +241,60 @@ impl Product for BigFixedDecimal9 {
     }
 }
 
-impl<'a> Sum<&'a Self> for BigFixedDecimal9 {
+impl<'a, const N: u32> Sum<&'a Self> for BigFixedDecimal<N> {
     fn sum<I>(iter: I) -> Self
     where
         I: Iterator<Item = &'a Self>,
     {
-        BigFixedDecimal9(iter.map(|item| &item.0).sum())
+        BigFixedDecimal(iter.map(|item| &item.0).sum())
     }
 }
 
-impl RationalRef<&BigInt, BigFixedDecimal9> for &BigFixedDecimal9 {}
+impl<const N: u32> RationalRef<&BigInt, BigFixedDecimal<N>> for &BigFixedDecimal<N> {}
 
-impl Rational<BigInt> for BigFixedDecimal9 {
+impl<const N: u32> Rational<BigInt> for BigFixedDecimal<N> {
     fn from_int(i: BigInt) -> Self {
-        BigFixedDecimal9(i * BigInt::from(Self::FACTOR))
+        BigFixedDecimal(i * Self::factor())
     }
 
     fn ratio_i(num: BigInt, denom: BigInt) -> Self {
-        BigFixedDecimal9((num * BigInt::from(Self::FACTOR)) / denom)
+        BigFixedDecimal((num * Self::factor()) / denom)
     }
 
     fn to_f64(&self) -> f64 {
-        Rational::to_f64(&BigRational::new(
-            self.0.clone(),
-            BigInt::from(Self::FACTOR),
-        ))
+        Rational::to_f64(&BigRational::new(self.0.clone(), Self::factor()))
     }
 
     fn epsilon() -> Self {
-        BigFixedDecimal9(BigInt::from(1))
+        BigFixedDecimal(BigInt::from(1))
     }
 
     fn is_exact() -> bool {
         false
     }
 
-    fn description() -> &'static str {
-        "fixed-point decimal arithmetic (9 places)"
+    fn description() -> String {
+        format!("fixed-point decimal arithmetic ({N} places)")
     }
 
     fn mul_up(&self, rhs: &Self) -> Self {
-        let ratio = BigRational::new(&self.0 * &rhs.0, BigInt::from(Self::FACTOR));
-        BigFixedDecimal9(ratio.ceil().numer().clone())
+        let ratio = BigRational::new(&self.0 * &rhs.0, Self::factor());
+        BigFixedDecimal(ratio.ceil().numer().clone())
     }
 
     fn div_up(&self, rhs: &Self) -> Self {
-        let ratio = BigRational::new(&self.0 * BigInt::from(Self::FACTOR), rhs.0.clone());
-        BigFixedDecimal9(ratio.ceil().numer().clone())
+        let ratio = BigRational::new(&self.0 * Self::factor(), rhs.0.clone());
+        BigFixedDecimal(ratio.ceil().numer().clone())
     }
 
     #[cfg(test)]
     fn get_positive_test_values() -> Vec<Self> {
         let mut result = Vec::new();
         for i in 0..=62 {
-            result.push(BigFixedDecimal9(BigInt::from(1i64 << i)));
+            result.push(BigFixedDecimal(BigInt::from(1i64 << i)));
         }
         for i in 0..=62 {
-            result.push(BigFixedDecimal9(BigInt::from(
+            result.push(BigFixedDecimal(BigInt::from(
                 0x7FFF_FFFF_FFFF_FFFF_i64 - (1 << i),
             )));
         }
@@ -309,8 +315,8 @@ mod test {
         test_ceil_precision,
         test_ratio,
         test_ratio_invert => fail(r"assertion `left == right` failed: R::ratio(1, a) * a != 1 for 3
-  left: BigFixedDecimal9(999999999)
- right: BigFixedDecimal9(1000000000)"),
+  left: BigFixedDecimal(999999999)
+ right: BigFixedDecimal(1000000000)"),
         test_is_zero,
         test_zero_is_add_neutral,
         test_add_is_commutative,
@@ -324,17 +330,17 @@ mod test {
         test_mul_up_integers,
         test_mul_up_wrt_mul,
         test_invert => fail(r"assertion `left == right` failed: 1/(1/a) != a for 2.147483648
-  left: BigFixedDecimal9(2147483649)
- right: BigFixedDecimal9(2147483648)"),
+  left: BigFixedDecimal(2147483649)
+ right: BigFixedDecimal(2147483648)"),
         test_div_self,
         test_div_up_self,
         test_div_up_wrt_div,
         test_mul_div => fail(r"assertion `left == right` failed: (a * b) / b != a for 0.000000001, 0.000000001
-  left: BigFixedDecimal9(0)
- right: BigFixedDecimal9(1)"),
+  left: BigFixedDecimal(0)
+ right: BigFixedDecimal(1)"),
         test_div_mul => fail(r"assertion `left == right` failed: (a / b) * b != a for 0.000000001, 0.000001024
-  left: BigFixedDecimal9(0)
- right: BigFixedDecimal9(1)"),
+  left: BigFixedDecimal(0)
+ right: BigFixedDecimal(1)"),
         test_mul_by_int,
         test_div_by_int,
         test_references,
@@ -347,17 +353,17 @@ mod test {
         None,
         test_add_is_associative,
         test_mul_is_associative => fail(r"assertion `left == right` failed: (a * b) * c != a * (b * c) for 0.000000001, 0.000000001, 1152921504.606846976
-  left: BigFixedDecimal9(0)
- right: BigFixedDecimal9(1)"),
+  left: BigFixedDecimal(0)
+ right: BigFixedDecimal(1)"),
         test_mul_is_distributive => fail(r"assertion `left == right` failed: a * (b + c) != (a * b) + (a * c) for 0.000000001, 0.033554432, 281474.976710656
-  left: BigFixedDecimal9(281475)
- right: BigFixedDecimal9(281474)"),
+  left: BigFixedDecimal(281475)
+ right: BigFixedDecimal(281474)"),
         test_mul_by_int_is_associative,
         test_mul_by_int_is_distributive,
         test_div_by_int_is_associative,
         test_div_by_int_is_distributive => fail(r"assertion `left == right` failed: (a + b) / c != (a / c) + (b / c) for 0.000000001, 0.000000001, 2
-  left: BigFixedDecimal9(1)
- right: BigFixedDecimal9(0)"),
+  left: BigFixedDecimal(1)
+ right: BigFixedDecimal(0)"),
         test_sum,
         test_product,
     );
@@ -374,41 +380,45 @@ mod test {
     #[test]
     fn test_description() {
         assert_eq!(
-            BigFixedDecimal9::description(),
+            BigFixedDecimal::<8>::description(),
+            "fixed-point decimal arithmetic (8 places)"
+        );
+        assert_eq!(
+            BigFixedDecimal::<9>::description(),
             "fixed-point decimal arithmetic (9 places)"
         );
     }
 
     #[test]
     fn test_display() {
-        assert_eq!(format!("{}", BigFixedDecimal9::zero()), "0.000000000");
-        assert_eq!(format!("{}", BigFixedDecimal9::one()), "1.000000000");
+        assert_eq!(format!("{}", BigFixedDecimal::<9>::zero()), "0.000000000");
+        assert_eq!(format!("{}", BigFixedDecimal::<9>::one()), "1.000000000");
         assert_eq!(
-            format!("{}", BigFixedDecimal9(BigInt::from(0))),
+            format!("{}", BigFixedDecimal::<9>(BigInt::from(0))),
             "0.000000000"
         );
         assert_eq!(
-            format!("{}", BigFixedDecimal9(BigInt::from(1))),
+            format!("{}", BigFixedDecimal::<9>(BigInt::from(1))),
             "0.000000001"
         );
         assert_eq!(
-            format!("{}", BigFixedDecimal9(BigInt::from(1_000_000_000))),
+            format!("{}", BigFixedDecimal::<9>(BigInt::from(1_000_000_000))),
             "1.000000000"
         );
         assert_eq!(
-            format!("{}", BigFixedDecimal9(BigInt::from(1_234_567_890))),
+            format!("{}", BigFixedDecimal::<9>(BigInt::from(1_234_567_890))),
             "1.234567890"
         );
         assert_eq!(
-            format!("{}", BigFixedDecimal9(BigInt::from(-1))),
+            format!("{}", BigFixedDecimal::<9>(BigInt::from(-1))),
             "-0.000000001"
         );
         assert_eq!(
-            format!("{}", BigFixedDecimal9(BigInt::from(-1_000_000_000))),
+            format!("{}", BigFixedDecimal::<9>(BigInt::from(-1_000_000_000))),
             "-1.000000000"
         );
         assert_eq!(
-            format!("{}", BigFixedDecimal9(BigInt::from(10).pow(20))),
+            format!("{}", BigFixedDecimal::<9>(BigInt::from(10).pow(20))),
             "100000000000.000000000"
         );
     }
@@ -456,7 +466,7 @@ mod test {
             "9079256848.778919935", "8935141660.703064063", "8646911284.551352319",
             "8070450532.247928831", "6917529027.641081855", "4611686018.427387903"
         ];
-        let actual_displays: Vec<String> = BigFixedDecimal9::get_positive_test_values()
+        let actual_displays: Vec<String> = BigFixedDecimal::<9>::get_positive_test_values()
             .iter()
             .map(|x| format!("{x}"))
             .collect();

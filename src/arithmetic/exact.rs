@@ -89,8 +89,8 @@ where
         true
     }
 
-    fn description() -> &'static str {
-        "exact rational arithmetic"
+    fn description() -> String {
+        "exact rational arithmetic".to_owned()
     }
 
     #[cfg(test)]
