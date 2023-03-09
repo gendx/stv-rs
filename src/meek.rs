@@ -426,13 +426,13 @@ Election: {}
                 Status::Elected => {
                     if count.sum[i] < self.threshold {
                         warn!(
-                                "Count for elected candidate {} is lower than the quota: {} < {} ~ {} < {}",
-                                candidate.nickname,
-                                count.sum[i],
-                                self.threshold,
-                                count.sum[i].to_f64(),
-                                self.threshold.to_f64(),
-                            )
+                            "Count for elected candidate {} is lower than the quota: {} < {} ~ {} < {}",
+                            candidate.nickname,
+                            count.sum[i],
+                            self.threshold,
+                            count.sum[i].to_f64(),
+                            self.threshold.to_f64(),
+                        )
                     }
                 }
                 // Already non-elected candidates must have no ballot left.
