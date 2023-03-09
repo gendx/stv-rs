@@ -25,6 +25,9 @@ jobs:
           - equal_preference
           - equal_preference_droop
           - equal_preference_equalize
+          - rand_2x10
+          - rand_5x4
+          - rand_hypergeometric
           - tie_break_explicit
           - tie_break_implicit
           - vegetables

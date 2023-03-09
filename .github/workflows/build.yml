@@ -20,6 +20,8 @@ jobs:
         with:
           toolchain: ${{ matrix.rust }}
       - name: Build without features
-        run: cargo build --release --no-default-features --verbose
+        run: cargo build --no-default-features --verbose
       - name: Build with default features
-        run: cargo build --release --verbose
+        run: cargo build --verbose
+      - name: Build examples
+        run: cargo build --examples

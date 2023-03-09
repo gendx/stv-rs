@@ -15,3 +15,5 @@ jobs:
         run: cargo clippy --verbose
       - name: Check Clippy lints on tests
         run: cargo clippy --verbose --tests
+      - name: Check Clippy lints on examples
+        run: cargo clippy --verbose --examples
