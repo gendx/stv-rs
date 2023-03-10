@@ -1,0 +1,16 @@
+6 3
+[nick apple banana cherry date eggplant fig]
+1 apple=banana cherry=date eggplant=fig 0
+2 banana=cherry date=eggplant fig=apple 0
+3 cherry=date eggplant=fig apple=banana 0
+4 date=eggplant fig=apple banana=cherry 0
+5 eggplant=fig apple=banana cherry=date 0
+6 fig=apple banana=cherry date=eggplant 0
+0
+"Apple"
+"Banana"
+"Cherry"
+"Date"
+"Eggplant"
+"Fig"
+"Vegetable contest"

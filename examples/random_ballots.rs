@@ -3,7 +3,7 @@
 use rand::distributions::{Distribution, Uniform};
 use rand::seq::index::sample;
 use rand::thread_rng;
-use rand_distr::Hypergeometric;
+use rand_distr::{Geometric, Hypergeometric};
 use std::collections::BTreeMap;
 use std::fs::File;
 use std::io::{BufWriter, Result, Write};
@@ -21,6 +21,9 @@ fn main() -> Result<()> {
     let file = File::create("rand_5x4.blt")?;
     write_blt_5x4(&mut BufWriter::new(file), 1000)?;
 
+    let file = File::create("rand_geometric.blt")?;
+    write_blt_geometric(&mut BufWriter::new(file), 1000)?;
+
     let file = File::create("rand_hypergeometric.blt")?;
     write_blt_hypergeometric(&mut BufWriter::new(file), 1000)?;
 
@@ -37,6 +40,13 @@ fn write_blt_2x10(output: &mut impl Write, ballot_count: usize) -> Result<()> {
 fn write_blt_5x4(output: &mut impl Write, ballot_count: usize) -> Result<()> {
     write_header(output)?;
     generate_5x4(output, ballot_count)?;
+    write_footer(output)?;
+    Ok(())
+}
+
+fn write_blt_geometric(output: &mut impl Write, ballot_count: usize) -> Result<()> {
+    write_header(output)?;
+    generate_geometric(output, ballot_count)?;
     write_footer(output)?;
     Ok(())
 }
@@ -77,6 +87,13 @@ fn generate_2x10(output: &mut impl Write, ballot_count: usize) -> Result<()> {
 
 fn generate_5x4(output: &mut impl Write, ballot_count: usize) -> Result<()> {
     generate_tuples(output, ballot_count, 5)
+}
+
+fn generate_geometric(output: &mut impl Write, ballot_count: usize) -> Result<()> {
+    let distributions = (0..20)
+        .map(|i| Geometric::new(0.3 + i as f64 / 50.0).unwrap())
+        .collect::<Vec<_>>();
+    generate_distributions(output, ballot_count, &distributions)
 }
 
 fn generate_hypergeometric(output: &mut impl Write, ballot_count: usize) -> Result<()> {
