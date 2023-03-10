@@ -83,6 +83,9 @@ pub struct State<'e, I, R> {
     omega: R,
     /// Whether parallel ballot counting (based on the rayon crate) is enabled.
     parallel: bool,
+    /// Whether to use a positive surplus calculation (which avoids potential
+    /// crashes if the surplus otherwise becomes negative.
+    force_positive_surplus: bool,
     _phantom: PhantomData<I>,
 }
 
@@ -107,7 +110,12 @@ where
     for<'a> &'a R: Div<&'a R, Output = R>,
     for<'a> &'a R: Div<&'a I, Output = R>,
 {
-    fn new(election: &Election, omega_exponent: usize, parallel: bool) -> State<'_, I, R> {
+    fn new(
+        election: &Election,
+        omega_exponent: usize,
+        parallel: bool,
+        force_positive_surplus: bool,
+    ) -> State<'_, I, R> {
         State {
             election,
             statuses: election
@@ -129,6 +137,7 @@ where
             surplus: R::zero(),
             omega: R::one() / &(0..omega_exponent).map(|_| R::from_usize(10)).product(),
             parallel,
+            force_positive_surplus,
             _phantom: PhantomData,
         }
     }
@@ -141,13 +150,14 @@ where
         package_name: &str,
         omega_exponent: usize,
         parallel: bool,
+        force_positive_surplus: bool,
     ) -> io::Result<ElectionResult> {
         info!(
             "Parallel vote counting is {}",
             if parallel { "enabled" } else { "disabled" }
         );
 
-        let mut state = Self::new(election, omega_exponent, parallel);
+        let mut state = Self::new(election, omega_exponent, parallel, force_positive_surplus);
 
         let beginning = Instant::now();
         let mut timestamp = beginning;
@@ -364,7 +374,11 @@ Election: {}
 
             let has_elected = self.elect_candidates(stdout, count, round)?;
 
-            self.surplus = count.surplus(&self.threshold, &self.elected);
+            self.surplus = if self.force_positive_surplus {
+                count.surplus_positive(&self.threshold, &self.elected)
+            } else {
+                count.surplus_droop(&self.threshold, &self.elected)
+            };
 
             if has_elected {
                 debug!("Returning from iterate_droop (Elected)");
@@ -696,6 +710,7 @@ mod test {
         surplus: Option<R>,
         omega: Option<R>,
         parallel: Option<bool>,
+        force_positive_surplus: Option<bool>,
         _phantom: PhantomData<I>,
     }
 
@@ -709,6 +724,7 @@ mod test {
                 surplus: None,
                 omega: None,
                 parallel: None,
+                force_positive_surplus: None,
                 _phantom: PhantomData,
             }
         }
@@ -753,6 +769,11 @@ mod test {
             self
         }
 
+        fn force_positive_surplus(mut self, force_positive_surplus: bool) -> Self {
+            self.force_positive_surplus = Some(force_positive_surplus);
+            self
+        }
+
         fn build(self) -> State<'e, I, R> {
             let election = self.election.unwrap();
             let statuses = self.statuses.unwrap();
@@ -790,6 +811,7 @@ mod test {
                 surplus: self.surplus.unwrap(),
                 omega: self.omega.unwrap(),
                 parallel: self.parallel.unwrap(),
+                force_positive_surplus: self.force_positive_surplus.unwrap(),
                 _phantom: PhantomData,
             }
         }
@@ -875,6 +897,7 @@ mod test {
             .surplus(FixedDecimal9::ratio(1, 10))
             .omega(FixedDecimal9::ratio(1, 1_000_000))
             .parallel(false)
+            .force_positive_surplus(false)
             .build()
     }
 
@@ -923,9 +946,15 @@ mod test {
             .build();
 
         let mut buf = Vec::new();
-        let result =
-            State::<i64, FixedDecimal9>::stv_droop(&mut buf, &election, "package name", 6, false)
-                .unwrap();
+        let result = State::<i64, FixedDecimal9>::stv_droop(
+            &mut buf,
+            &election,
+            "package name",
+            6,
+            false,
+            false,
+        )
+        .unwrap();
         assert_eq!(
             result,
             ElectionResult {
@@ -1131,7 +1160,7 @@ Action: Count Complete
             ])
             .build();
         let omega_exponent = 6;
-        let state = State::new(&election, omega_exponent, false);
+        let state = State::new(&election, omega_exponent, false, false);
 
         let mut buf = Vec::new();
         let count = state
@@ -1219,6 +1248,7 @@ Action: Begin Count
                 .surplus(FixedDecimal9::zero())
                 .omega(FixedDecimal9::zero())
                 .parallel(false)
+                .force_positive_surplus(false)
                 .build()
         }
 
@@ -1346,6 +1376,7 @@ Action: Begin Count
                 .surplus(FixedDecimal9::zero())
                 .omega(FixedDecimal9::ratio(1, 1_000_000))
                 .parallel(false)
+                .force_positive_surplus(false)
                 .build()
         }
 
@@ -1658,6 +1689,7 @@ Action: Defeat (stable surplus 0.000066666): Apple
                 .surplus(FixedDecimal9::zero())
                 .omega(FixedDecimal9::ratio(1, 1_000_000))
                 .parallel(false)
+                .force_positive_surplus(false)
                 .build()
         }
 
@@ -1905,6 +1937,7 @@ Action: Defeat (stable surplus 0.000066666): Apple
             .surplus(FixedDecimal9::zero())
             .omega(FixedDecimal9::zero())
             .parallel(false)
+            .force_positive_surplus(false)
             .build();
         let count = VoteCount::new(
             [
@@ -2003,6 +2036,7 @@ Action: Elect: Grape
             .surplus(BigRational::zero())
             .omega(BigRational::zero())
             .parallel(false)
+            .force_positive_surplus(false)
             .build();
         let count = VoteCount::new(
             [
@@ -2185,6 +2219,7 @@ Action: Defeat remaining: Eggplant
             .surplus(FixedDecimal9::ratio(1, 10))
             .omega(FixedDecimal9::zero())
             .parallel(false)
+            .force_positive_surplus(false)
             .build();
 
         // One defeated candidate.

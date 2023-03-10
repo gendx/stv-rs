@@ -215,14 +215,16 @@ where
     }
 
     /// Computes the current surplus, based on the votes, the threshold and the
-    /// currently elected candidates. This is the sum of the differences between
-    /// the received vote count and the required threshold, across all
-    /// elected candidates.
+    /// currently elected candidates, in a manner compatible with Droop.py. This
+    /// is the sum of the differences between the received vote count and
+    /// the required threshold, across all elected candidates.
     ///
     /// Note: Normally we'd only add positive surpluses here, but sometimes an
-    /// already elected candidate goes below the threshold. Instead, we just
-    /// sum the difference for the elected candidates.
-    pub fn surplus(&self, threshold: &R, elected: &[usize]) -> R {
+    /// already elected candidate goes below the threshold. In this case,
+    /// Droop.py just sums the difference for the elected candidates, which
+    /// can lead to crashes. See the [`Self::surplus_positive()`] function which
+    /// fixes this behavior.
+    pub fn surplus_droop(&self, threshold: &R, elected: &[usize]) -> R {
         elected
             .iter()
             .map(|&i| {
@@ -233,6 +235,32 @@ where
                     );
                 }
                 x - threshold
+            })
+            .sum()
+    }
+
+    /// Computes the current surplus, based on the votes, the threshold and the
+    /// currently elected candidates. This is the sum of the differences between
+    /// the received vote count and the required threshold, across all
+    /// elected candidates.
+    ///
+    /// Note: Normally we'd only add positive surpluses here, but sometimes an
+    /// already elected candidate goes below the threshold. In this case, this
+    /// function counts a positive surplus for this candidate. See the
+    /// [`Self::surplus_droop()`] function for Droop.py's behavior.
+    pub fn surplus_positive(&self, threshold: &R, elected: &[usize]) -> R {
+        elected
+            .iter()
+            .map(|&i| {
+                let x = &self.sum[i];
+                if x < threshold {
+                    warn!(
+                        "Candidate #{i} was elected but received fewer votes than the threshold."
+                    );
+                    R::zero()
+                } else {
+                    x - threshold
+                }
             })
             .sum()
     }
@@ -504,7 +532,8 @@ mod test {
                 test_write_stats,
                 test_threshold,
                 test_threshold_exhausted,
-                test_surplus,
+                test_surplus_droop,
+                test_surplus_positive,
                 test_process_ballot_rec_first,
                 test_process_ballot_rec_chain,
                 test_process_ballot_rec_defeated,
@@ -660,7 +689,7 @@ mod test {
             }
         }
 
-        fn test_surplus() {
+        fn test_surplus_droop() {
             let vote_count = VoteCount {
                 sum: vec![
                     R::ratio(14, 100),
@@ -675,21 +704,54 @@ mod test {
             };
 
             assert_eq!(
-                vote_count.surplus(&R::ratio(10, 100), &[0]),
+                vote_count.surplus_droop(&R::ratio(10, 100), &[0]),
                 R::ratio(4, 100)
             );
 
             assert_eq!(
-                vote_count.surplus(&R::ratio(10, 100), &[0, 1, 2, 3, 4, 5]),
+                vote_count.surplus_droop(&R::ratio(10, 100), &[0, 1, 2, 3, 4, 5]),
                 R::ratio(237, 100)
             );
             assert_eq!(
-                vote_count.surplus(&R::ratio(40, 100), &[2, 3, 4, 5]),
+                vote_count.surplus_droop(&R::ratio(40, 100), &[2, 3, 4, 5]),
                 R::ratio(95, 100)
             );
             assert_eq!(
-                vote_count.surplus(&R::ratio(40, 100), &[0, 1, 2, 3, 4, 5]),
+                vote_count.surplus_droop(&R::ratio(40, 100), &[0, 1, 2, 3, 4, 5]),
                 R::ratio(57, 100)
+            );
+        }
+
+        fn test_surplus_positive() {
+            let vote_count = VoteCount {
+                sum: vec![
+                    R::ratio(14, 100),
+                    R::ratio(28, 100),
+                    R::ratio(57, 100),
+                    R::ratio(42, 100),
+                    R::ratio(85, 100),
+                    R::ratio(71, 100),
+                ],
+                exhausted: R::zero(),
+                _phantom: PhantomData,
+            };
+
+            assert_eq!(
+                vote_count.surplus_positive(&R::ratio(10, 100), &[0]),
+                R::ratio(4, 100)
+            );
+
+            assert_eq!(
+                vote_count.surplus_positive(&R::ratio(10, 100), &[0, 1, 2, 3, 4, 5]),
+                R::ratio(237, 100)
+            );
+            assert_eq!(
+                vote_count.surplus_positive(&R::ratio(40, 100), &[2, 3, 4, 5]),
+                R::ratio(95, 100)
+            );
+            assert_eq!(
+                vote_count.surplus_positive(&R::ratio(40, 100), &[0, 1, 2, 3, 4, 5]),
+                R::ratio(95, 100)
             );
         }
 

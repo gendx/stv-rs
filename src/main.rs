@@ -46,6 +46,12 @@ struct Cli {
     /// Enable parallel ballot counting based on the rayon crate.
     #[arg(long, action = clap::ArgAction::Set, default_value = "true")]
     parallel: bool,
+
+    /// Enable a bug-fix in the surplus calculation, preventing it from being
+    /// negative. Results may differ from Droop.py, but this prevents
+    /// crashes.
+    #[arg(long, action = clap::ArgAction::Set, default_value = "false")]
+    force_positive_surplus: bool,
 }
 
 /// Arithmetic for rational numbers.
@@ -73,6 +79,7 @@ impl Cli {
                 &self.package_name,
                 self.omega_exponent,
                 self.parallel,
+                self.force_positive_surplus,
             )?,
             Arithmetic::Bigfixed9 => State::<BigInt, BigFixedDecimal9>::stv_droop(
                 &mut io::stdout().lock(),
@@ -80,6 +87,7 @@ impl Cli {
                 &self.package_name,
                 self.omega_exponent,
                 self.parallel,
+                self.force_positive_surplus,
             )?,
             Arithmetic::Exact => State::<BigInt, BigRational>::stv_droop(
                 &mut io::stdout().lock(),
@@ -87,6 +95,7 @@ impl Cli {
                 &self.package_name,
                 self.omega_exponent,
                 self.parallel,
+                self.force_positive_surplus,
             )?,
             Arithmetic::Approx => State::<BigInt, ApproxRational>::stv_droop(
                 &mut io::stdout().lock(),
@@ -94,6 +103,7 @@ impl Cli {
                 &self.package_name,
                 self.omega_exponent,
                 self.parallel,
+                self.force_positive_surplus,
             )?,
             Arithmetic::Float64 => State::<f64, f64>::stv_droop(
                 &mut io::stdout().lock(),
@@ -101,6 +111,7 @@ impl Cli {
                 &self.package_name,
                 self.omega_exponent,
                 self.parallel,
+                self.force_positive_surplus,
             )?,
         };
         Ok(())
@@ -143,7 +154,8 @@ mod test {
                 package_name: "Implementation: STV-rs".to_owned(),
                 omega_exponent: 6,
                 arithmetic: Arithmetic::Fixed9,
-                parallel: true
+                parallel: true,
+                force_positive_surplus: false,
             }
         );
     }
@@ -162,6 +174,7 @@ mod test {
             "--package-name=foo bar",
             "--omega-exponent=42",
             "--parallel=false",
+            "--force-positive-surplus=true",
         ])
         .unwrap();
         assert_eq!(
@@ -170,7 +183,8 @@ mod test {
                 package_name: "foo bar".to_owned(),
                 omega_exponent: 42,
                 arithmetic: Arithmetic::Float64,
-                parallel: false
+                parallel: false,
+                force_positive_surplus: true,
             }
         );
     }
@@ -184,6 +198,7 @@ mod test {
             "--package-name", "foo bar",
             "--omega-exponent", "42",
             "--parallel", "false",
+            "--force-positive-surplus", "true",
         ])
         .unwrap();
         assert_eq!(
@@ -192,7 +207,8 @@ mod test {
                 package_name: "foo bar".to_owned(),
                 omega_exponent: 42,
                 arithmetic: Arithmetic::Float64,
-                parallel: false
+                parallel: false,
+                force_positive_surplus: true,
             }
         );
     }
