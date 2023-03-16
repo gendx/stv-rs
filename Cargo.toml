@@ -1,8 +1,14 @@
 [package]
 name = "stv-rs"
-version = "0.0.1"
+description = "Single Transferable Vote implementation in Rust"
+version = "0.1.0"
 authors = ["Guillaume Endignoux <guillaumee@google.com>"]
 license = "Apache-2.0"
+repository = "https://github.com/gendx/stv-rs"
+readme = "README.md"
+categories = ["voting"]
+keywords = ["voting", "election", "stv", "meek"]
+exclude = ["testdata/*", ".github/*"]
 edition = "2021"
 
 [dependencies]

@@ -1,5 +1,7 @@
 # Single Transferable Vote implementation in Rust
 
+[![Crate](https://img.shields.io/crates/v/stv-rs.svg)](https://crates.io/crates/stv-rs)
+[![Documentation](https://docs.rs/stv-rs/badge.svg)](https://docs.rs/stv-rs)
 [![Safety Dance](https://img.shields.io/badge/unsafe-forbidden-success.svg)](https://github.com/rust-secure-code/safety-dance/)
 [![Minimum Rust 1.67](https://img.shields.io/badge/rust-1.67%2B-orange.svg)](https://github.com/rust-lang/rust/blob/master/RELEASES.md#version-1670-2023-01-26)
 [![Codecov](https://codecov.io/gh/gendx/stv-rs/branch/main/graph/badge.svg?token=JB5S8MYBZ0)](https://codecov.io/gh/gendx/stv-rs)
