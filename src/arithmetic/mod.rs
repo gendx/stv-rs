@@ -20,6 +20,8 @@ pub(crate) mod exact;
 pub(crate) mod fixed;
 pub(crate) mod fixed_big;
 pub(crate) mod float64;
+#[cfg(test)]
+mod ratio_i64;
 
 pub use approx_rational::ApproxRational;
 pub use fixed::FixedDecimal9;
