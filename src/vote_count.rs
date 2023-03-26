@@ -738,15 +738,33 @@ mod test {
                 bench_count_votes_parallel_64,
                 bench_count_votes_parallel_128,
                 bench_process_ballot_rec_chain,
+                bench_process_ballot_rec_pairs_01,
+                bench_process_ballot_rec_pairs_02,
+                bench_process_ballot_rec_pairs_03,
+                bench_process_ballot_rec_pairs_04,
                 bench_process_ballot_rec_pairs_05,
+                bench_process_ballot_rec_pairs_06,
+                bench_process_ballot_rec_pairs_07,
+                bench_process_ballot_rec_pairs_08,
+                bench_process_ballot_rec_pairs_09,
                 bench_process_ballot_rec_pairs_10,
+                bench_process_ballot_rec_tens_1,
                 bench_process_ballot_rec_tens_2,
                 bench_process_ballot_rec_tens_3,
                 bench_process_ballot_rec_tens_4,
                 bench_process_ballot_equalize_chain,
+                bench_process_ballot_equalize_pairs_01,
+                bench_process_ballot_equalize_pairs_02,
+                bench_process_ballot_equalize_pairs_03,
+                bench_process_ballot_equalize_pairs_04,
                 bench_process_ballot_equalize_pairs_05,
+                bench_process_ballot_equalize_pairs_06,
+                bench_process_ballot_equalize_pairs_07,
+                bench_process_ballot_equalize_pairs_08,
+                bench_process_ballot_equalize_pairs_09,
                 bench_process_ballot_equalize_pairs_10,
                 bench_process_ballot_equalize_pairs_15,
+                bench_process_ballot_equalize_tens_1,
                 bench_process_ballot_equalize_tens_2,
                 bench_process_ballot_equalize_tens_3,
                 bench_process_ballot_equalize_tens_4,
@@ -1572,8 +1590,40 @@ mod test {
             bencher.iter(|| Self::process_ballot_rec(black_box(&ballot), black_box(&keep_factors)))
         }
 
+        fn bench_process_ballot_rec_pairs_01(bencher: &mut Bencher) {
+            Self::bench_process_ballot_rec_pairs(bencher, 1);
+        }
+
+        fn bench_process_ballot_rec_pairs_02(bencher: &mut Bencher) {
+            Self::bench_process_ballot_rec_pairs(bencher, 2);
+        }
+
+        fn bench_process_ballot_rec_pairs_03(bencher: &mut Bencher) {
+            Self::bench_process_ballot_rec_pairs(bencher, 3);
+        }
+
+        fn bench_process_ballot_rec_pairs_04(bencher: &mut Bencher) {
+            Self::bench_process_ballot_rec_pairs(bencher, 4);
+        }
+
         fn bench_process_ballot_rec_pairs_05(bencher: &mut Bencher) {
             Self::bench_process_ballot_rec_pairs(bencher, 5);
+        }
+
+        fn bench_process_ballot_rec_pairs_06(bencher: &mut Bencher) {
+            Self::bench_process_ballot_rec_pairs(bencher, 6);
+        }
+
+        fn bench_process_ballot_rec_pairs_07(bencher: &mut Bencher) {
+            Self::bench_process_ballot_rec_pairs(bencher, 7);
+        }
+
+        fn bench_process_ballot_rec_pairs_08(bencher: &mut Bencher) {
+            Self::bench_process_ballot_rec_pairs(bencher, 8);
+        }
+
+        fn bench_process_ballot_rec_pairs_09(bencher: &mut Bencher) {
+            Self::bench_process_ballot_rec_pairs(bencher, 9);
         }
 
         fn bench_process_ballot_rec_pairs_10(bencher: &mut Bencher) {
@@ -1592,6 +1642,10 @@ mod test {
             };
             let keep_factors = Self::fake_keep_factors(n);
             bencher.iter(|| Self::process_ballot_rec(black_box(&ballot), black_box(&keep_factors)))
+        }
+
+        fn bench_process_ballot_rec_tens_1(bencher: &mut Bencher) {
+            Self::bench_process_ballot_rec_tens(bencher, 1);
         }
 
         fn bench_process_ballot_rec_tens_2(bencher: &mut Bencher) {
@@ -1632,8 +1686,40 @@ mod test {
             })
         }
 
+        fn bench_process_ballot_equalize_pairs_01(bencher: &mut Bencher) {
+            Self::bench_process_ballot_equalize_pairs(bencher, 1);
+        }
+
+        fn bench_process_ballot_equalize_pairs_02(bencher: &mut Bencher) {
+            Self::bench_process_ballot_equalize_pairs(bencher, 2);
+        }
+
+        fn bench_process_ballot_equalize_pairs_03(bencher: &mut Bencher) {
+            Self::bench_process_ballot_equalize_pairs(bencher, 3);
+        }
+
+        fn bench_process_ballot_equalize_pairs_04(bencher: &mut Bencher) {
+            Self::bench_process_ballot_equalize_pairs(bencher, 4);
+        }
+
         fn bench_process_ballot_equalize_pairs_05(bencher: &mut Bencher) {
             Self::bench_process_ballot_equalize_pairs(bencher, 5);
+        }
+
+        fn bench_process_ballot_equalize_pairs_06(bencher: &mut Bencher) {
+            Self::bench_process_ballot_equalize_pairs(bencher, 6);
+        }
+
+        fn bench_process_ballot_equalize_pairs_07(bencher: &mut Bencher) {
+            Self::bench_process_ballot_equalize_pairs(bencher, 7);
+        }
+
+        fn bench_process_ballot_equalize_pairs_08(bencher: &mut Bencher) {
+            Self::bench_process_ballot_equalize_pairs(bencher, 8);
+        }
+
+        fn bench_process_ballot_equalize_pairs_09(bencher: &mut Bencher) {
+            Self::bench_process_ballot_equalize_pairs(bencher, 9);
         }
 
         fn bench_process_ballot_equalize_pairs_10(bencher: &mut Bencher) {
@@ -1659,6 +1745,10 @@ mod test {
             bencher.iter(|| {
                 Self::process_ballot_equalize(black_box(&ballot), black_box(&keep_factors), &pascal)
             })
+        }
+
+        fn bench_process_ballot_equalize_tens_1(bencher: &mut Bencher) {
+            Self::bench_process_ballot_equalize_tens(bencher, 1);
         }
 
         fn bench_process_ballot_equalize_tens_2(bencher: &mut Bencher) {
