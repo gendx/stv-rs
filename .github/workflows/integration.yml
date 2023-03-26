@@ -22,14 +22,14 @@ jobs:
     strategy:
       matrix:
         file:
-          - equal_preference
-          - equal_preference_droop
-          - equal_preference_equalize
-          - rand_2x10
-          - rand_5x4
-          - rand_hypergeometric
-          - tie_break_explicit
-          - tie_break_implicit
+          - equal_preference/equal_preference
+          - equal_preference/equal_preference_droop
+          - equal_preference/equal_preference_equalize
+          - random/rand_2x10
+          - random/rand_5x4
+          - random/rand_hypergeometric
+          - ties/tie_break_explicit
+          - ties/tie_break_implicit
           - vegetables
       fail-fast: false
     runs-on: ubuntu-latest
@@ -56,7 +56,7 @@ jobs:
         run: |
           sed -i "s/Implementation: STV-rs/Droop package: droop v0.14/g" testdata/${{ matrix.file }}.fixed9.log
           python3 droop/Droop.py meek fixed precision=9 omega=6 defeat_batch=none testdata/${{ matrix.file }}.blt | diff testdata/${{ matrix.file }}.fixed9.log -
-  crash_fixes_tests:
+  crash_fixed9_tests:
     needs: build
     strategy:
       matrix:
