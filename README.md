@@ -20,6 +20,8 @@ For now, only
 [Meek's counting method](https://en.wikipedia.org/wiki/Counting_single_transferable_votes#Meek)
 is implemented.
 
+You can find more details in the following blog article: [STV-rs: Single Transferable Vote implementation in Rust](https://gendignoux.com/blog/2023/03/27/single-transferable-vote.html).
+
 ## Usage
 
 With Cargo:
