@@ -14,8 +14,7 @@
 
 //! Command-line program for Single Transferable Vote.
 
-#![deny(missing_docs)]
-#![forbid(unsafe_code)]
+#![forbid(missing_docs, unsafe_code)]
 
 use clap::Parser;
 use num::{BigInt, BigRational};
