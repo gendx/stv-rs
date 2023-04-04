@@ -21,7 +21,7 @@ use num::{BigInt, BigRational};
 use std::io;
 use stv_rs::{
     arithmetic::{ApproxRational, BigFixedDecimal9, FixedDecimal9},
-    meek::State,
+    meek::stv_droop,
     parse::parse_election,
     types::Election,
 };
@@ -81,7 +81,7 @@ impl Cli {
             "Implementation: STV-rs"
         });
         match self.arithmetic {
-            Arithmetic::Fixed9 => State::<i64, FixedDecimal9>::stv_droop(
+            Arithmetic::Fixed9 => stv_droop::<i64, FixedDecimal9>(
                 &mut io::stdout().lock(),
                 election,
                 package_name,
@@ -90,7 +90,7 @@ impl Cli {
                 self.force_positive_surplus,
                 self.equalize,
             )?,
-            Arithmetic::Bigfixed9 => State::<BigInt, BigFixedDecimal9>::stv_droop(
+            Arithmetic::Bigfixed9 => stv_droop::<BigInt, BigFixedDecimal9>(
                 &mut io::stdout().lock(),
                 election,
                 package_name,
@@ -99,7 +99,7 @@ impl Cli {
                 self.force_positive_surplus,
                 self.equalize,
             )?,
-            Arithmetic::Exact => State::<BigInt, BigRational>::stv_droop(
+            Arithmetic::Exact => stv_droop::<BigInt, BigRational>(
                 &mut io::stdout().lock(),
                 election,
                 package_name,
@@ -108,7 +108,7 @@ impl Cli {
                 self.force_positive_surplus,
                 self.equalize,
             )?,
-            Arithmetic::Approx => State::<BigInt, ApproxRational>::stv_droop(
+            Arithmetic::Approx => stv_droop::<BigInt, ApproxRational>(
                 &mut io::stdout().lock(),
                 election,
                 package_name,
@@ -117,7 +117,7 @@ impl Cli {
                 self.force_positive_surplus,
                 self.equalize,
             )?,
-            Arithmetic::Float64 => State::<f64, f64>::stv_droop(
+            Arithmetic::Float64 => stv_droop::<f64, f64>(
                 &mut io::stdout().lock(),
                 election,
                 package_name,

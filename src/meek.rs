@@ -25,6 +25,56 @@ use std::marker::PhantomData;
 use std::ops::{Add, Div, Mul, Sub};
 use std::time::Instant;
 
+/// Runs an election according to Meek's rules. This aims to produce
+/// reproducible results w.r.t. Droop.py.
+pub fn stv_droop<I, R>(
+    stdout: &mut impl io::Write,
+    election: &Election,
+    package_name: &str,
+    omega_exponent: usize,
+    parallel: bool,
+    force_positive_surplus: bool,
+    equalize: bool,
+) -> io::Result<ElectionResult>
+where
+    I: Integer + Send + Sync,
+    for<'a> &'a I: Add<&'a I, Output = I>,
+    for<'a> &'a I: Sub<&'a I, Output = I>,
+    for<'a> &'a I: Mul<&'a I, Output = I>,
+    R: Rational<I> + Send + Sync,
+    for<'a> &'a R: Add<&'a R, Output = R>,
+    for<'a> &'a R: Sub<&'a R, Output = R>,
+    for<'a> &'a R: Mul<&'a R, Output = R>,
+    for<'a> &'a R: Mul<&'a I, Output = R>,
+    for<'a> &'a R: Div<&'a R, Output = R>,
+    for<'a> &'a R: Div<&'a I, Output = R>,
+{
+    info!(
+        "Parallel vote counting is {}",
+        if parallel { "enabled" } else { "disabled" }
+    );
+    info!(
+        "Equalized vote counting is {}",
+        if equalize { "enabled" } else { "disabled" }
+    );
+
+    let pascal = if equalize {
+        Some(vote_count::pascal::<I>(election.num_candidates))
+    } else {
+        None
+    };
+
+    let state = State::<'_, I, R>::new(
+        election,
+        omega_exponent,
+        parallel,
+        force_positive_surplus,
+        pascal.as_deref(),
+    );
+
+    state.run(stdout, package_name, omega_exponent)
+}
+
 /// Status of a candidate during the vote-counting process.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Status {
@@ -147,51 +197,24 @@ where
         }
     }
 
-    /// Runs an election according to Meek's rules. This aims to produce
-    /// reproducible results w.r.t. Droop.py.
-    pub fn stv_droop(
+    /// Runs the main loop of Meek's rules.
+    fn run(
+        mut self,
         stdout: &mut impl io::Write,
-        election: &Election,
         package_name: &str,
         omega_exponent: usize,
-        parallel: bool,
-        force_positive_surplus: bool,
-        equalize: bool,
     ) -> io::Result<ElectionResult> {
-        info!(
-            "Parallel vote counting is {}",
-            if parallel { "enabled" } else { "disabled" }
-        );
-        info!(
-            "Equalized vote counting is {}",
-            if equalize { "enabled" } else { "disabled" }
-        );
-
-        let pascal = if equalize {
-            Some(vote_count::pascal::<I>(election.num_candidates))
-        } else {
-            None
-        };
-
-        let mut state = Self::new(
-            election,
-            omega_exponent,
-            parallel,
-            force_positive_surplus,
-            pascal.as_deref(),
-        );
-
         let beginning = Instant::now();
         let mut timestamp = beginning;
 
-        let mut count = state.start_election(stdout, package_name, omega_exponent)?;
+        let mut count = self.start_election(stdout, package_name, omega_exponent)?;
 
         for round in 1.. {
-            if state.election_completed(stdout, round)? {
+            if self.election_completed(stdout, round)? {
                 break;
             }
 
-            state.election_round(stdout, &mut count, round)?;
+            self.election_round(stdout, &mut count, round)?;
 
             let now = Instant::now();
             debug!(
@@ -202,16 +225,16 @@ where
             timestamp = now;
         }
 
-        state.handle_remaining_candidates(stdout, &mut count)?;
+        self.handle_remaining_candidates(stdout, &mut count)?;
 
-        state.write_action(stdout, "Count Complete", &count, true)?;
+        self.write_action(stdout, "Count Complete", &count, true)?;
 
         let now = Instant::now();
         info!("Total elapsed time: {:?}", now.duration_since(beginning));
 
         let result = ElectionResult {
-            elected: state.elected,
-            not_elected: state.not_elected,
+            elected: self.elected,
+            not_elected: self.not_elected,
         };
 
         writeln!(stdout)?;
@@ -983,7 +1006,7 @@ mod test {
             .build();
 
         let mut buf = Vec::new();
-        let result = State::<i64, FixedDecimal9>::stv_droop(
+        let result = stv_droop::<i64, FixedDecimal9>(
             &mut buf,
             &election,
             "package name",
