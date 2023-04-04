@@ -115,22 +115,6 @@ where
     for<'a> &'a R: Div<&'a R, Output = R>,
     for<'a> &'a R: Div<&'a I, Output = R>,
 {
-    /// Writes statistics about this vote count to the given output.
-    pub fn write_stats(
-        &self,
-        out: &mut impl io::Write,
-        threshold: &R,
-        surplus: &R,
-    ) -> io::Result<()> {
-        writeln!(out, "\tQuota: {threshold}")?;
-        let total_votes = self.sum.iter().sum::<R>();
-        writeln!(out, "\tVotes: {total_votes}")?;
-        writeln!(out, "\tResidual: {}", self.exhausted)?;
-        writeln!(out, "\tTotal: {}", total_votes + &self.exhausted)?;
-        writeln!(out, "\tSurplus: {surplus}")?;
-        Ok(())
-    }
-
     /// Counts the votes, based on the given keep factors.
     pub fn count_votes(
         election: &Election,
@@ -160,19 +144,6 @@ where
         vote_accumulator.into_vote_count()
     }
 
-    /// Serial implementation of vote counting, using only one CPU core.
-    fn accumulate_votes_serial(
-        election: &Election,
-        keep_factors: &[R],
-        pascal: Option<&[Vec<I>]>,
-    ) -> VoteAccumulator<I, R> {
-        let mut vote_accumulator = VoteAccumulator::new(election.num_candidates);
-        for (i, ballot) in election.ballots.iter().enumerate() {
-            Self::process_ballot(&mut vote_accumulator, keep_factors, pascal, i, ballot);
-        }
-        vote_accumulator
-    }
-
     /// Parallel implementation of vote counting, leveraging all CPU cores to
     /// speed up the computation.
     fn accumulate_votes_rayon(
@@ -195,6 +166,50 @@ where
                 || VoteAccumulator::new(election.num_candidates),
                 |a, b| a.reduce(b),
             )
+    }
+}
+
+impl<I, R> VoteCount<I, R>
+where
+    I: Integer,
+    for<'a> &'a I: Add<&'a I, Output = I>,
+    for<'a> &'a I: Sub<&'a I, Output = I>,
+    for<'a> &'a I: Mul<&'a I, Output = I>,
+    R: Rational<I>,
+    for<'a> &'a R: Add<&'a R, Output = R>,
+    for<'a> &'a R: Sub<&'a R, Output = R>,
+    for<'a> &'a R: Mul<&'a R, Output = R>,
+    for<'a> &'a R: Mul<&'a I, Output = R>,
+    for<'a> &'a R: Div<&'a R, Output = R>,
+    for<'a> &'a R: Div<&'a I, Output = R>,
+{
+    /// Writes statistics about this vote count to the given output.
+    pub fn write_stats(
+        &self,
+        out: &mut impl io::Write,
+        threshold: &R,
+        surplus: &R,
+    ) -> io::Result<()> {
+        writeln!(out, "\tQuota: {threshold}")?;
+        let total_votes = self.sum.iter().sum::<R>();
+        writeln!(out, "\tVotes: {total_votes}")?;
+        writeln!(out, "\tResidual: {}", self.exhausted)?;
+        writeln!(out, "\tTotal: {}", total_votes + &self.exhausted)?;
+        writeln!(out, "\tSurplus: {surplus}")?;
+        Ok(())
+    }
+
+    /// Serial implementation of vote counting, using only one CPU core.
+    fn accumulate_votes_serial(
+        election: &Election,
+        keep_factors: &[R],
+        pascal: Option<&[Vec<I>]>,
+    ) -> VoteAccumulator<I, R> {
+        let mut vote_accumulator = VoteAccumulator::new(election.num_candidates);
+        for (i, ballot) in election.ballots.iter().enumerate() {
+            Self::process_ballot(&mut vote_accumulator, keep_factors, pascal, i, ballot);
+        }
+        vote_accumulator
     }
 
     /// Processes a ballot and adds its votes to the accumulator.
