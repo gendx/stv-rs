@@ -74,7 +74,7 @@ enum Arithmetic {
 
 impl Cli {
     /// Run the given election based on the command-line parameters.
-    fn run(self, election: &Election) -> io::Result<()> {
+    fn run(self, election: &Election, output: &mut impl io::Write) -> io::Result<()> {
         let package_name: &str = self.package_name.as_deref().unwrap_or(if self.equalize {
             "Implementation: STV-rs (equalized counting)"
         } else {
@@ -82,7 +82,7 @@ impl Cli {
         });
         match self.arithmetic {
             Arithmetic::Fixed9 => stv_droop::<i64, FixedDecimal9>(
-                &mut io::stdout().lock(),
+                output,
                 election,
                 package_name,
                 self.omega_exponent,
@@ -91,7 +91,7 @@ impl Cli {
                 self.equalize,
             )?,
             Arithmetic::Bigfixed9 => stv_droop::<BigInt, BigFixedDecimal9>(
-                &mut io::stdout().lock(),
+                output,
                 election,
                 package_name,
                 self.omega_exponent,
@@ -100,7 +100,7 @@ impl Cli {
                 self.equalize,
             )?,
             Arithmetic::Exact => stv_droop::<BigInt, BigRational>(
-                &mut io::stdout().lock(),
+                output,
                 election,
                 package_name,
                 self.omega_exponent,
@@ -109,7 +109,7 @@ impl Cli {
                 self.equalize,
             )?,
             Arithmetic::Approx => stv_droop::<BigInt, ApproxRational>(
-                &mut io::stdout().lock(),
+                output,
                 election,
                 package_name,
                 self.omega_exponent,
@@ -118,7 +118,7 @@ impl Cli {
                 self.equalize,
             )?,
             Arithmetic::Float64 => stv_droop::<f64, f64>(
-                &mut io::stdout().lock(),
+                output,
                 election,
                 package_name,
                 self.omega_exponent,
@@ -138,7 +138,7 @@ fn main() {
 
     let election = parse_election(io::stdin().lock()).unwrap();
 
-    cli.run(&election).unwrap();
+    cli.run(&election, &mut io::stdout().lock()).unwrap();
 }
 
 #[cfg(test)]
