@@ -16,8 +16,8 @@ function record() {
     local TRACE_FILE=perf-record.${NUM_THREADS}-threads.${EVENT}
 
     sleep 1
-    RAYON_NUM_THREADS=${NUM_THREADS} perf record -e "${EVENT}" -c "${INTERVAL}" -g "--output=${TRACE_FILE}.perf" \
-        "${BINARY}" --arithmetic "${ARITHMETIC}" --input "${BALLOT_FILE}" meek --parallel=true > /dev/null
+    perf record -e "${EVENT}" -c "${INTERVAL}" -g "--output=${TRACE_FILE}.perf" \
+        "${BINARY}" --arithmetic "${ARITHMETIC}" --input "${BALLOT_FILE}" meek --parallel=custom --num-threads=${NUM_THREADS} > /dev/null
     perf script "--input=${TRACE_FILE}.perf" -F +pid > "${TRACE_FILE}.processed.perf"
 }
 

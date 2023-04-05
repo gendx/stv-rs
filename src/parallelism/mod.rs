@@ -12,23 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! Single Transferable Vote implementation in Rust. The Meek algorithm is
-//! implemented in the corresponding module.
+//! Hand-rolled parallelism utilities for vote counting.
 
-#![forbid(missing_docs, unsafe_code)]
-#![cfg_attr(test, feature(test, cfg_overflow_checks, iter_array_chunks))]
+mod thread_pool;
 
-#[cfg(test)]
-extern crate test;
-
-pub mod arithmetic;
-pub mod blt;
-pub mod cli;
-pub mod meek;
-mod parallelism;
-pub mod parse;
-pub mod pbv;
-pub mod types;
-#[cfg(test)]
-mod util;
-mod vote_count;
+pub use thread_pool::ThreadPool;
