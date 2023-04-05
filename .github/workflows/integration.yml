@@ -79,6 +79,8 @@ jobs:
             flags: "-h"
           - file: help
             flags: "--help"
+          - file: meek_short_help
+            flags: "meek -h"
           - file: meek_help
             flags: "meek --help"
           - file: plurality_help
@@ -168,8 +170,9 @@ jobs:
           - skewed
           - vegetables
         parallel:
-          - false
-          - true
+          - no
+          - rayon
+          - custom
         include:
           - droop: true
           - file: random/rand_hypergeometric_10k
@@ -191,7 +194,7 @@ jobs:
           name: large-test-files
           path: testdata/ballots/random/
       - name: Install Droop
-        if: ${{ matrix.parallel == true }}
+        if: ${{ matrix.parallel == 'rayon' }}
         run: git clone https://github.com/jklundell/droop
       - name: Prepare STV-rs binary
         run: chmod +x target/release/stv-rs
@@ -206,7 +209,7 @@ jobs:
         run: |
           target/release/stv-rs --arithmetic fixed9 --input testdata/ballots/${{ matrix.file }}.blt meek --parallel=${{ matrix.parallel }} --equalize | diff -s testdata/meek/${{ matrix.file }}.equalize.fixed9.log -
       - name: Check Droop output
-        if: matrix.droop == true && matrix.parallel == true
+        if: matrix.droop == true && matrix.parallel == 'rayon'
         run: |
           sed -i "s/Implementation: STV-rs/Droop package: droop v0.14/g" testdata/meek/${{ matrix.file }}.fixed9.log
           python3 droop/Droop.py meek fixed precision=9 omega=6 defeat_batch=none testdata/ballots/${{ matrix.file }}.blt 2> droop.err | diff -s testdata/meek/${{ matrix.file }}.fixed9.log -
@@ -227,8 +230,9 @@ jobs:
           - bigfixed9
           - approx
         parallel:
-          - false
-          - true
+          - no
+          - rayon
+          - custom
         exclude:
           - file: crashes/elect_too_many
             arithmetic: bigfixed9
@@ -327,8 +331,9 @@ jobs:
         file:
           - negative_surplus/below_quota
         parallel:
-          - false
-          - true
+          - no
+          - rayon
+          - custom
         include:
           - file: negative_surplus/below_quota
             output: negative_surplus/force_positive_surplus
@@ -435,14 +440,14 @@ jobs:
           - bigint/ballot_sum_overflows
           - bigint/rand_hypergeometric_many
         parallel:
-          - false
-          - true
+          - no
+          - rayon
         include:
           - error_suffix: ""
           - equalize: false
           - file: bigint/ballot_sum_overflows
-            parallel: true
-            error_suffix: ".parallel"
+            parallel: rayon
+            error_suffix: ".rayon"
           - file: bigint/rand_hypergeometric_many
             equalize: true
       fail-fast: false
@@ -494,8 +499,9 @@ jobs:
           - crashes/minimal10
           - crashes/rand_geometric
         parallel:
-          - false
-          - true
+          - no
+          - rayon
+          - custom
       fail-fast: false
     runs-on: ubuntu-latest
     steps:

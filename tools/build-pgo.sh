@@ -15,7 +15,7 @@ LLVM_PROFDATA=${HOME}/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rus
 
 PGO_DATA_DIR=/tmp/pgo-data
 SLEEP_SECONDS=20
-ARGUMENTS="--arithmetic fixed9 --input testdata/ballots/random/rand_hypergeometric.blt meek --parallel=true"
+ARGUMENTS="--arithmetic fixed9 --input testdata/ballots/random/rand_hypergeometric.blt meek --parallel=custom"
 
 function build_pgo() {
     # See https://doc.rust-lang.org/rustc/profile-guided-optimization.html

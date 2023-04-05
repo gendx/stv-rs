@@ -16,6 +16,8 @@
 //! values.
 
 use crate::arithmetic::{Integer, IntegerRef, Rational, RationalRef};
+use crate::cli::Parallel;
+use crate::parallelism::ThreadPool;
 use crate::types::{Ballot, Election};
 use log::{debug, trace, warn};
 use rayon::prelude::*;
@@ -47,7 +49,7 @@ where
 }
 
 #[derive(Clone)]
-struct VoteAccumulator<I, R> {
+pub struct VoteAccumulator<I, R> {
     /// Sum of votes for each candidate.
     sum: Vec<R>,
     /// Exhausted voting power.
@@ -64,7 +66,7 @@ where
     R: Rational<I>,
     for<'a> &'a R: RationalRef<&'a I, R>,
 {
-    fn new(num_candidates: usize) -> Self {
+    pub(crate) fn new(num_candidates: usize) -> Self {
         Self {
             sum: vec![R::zero(); num_candidates],
             exhausted: R::zero(),
@@ -73,7 +75,7 @@ where
         }
     }
 
-    fn reduce(self, other: Self) -> Self {
+    pub(crate) fn reduce(self, other: Self) -> Self {
         Self {
             sum: std::iter::zip(self.sum, other.sum)
                 .map(|(a, b)| a + b)
@@ -104,13 +106,14 @@ where
     pub fn count_votes(
         election: &Election,
         keep_factors: &[R],
-        parallel: bool,
+        parallel: Parallel,
+        thread_pool: Option<&ThreadPool<'_, I, R>>,
         pascal: Option<&[Vec<I>]>,
     ) -> Self {
-        let vote_accumulator = if parallel {
-            Self::accumulate_votes_rayon(election, keep_factors, pascal)
-        } else {
-            Self::accumulate_votes_serial(election, keep_factors, pascal)
+        let vote_accumulator = match parallel {
+            Parallel::No => Self::accumulate_votes_serial(election, keep_factors, pascal),
+            Parallel::Rayon => Self::accumulate_votes_rayon(election, keep_factors, pascal),
+            Parallel::Custom => thread_pool.unwrap().accumulate_votes(keep_factors),
         };
 
         trace!("Finished counting ballots:");
@@ -191,7 +194,7 @@ where
     }
 
     /// Processes a ballot and adds its votes to the accumulator.
-    fn process_ballot(
+    pub(crate) fn process_ballot(
         vote_accumulator: &mut VoteAccumulator<I, R>,
         keep_factors: &[R],
         pascal: Option<&[Vec<I>]>,
@@ -680,6 +683,7 @@ mod test {
     use std::borrow::Borrow;
     use std::fmt::{Debug, Display};
     use std::hint::black_box;
+    use std::num::NonZeroUsize;
 
     macro_rules! numeric_tests {
         ( $typei:ty, $typer:ty, ) => {};
@@ -790,7 +794,12 @@ mod test {
 
     macro_rules! advanced_numeric_tests {
         ( $typei:ty, $typer:ty ) => {
-            numeric_tests!($typei, $typer, test_count_votes_parallel_is_consistent,);
+            numeric_tests!(
+                $typei,
+                $typer,
+                test_count_votes_rayon_is_consistent,
+                test_count_votes_parallel_is_consistent,
+            );
         };
     }
 
@@ -1030,6 +1039,38 @@ mod test {
                 .collect()
         }
 
+        fn test_count_votes_rayon_is_consistent() {
+            for n in [1, 2, 4, 8, 16, 32, 64, 128] {
+                let ballots = Self::fake_ballots(n);
+                let keep_factors = Self::fake_keep_factors(n);
+                let election = Election::builder()
+                    .title("")
+                    .candidates(Self::fake_candidates(n))
+                    .num_seats(0)
+                    .ballots(ballots)
+                    .build();
+
+                let vote_count = VoteCount::<I, R>::count_votes(
+                    &election,
+                    &keep_factors,
+                    Parallel::No,
+                    None,
+                    None,
+                );
+                let vote_count_parallel = VoteCount::<I, R>::count_votes(
+                    &election,
+                    &keep_factors,
+                    Parallel::Rayon,
+                    None,
+                    None,
+                );
+                assert_eq!(
+                    vote_count, vote_count_parallel,
+                    "Mismatch with {n} candidates"
+                );
+            }
+        }
+
         fn test_count_votes_parallel_is_consistent() {
             for n in [1, 2, 4, 8, 16, 32, 64, 128] {
                 let ballots = Self::fake_ballots(n);
@@ -1041,14 +1082,36 @@ mod test {
                     .ballots(ballots)
                     .build();
 
-                let vote_count =
-                    VoteCount::<I, R>::count_votes(&election, &keep_factors, false, None);
-                let vote_count_parallel =
-                    VoteCount::<I, R>::count_votes(&election, &keep_factors, true, None);
-                assert_eq!(
-                    vote_count, vote_count_parallel,
-                    "Mismatch with {n} candidates"
+                let vote_count = VoteCount::<I, R>::count_votes(
+                    &election,
+                    &keep_factors,
+                    Parallel::No,
+                    None,
+                    None,
                 );
+
+                for num_threads in 1..=10 {
+                    std::thread::scope(|thread_scope| {
+                        let thread_pool = ThreadPool::new(
+                            thread_scope,
+                            NonZeroUsize::new(num_threads).unwrap(),
+                            &election,
+                            None,
+                        );
+                        let vote_count_parallel = VoteCount::<I, R>::count_votes(
+                            &election,
+                            &keep_factors,
+                            Parallel::Custom,
+                            Some(&thread_pool),
+                            None,
+                        );
+                        assert_eq!(
+                            vote_count, vote_count_parallel,
+                            "Mismatch with {n} candidates"
+                        );
+                        thread_pool.join();
+                    });
+                }
             }
         }
 
@@ -1536,38 +1599,38 @@ mod test {
         }
 
         fn bench_count_votes_serial_16(bencher: &mut Bencher) {
-            Self::bench_count_votes(bencher, 16, false);
+            Self::bench_count_votes(bencher, 16, Parallel::No);
         }
 
         fn bench_count_votes_serial_32(bencher: &mut Bencher) {
-            Self::bench_count_votes(bencher, 32, false);
+            Self::bench_count_votes(bencher, 32, Parallel::No);
         }
 
         fn bench_count_votes_serial_64(bencher: &mut Bencher) {
-            Self::bench_count_votes(bencher, 64, false);
+            Self::bench_count_votes(bencher, 64, Parallel::No);
         }
 
         fn bench_count_votes_serial_128(bencher: &mut Bencher) {
-            Self::bench_count_votes(bencher, 128, false);
+            Self::bench_count_votes(bencher, 128, Parallel::No);
         }
 
         fn bench_count_votes_parallel_16(bencher: &mut Bencher) {
-            Self::bench_count_votes(bencher, 16, true);
+            Self::bench_count_votes(bencher, 16, Parallel::Rayon);
         }
 
         fn bench_count_votes_parallel_32(bencher: &mut Bencher) {
-            Self::bench_count_votes(bencher, 32, true);
+            Self::bench_count_votes(bencher, 32, Parallel::Rayon);
         }
 
         fn bench_count_votes_parallel_64(bencher: &mut Bencher) {
-            Self::bench_count_votes(bencher, 64, true);
+            Self::bench_count_votes(bencher, 64, Parallel::Rayon);
         }
 
         fn bench_count_votes_parallel_128(bencher: &mut Bencher) {
-            Self::bench_count_votes(bencher, 128, true);
+            Self::bench_count_votes(bencher, 128, Parallel::Rayon);
         }
 
-        fn bench_count_votes(bencher: &mut Bencher, n: usize, parallel: bool) {
+        fn bench_count_votes(bencher: &mut Bencher, n: usize, parallel: Parallel) {
             let ballots = Self::fake_ballots(n);
             let keep_factors = Self::fake_keep_factors(n);
             let election = Election::builder()
@@ -1582,6 +1645,7 @@ mod test {
                     black_box(&election),
                     black_box(&keep_factors),
                     parallel,
+                    None,
                     None,
                 )
             });

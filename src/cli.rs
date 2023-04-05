@@ -12,23 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! Single Transferable Vote implementation in Rust. The Meek algorithm is
-//! implemented in the corresponding module.
+//! Type definitions for the command-line interface.
 
-#![forbid(missing_docs, unsafe_code)]
-#![cfg_attr(test, feature(test, cfg_overflow_checks, iter_array_chunks))]
-
-#[cfg(test)]
-extern crate test;
-
-pub mod arithmetic;
-pub mod blt;
-pub mod cli;
-pub mod meek;
-mod parallelism;
-pub mod parse;
-pub mod pbv;
-pub mod types;
-#[cfg(test)]
-mod util;
-mod vote_count;
+/// Strategy for parallelism.
+#[derive(clap::ValueEnum, Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Parallel {
+    /// No parallelism.
+    No,
+    /// Parallelism based on the [`rayon` crate](https://crates.io/crates/rayon).
+    Rayon,
+    /// Custom thread pool.
+    Custom,
+}
