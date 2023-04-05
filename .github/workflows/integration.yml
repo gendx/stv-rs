@@ -28,6 +28,8 @@ jobs:
           - random/rand_2x10
           - random/rand_5x4
           - random/rand_hypergeometric
+          - recursive_descent/transfer
+          - recursive_descent/transfer_is_blocked
           - ties/tie_break_explicit
           - ties/tie_break_implicit
           - vegetables

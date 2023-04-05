@@ -1,0 +1,96 @@
+
+Election: Example election where a transfer is blocked because a ballot contains candidates ranked equally
+
+	Implementation: STV-rs
+	Rule: Meek Parametric (omega = 1/10^6)
+	Arithmetic: fixed-point decimal arithmetic (9 places)
+	Seats: 2
+	Ballots: 42
+	Quota: 14.000000001
+	Omega: 0.000001000
+
+	Add eligible: Apple
+	Add eligible: Banana
+	Add eligible: Cherry
+	Add eligible: Date
+Action: Begin Count
+	Hopeful:  Apple (9.000000000)
+	Hopeful:  Banana (10.000000000)
+	Hopeful:  Cherry (11.000000000)
+	Hopeful:  Date (12.000000000)
+	Quota: 14.000000001
+	Votes: 42.000000000
+	Residual: 0.000000000
+	Total: 42.000000000
+	Surplus: 0.000000000
+Round 1:
+Action: Iterate (omega)
+	Quota: 14.000000001
+	Votes: 42.000000000
+	Residual: 0.000000000
+	Total: 42.000000000
+	Surplus: 0.000000000
+Action: Defeat (surplus 0.000000000 < omega): Apple
+	Hopeful:  Banana (10.000000000)
+	Hopeful:  Cherry (11.000000000)
+	Hopeful:  Date (12.000000000)
+	Defeated: Apple (9.000000000)
+	Quota: 14.000000001
+	Votes: 42.000000000
+	Residual: 0.000000000
+	Total: 42.000000000
+	Surplus: 0.000000000
+Round 2:
+Action: Elect: Date
+	Elected:  Date (12.000000000)
+	Hopeful:  Banana (10.000000000)
+	Hopeful:  Cherry (11.000000000)
+	Defeated: Apple (0.000000000)
+	Quota: 11.000000001
+	Votes: 33.000000000
+	Residual: 9.000000000
+	Total: 42.000000000
+	Surplus: 0.000000000
+Action: Iterate (elected)
+	Quota: 11.000000001
+	Votes: 33.000000000
+	Residual: 9.000000000
+	Total: 42.000000000
+	Surplus: 0.999999999
+Round 3:
+Action: Elect: Cherry
+	Elected:  Cherry (11.000000000)
+	Elected:  Date (11.000000004)
+	Hopeful:  Banana (10.000000000)
+	Defeated: Apple (0.000000000)
+	Quota: 10.666666669
+	Votes: 32.000000004
+	Residual: 9.999999996
+	Total: 42.000000000
+	Surplus: 0.999999999
+Action: Iterate (elected)
+	Quota: 10.666666669
+	Votes: 32.000000004
+	Residual: 9.999999996
+	Total: 42.000000000
+	Surplus: 0.666666666
+Action: Defeat remaining: Banana
+	Elected:  Cherry (11.000000000)
+	Elected:  Date (11.000000004)
+	Defeated: Banana (10.000000000)
+	Defeated: Apple (0.000000000)
+	Quota: 10.666666669
+	Votes: 32.000000004
+	Residual: 9.999999996
+	Total: 42.000000000
+	Surplus: 0.666666666
+Action: Count Complete
+	Elected:  Cherry (11.000000000)
+	Elected:  Date (11.000000004)
+	Defeated: Apple, Banana (0.000000000)
+	Quota: 10.666666669
+	Votes: 22.000000004
+	Residual: 19.999999996
+	Total: 42.000000000
+	Surplus: 0.666666666
+

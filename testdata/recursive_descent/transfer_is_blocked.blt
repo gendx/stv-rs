@@ -1,0 +1,12 @@
+4 2
+[nick apple banana cherry date]
+9 apple banana cherry=date 0
+10 banana 0
+11 cherry 0
+12 date 0
+0
+"Apple"
+"Banana"
+"Cherry"
+"Date"
+"Example election where a transfer is blocked because a ballot contains candidates ranked equally"
