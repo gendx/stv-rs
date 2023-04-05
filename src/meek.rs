@@ -16,22 +16,27 @@
 //! give consistent results with Droop.py.
 
 use crate::arithmetic::{Integer, IntegerRef, Rational, RationalRef};
+use crate::cli::Parallel;
+use crate::parallelism::ThreadPool;
 use crate::types::{Election, ElectionResult};
 use crate::vote_count::{self, VoteCount};
 use log::{debug, info, warn};
 use std::fmt::{self, Debug, Display};
 use std::io;
 use std::marker::PhantomData;
+use std::num::NonZeroUsize;
 use std::time::Instant;
 
 /// Runs an election according to Meek's rules. This aims to produce
 /// reproducible results w.r.t. Droop.py.
+#[allow(clippy::too_many_arguments)]
 pub fn stv_droop<I, R>(
     stdout: &mut impl io::Write,
     election: &Election,
     package_name: &str,
     omega_exponent: usize,
-    parallel: bool,
+    parallel: Parallel,
+    num_threads: Option<NonZeroUsize>,
     force_positive_surplus: bool,
     equalize: bool,
 ) -> io::Result<ElectionResult>
@@ -43,7 +48,11 @@ where
 {
     info!(
         "Parallel vote counting is {}",
-        if parallel { "enabled" } else { "disabled" }
+        match parallel {
+            Parallel::No => "disabled",
+            Parallel::Rayon => "enabled with rayon",
+            Parallel::Custom => "enabled using custom threads",
+        }
     );
     info!(
         "Equalized vote counting is {}",
@@ -55,16 +64,65 @@ where
     } else {
         None
     };
+    let pascal = pascal.as_deref();
 
-    let state = State::<'_, I, R>::new(
-        election,
-        omega_exponent,
-        parallel,
-        force_positive_surplus,
-        pascal.as_deref(),
-    );
+    match parallel {
+        Parallel::No => {
+            let state = State::<I, R>::new(
+                election,
+                omega_exponent,
+                parallel,
+                force_positive_surplus,
+                pascal,
+                None,
+            );
+            state.run(stdout, package_name, omega_exponent)
+        }
+        Parallel::Rayon => {
+            if let Some(num_threads) = num_threads {
+                info!("Spawning {num_threads} rayon threads");
+                rayon::ThreadPoolBuilder::new()
+                    .num_threads(num_threads.into())
+                    .build_global()
+                    .unwrap();
+            }
 
-    state.run(stdout, package_name, omega_exponent)
+            let state = State::<I, R>::new(
+                election,
+                omega_exponent,
+                parallel,
+                force_positive_surplus,
+                pascal,
+                None,
+            );
+            state.run(stdout, package_name, omega_exponent)
+        }
+        Parallel::Custom => std::thread::scope(|thread_scope| -> io::Result<ElectionResult> {
+            let num_threads: NonZeroUsize = num_threads.unwrap_or_else(|| {
+                let count = match std::thread::available_parallelism() {
+                    Ok(num_threads) => num_threads.get(),
+                    Err(e) => {
+                        warn!("Failed to query available parallelism: {e:?}");
+                        1
+                    }
+                };
+                NonZeroUsize::new(count)
+                    .expect("A positive number of threads must be spawned, but the available parallelism is zero threads")
+            });
+            info!("Spawning {num_threads} threads");
+            let thread_pool = ThreadPool::new(thread_scope, num_threads, election, pascal);
+
+            let state = State::<I, R>::new(
+                election,
+                omega_exponent,
+                parallel,
+                force_positive_surplus,
+                pascal,
+                Some(thread_pool),
+            );
+            state.run(stdout, package_name, omega_exponent)
+        }),
+    }
 }
 
 /// Status of a candidate during the vote-counting process.
@@ -102,7 +160,7 @@ impl Display for DroopIteration {
 }
 
 /// Running state while computing the election results.
-pub struct State<'e, I, R> {
+pub struct State<'scope, 'e, I, R> {
     /// Election input.
     election: &'e Election,
     /// Status of each candidate.
@@ -124,37 +182,39 @@ pub struct State<'e, I, R> {
     /// iteration is considered stabilized.
     omega: R,
     /// Whether parallel ballot counting (based on the rayon crate) is enabled.
-    parallel: bool,
+    parallel: Parallel,
     /// Whether to use a positive surplus calculation (which avoids potential
     /// crashes if the surplus otherwise becomes negative.
     force_positive_surplus: bool,
     /// Pre-computed Pascal triangle. Set only if the "equalized counting" is
     /// enabled.
     pascal: Option<&'e [Vec<I>]>,
+    thread_pool: Option<ThreadPool<'scope, I, R>>,
     _phantom: PhantomData<I>,
 }
 
 #[cfg(test)]
-impl<'e, I, R> State<'e, I, R> {
+impl<'scope, 'e, I, R> State<'scope, 'e, I, R> {
     fn builder() -> test::StateBuilder<'e, I, R> {
         test::StateBuilder::default()
     }
 }
 
-impl<'e, I, R> State<'e, I, R>
+impl<'scope, 'e, I, R> State<'scope, 'e, I, R>
 where
     I: Integer + Send + Sync + 'e,
     for<'a> &'a I: IntegerRef<I>,
-    R: Rational<I> + Send + Sync,
+    R: Rational<I> + Send + Sync + 'scope,
     for<'a> &'a R: RationalRef<&'a I, R>,
 {
     fn new<'a>(
         election: &'a Election,
         omega_exponent: usize,
-        parallel: bool,
+        parallel: Parallel,
         force_positive_surplus: bool,
         pascal: Option<&'a [Vec<I>]>,
-    ) -> State<'a, I, R> {
+        thread_pool: Option<ThreadPool<'scope, I, R>>,
+    ) -> State<'scope, 'a, I, R> {
         State {
             election,
             statuses: election
@@ -178,6 +238,7 @@ where
             parallel,
             force_positive_surplus,
             pascal,
+            thread_pool,
             _phantom: PhantomData,
         }
     }
@@ -222,8 +283,11 @@ where
             not_elected: self.not_elected,
         };
 
-        writeln!(stdout)?;
+        if let Some(thread_pool) = self.thread_pool {
+            thread_pool.join();
+        }
 
+        writeln!(stdout)?;
         Ok(result)
     }
 
@@ -260,6 +324,7 @@ where
             self.election,
             &self.keep_factors,
             self.parallel,
+            self.thread_pool.as_ref(),
             self.pascal,
         )
     }
@@ -742,7 +807,7 @@ mod test {
         threshold: Option<R>,
         surplus: Option<R>,
         omega: Option<R>,
-        parallel: Option<bool>,
+        parallel: Option<Parallel>,
         force_positive_surplus: Option<bool>,
         pascal: Option<Option<&'e [Vec<I>]>>,
         _phantom: PhantomData<I>,
@@ -799,7 +864,7 @@ mod test {
             self
         }
 
-        fn parallel(mut self, parallel: bool) -> Self {
+        fn parallel(mut self, parallel: Parallel) -> Self {
             self.parallel = Some(parallel);
             self
         }
@@ -815,7 +880,7 @@ mod test {
         }
 
         #[track_caller]
-        fn build(self) -> State<'e, I, R> {
+        fn build(self) -> State<'static, 'e, I, R> {
             let election = self.election.unwrap();
             let statuses = self.statuses.unwrap();
             let elected = statuses
@@ -854,6 +919,7 @@ mod test {
                 parallel: self.parallel.unwrap(),
                 force_positive_surplus: self.force_positive_surplus.unwrap(),
                 pascal: self.pascal.unwrap(),
+                thread_pool: None,
                 _phantom: PhantomData,
             }
         }
@@ -906,7 +972,7 @@ mod test {
             .threshold(FixedDecimal9::ratio(3, 2))
             .surplus(FixedDecimal9::ratio(1, 10))
             .omega(FixedDecimal9::ratio(1, 1_000_000))
-            .parallel(false)
+            .parallel(Parallel::No)
             .force_positive_surplus(false)
             .pascal(None)
             .build()
@@ -930,7 +996,21 @@ mod test {
     }
 
     #[test]
-    fn test_stv_droop() {
+    fn test_stv_droop_parallel_no() {
+        test_stv_droop(Parallel::No);
+    }
+
+    #[test]
+    fn test_stv_droop_parallel_rayon() {
+        test_stv_droop(Parallel::Rayon);
+    }
+
+    #[test]
+    fn test_stv_droop_parallel_custom() {
+        test_stv_droop(Parallel::Custom);
+    }
+
+    fn test_stv_droop(parallel: Parallel) {
         let election = Election::builder()
             .title("Vegetable contest")
             .num_seats(5)
@@ -962,7 +1042,8 @@ mod test {
             &election,
             "package name",
             6,
-            false,
+            parallel,
+            None,
             false,
             false,
         )
@@ -1147,7 +1228,21 @@ Action: Count Complete
     }
 
     #[test]
-    fn test_stv_droop_equalize() {
+    fn test_stv_droop_equalize_parallel_no() {
+        test_stv_droop_equalize(Parallel::No);
+    }
+
+    #[test]
+    fn test_stv_droop_equalize_parallel_rayon() {
+        test_stv_droop_equalize(Parallel::Rayon);
+    }
+
+    #[test]
+    fn test_stv_droop_equalize_parallel_custom() {
+        test_stv_droop_equalize(Parallel::Custom);
+    }
+
+    fn test_stv_droop_equalize(parallel: Parallel) {
         let election = Election::builder()
             .title("Vegetable contest")
             .num_seats(3)
@@ -1173,7 +1268,8 @@ Action: Count Complete
             &election,
             "package name",
             6,
-            false,
+            parallel,
+            None,
             false,
             true,
         )
@@ -1337,7 +1433,8 @@ Action: Count Complete
             &election,
             "package name",
             6,
-            false,
+            Parallel::No,
+            None,
             false,
             false,
         )
@@ -1479,7 +1576,7 @@ Action: Count Complete
             ])
             .build();
         let omega_exponent = 6;
-        let state = State::new(&election, omega_exponent, false, false, None);
+        let state = State::new(&election, omega_exponent, Parallel::No, false, None, None);
 
         let mut buf = Vec::new();
         let count = state
@@ -1561,7 +1658,7 @@ Action: Begin Count
         fn make_state(
             election: &Election,
             statuses: [Status; 5],
-        ) -> State<'_, Integer64, FixedDecimal9> {
+        ) -> State<'_, '_, Integer64, FixedDecimal9> {
             State::builder()
                 .election(election)
                 .statuses(statuses)
@@ -1569,7 +1666,7 @@ Action: Begin Count
                 .threshold(FixedDecimal9::zero())
                 .surplus(FixedDecimal9::zero())
                 .omega(FixedDecimal9::zero())
-                .parallel(false)
+                .parallel(Parallel::No)
                 .force_positive_surplus(false)
                 .pascal(None)
                 .build()
@@ -1687,7 +1784,7 @@ Weights:
         fn make_state(
             election: &Election,
             statuses: impl Into<Vec<Status>>,
-        ) -> State<'_, Integer64, FixedDecimal9> {
+        ) -> State<'_, '_, Integer64, FixedDecimal9> {
             State::builder()
                 .election(election)
                 .statuses(statuses)
@@ -1695,7 +1792,7 @@ Weights:
                 .threshold(FixedDecimal9::zero())
                 .surplus(FixedDecimal9::zero())
                 .omega(FixedDecimal9::ratio(1, 1_000_000))
-                .parallel(false)
+                .parallel(Parallel::No)
                 .force_positive_surplus(false)
                 .pascal(None)
                 .build()
@@ -2001,7 +2098,7 @@ Action: Defeat (stable surplus 0.000066666): Apple
         fn make_state(
             election: &Election,
             statuses: impl Into<Vec<Status>>,
-        ) -> State<'_, Integer64, FixedDecimal9> {
+        ) -> State<'_, '_, Integer64, FixedDecimal9> {
             State::builder()
                 .election(election)
                 .statuses(statuses)
@@ -2009,7 +2106,7 @@ Action: Defeat (stable surplus 0.000066666): Apple
                 .threshold(FixedDecimal9::zero())
                 .surplus(FixedDecimal9::zero())
                 .omega(FixedDecimal9::ratio(1, 1_000_000))
-                .parallel(false)
+                .parallel(Parallel::No)
                 .force_positive_surplus(false)
                 .pascal(None)
                 .build()
@@ -2258,7 +2355,7 @@ Action: Defeat (stable surplus 0.000066666): Apple
             .threshold(FixedDecimal9::ratio(3, 2))
             .surplus(FixedDecimal9::zero())
             .omega(FixedDecimal9::zero())
-            .parallel(false)
+            .parallel(Parallel::No)
             .force_positive_surplus(false)
             .pascal(None)
             .build();
@@ -2358,7 +2455,7 @@ Action: Elect: Grape
             .threshold(BigRational::ratio(3, 2))
             .surplus(BigRational::zero())
             .omega(BigRational::zero())
-            .parallel(false)
+            .parallel(Parallel::No)
             .force_positive_surplus(false)
             .pascal(None)
             .build();
@@ -2542,7 +2639,7 @@ Action: Defeat remaining: Eggplant
             .threshold(FixedDecimal9::zero())
             .surplus(FixedDecimal9::ratio(1, 10))
             .omega(FixedDecimal9::zero())
-            .parallel(false)
+            .parallel(Parallel::No)
             .force_positive_surplus(false)
             .pascal(None)
             .build();

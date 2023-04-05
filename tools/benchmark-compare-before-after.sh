@@ -24,15 +24,16 @@ SLEEP_SECONDS=15
     --setup "sleep ${SLEEP_SECONDS}" \
     --warmup 1 \
     --parameter-list INDEX_COMMIT "${INDEX_COMMITS}" \
-    "./bin/stv-rs-{INDEX_COMMIT} --arithmetic ${ARITHMETIC} --input ${INPUT} meek ${EQUALIZE} --parallel=false > /dev/null"
+    "./bin/stv-rs-{INDEX_COMMIT} --arithmetic ${ARITHMETIC} --input ${INPUT} meek ${EQUALIZE} --parallel=no > /dev/null"
 
 for NUM_THREADS in 2 4 8
 do
-    RAYON_NUM_THREADS=${NUM_THREADS} "${HYPERFINE_PATH}" \
+    "${HYPERFINE_PATH}" \
         --style color \
         --sort command \
         --setup "sleep ${SLEEP_SECONDS}" \
         --warmup 1 \
+        --parameter-list PARALLEL "custom,rayon" \
         --parameter-list INDEX_COMMIT "${INDEX_COMMITS}" \
-        "./bin/stv-rs-{INDEX_COMMIT} --arithmetic ${ARITHMETIC} --input ${INPUT} meek ${EQUALIZE} --parallel=true > /dev/null"
+        "./bin/stv-rs-{INDEX_COMMIT} --arithmetic ${ARITHMETIC} --input ${INPUT} meek ${EQUALIZE} --parallel={PARALLEL} --num-threads=${NUM_THREADS} > /dev/null"
 done

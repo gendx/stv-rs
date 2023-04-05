@@ -33,7 +33,7 @@ $ RUST_LOG=$LOG_LEVEL cargo run \
   --arithmetic $ARITHMETIC \
   --input ballots.txt \
   meek \
-  --parallel=<true|false>
+  --parallel=<no|rayon|custom>
 ```
 
 ```bash
@@ -42,7 +42,7 @@ $ RUST_LOG=$LOG_LEVEL cargo run \
   --arithmetic $ARITHMETIC \
   --input ballots.txt \
   meek \
-  --parallel=<true|false> \
+  --parallel=<no|rayon|custom> \
   --equalize
 ```
 

@@ -16,15 +16,17 @@
 
 #![forbid(missing_docs, unsafe_code)]
 
-use clap::{ArgAction, Parser, Subcommand, ValueEnum};
+use clap::{Parser, Subcommand, ValueEnum};
 use num::{BigInt, BigRational};
 use std::fs::File;
 use std::io::{self, stdin, stdout, BufRead, BufReader, Write};
+use std::num::NonZeroUsize;
 use stv_rs::{
     arithmetic::{
         ApproxRational, BigFixedDecimal9, FixedDecimal9, Integer, Integer64, IntegerRef, Rational,
         RationalRef,
     },
+    cli::Parallel,
     meek::stv_droop,
     parse::{parse_election, ParsingOptions},
     pbv::plurality_block_voting,
@@ -69,9 +71,14 @@ struct MeekParams {
     #[arg(long, default_value_t = 6)]
     omega_exponent: usize,
 
-    /// Enable parallel ballot counting based on the rayon crate.
-    #[arg(long, action = ArgAction::Set, default_value = "true")]
-    parallel: bool,
+    /// Enable parallel ballot counting.
+    #[arg(long, value_enum, default_value = "rayon")]
+    parallel: Parallel,
+
+    /// Explicitly specify the number of threads to use in `--parallel` modes.
+    /// Ignored if parallelism is disabled.
+    #[arg(long)]
+    num_threads: Option<NonZeroUsize>,
 
     /// Enable a bug-fix in the surplus calculation, preventing it from being
     /// negative. Results may differ from Droop.py, but this prevents
@@ -113,9 +120,9 @@ impl Cli {
         match self.input {
             Some(ref filename) => {
                 let file = File::open(filename).expect("Couldn't open input file");
-                self.run_io(BufReader::new(file), stdout().lock())
+                self.run_io(BufReader::new(file), stdout())
             }
-            None => self.run_io(stdin().lock(), stdout().lock()),
+            None => self.run_io(stdin().lock(), stdout()),
         }
     }
 
@@ -183,6 +190,7 @@ impl Cli {
                     package_name,
                     meek_params.omega_exponent,
                     meek_params.parallel,
+                    meek_params.num_threads,
                     meek_params.force_positive_surplus,
                     meek_params.equalize,
                 )?;
@@ -248,7 +256,8 @@ mod test {
                 input: None,
                 algorithm: Algorithm::Meek(MeekParams {
                     omega_exponent: 6,
-                    parallel: true,
+                    parallel: Parallel::Rayon,
+                    num_threads: None,
                     force_positive_surplus: false,
                     equalize: false,
                 })
@@ -263,6 +272,14 @@ mod test {
     }
 
     #[test]
+    fn test_parse_meek_zero_threads() {
+        let error =
+            Cli::try_parse_from(["stv-rs", "--arithmetic=fixed9", "meek", "--num-threads=0"])
+                .unwrap_err();
+        assert_eq!(error.kind(), ErrorKind::ValueValidation);
+    }
+
+    #[test]
     fn test_parse_meek_full() {
         let cli = Cli::try_parse_from([
             "stv-rs",
@@ -271,7 +288,8 @@ mod test {
             "--input=abc def",
             "meek",
             "--omega-exponent=42",
-            "--parallel=false",
+            "--parallel=no",
+            "--num-threads=37",
             "--force-positive-surplus",
             "--equalize",
         ])
@@ -284,7 +302,8 @@ mod test {
                 input: Some("abc def".to_owned()),
                 algorithm: Algorithm::Meek(MeekParams {
                     omega_exponent: 42,
-                    parallel: false,
+                    parallel: Parallel::No,
+                    num_threads: Some(NonZeroUsize::new(37).unwrap()),
                     force_positive_surplus: true,
                     equalize: true,
                 }),
@@ -302,7 +321,8 @@ mod test {
             "--input", "abc def",
             "meek",
             "--omega-exponent", "42",
-            "--parallel", "false",
+            "--parallel", "rayon",
+            "--num-threads", "37",
             "--force-positive-surplus",
             "--equalize",
         ])
@@ -315,7 +335,8 @@ mod test {
                 input: Some("abc def".to_owned()),
                 algorithm: Algorithm::Meek(MeekParams {
                     omega_exponent: 42,
-                    parallel: false,
+                    parallel: Parallel::Rayon,
+                    num_threads: Some(NonZeroUsize::new(37).unwrap()),
                     force_positive_surplus: true,
                     equalize: true,
                 }),
@@ -387,7 +408,8 @@ mod test {
             input: None,
             algorithm: Algorithm::Meek(MeekParams {
                 omega_exponent: 6,
-                parallel: false,
+                parallel: Parallel::No,
+                num_threads: None,
                 force_positive_surplus: false,
                 equalize,
             }),

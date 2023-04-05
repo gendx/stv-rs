@@ -31,14 +31,17 @@ function benchmark() {
         --style color \
         --setup "sleep ${SLEEP_SECONDS}" \
         --warmup 1 \
-        "${BINARY} --arithmetic ${ARITHMETIC} --input ${INPUT} meek ${EQUALIZE} --parallel=false > /dev/null"
+        "${BINARY} --arithmetic ${ARITHMETIC} --input ${INPUT} meek ${EQUALIZE} --parallel=no > /dev/null"
+
     for NUM_THREADS in 2 4 8
     do
-        RAYON_NUM_THREADS=${NUM_THREADS} "${HYPERFINE_PATH}" \
+        "${HYPERFINE_PATH}" \
             --style color \
+            --sort command \
             --setup "sleep ${SLEEP_SECONDS}" \
             --warmup 1 \
-            "${BINARY} --arithmetic ${ARITHMETIC} --input ${INPUT} meek ${EQUALIZE} --parallel=true > /dev/null"
+            --parameter-list PARALLEL custom,rayon \
+            "${BINARY} --arithmetic ${ARITHMETIC} --input ${INPUT} meek ${EQUALIZE} --parallel={PARALLEL} --num-threads=${NUM_THREADS} > /dev/null"
     done
 }
 

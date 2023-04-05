@@ -33,13 +33,13 @@ function sample() {
 
     sleep "${SLEEP_SECONDS}"
     perf stat -r "${REPETITIONS}" "${PARAMS[@]}" \
-        "${BINARY}" --arithmetic "${ARITHMETIC}" --input "${BALLOT_FILE}" meek --parallel=false > /dev/null
+        "${BINARY}" --arithmetic "${ARITHMETIC}" --input "${BALLOT_FILE}" meek --parallel=no > /dev/null
 
     for NUM_THREADS in 2 4 8
     do
         sleep "${SLEEP_SECONDS}"
-        RAYON_NUM_THREADS=${NUM_THREADS} perf stat -r "${REPETITIONS}" "${PARAMS[@]}" \
-            "${BINARY}" --arithmetic "${ARITHMETIC}" --input "${BALLOT_FILE}" meek --parallel=true > /dev/null
+        perf stat -r "${REPETITIONS}" "${PARAMS[@]}" \
+            "${BINARY}" --arithmetic "${ARITHMETIC}" --input "${BALLOT_FILE}" meek --parallel=custom --num-threads=${NUM_THREADS} > /dev/null
     done
 }
 
