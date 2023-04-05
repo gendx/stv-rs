@@ -33,6 +33,9 @@ jobs:
           - ties/tie_break_explicit
           - ties/tie_break_implicit
           - vegetables
+        parallel:
+          - false
+          - true
       fail-fast: false
     runs-on: ubuntu-latest
     env:
@@ -49,12 +52,13 @@ jobs:
       - name: Check STV-rs output
         run: |
           chmod +x target/release/stv-rs
-          target/release/stv-rs --arithmetic fixed9 < testdata/${{ matrix.file }}.blt | diff testdata/${{ matrix.file }}.fixed9.log -
+          target/release/stv-rs --arithmetic fixed9 --parallel=${{ matrix.parallel }} < testdata/${{ matrix.file }}.blt | diff testdata/${{ matrix.file }}.fixed9.log -
       - name: Check STV-rs output (equalized counting)
         run: |
           chmod +x target/release/stv-rs
-          target/release/stv-rs --equalize --arithmetic fixed9 < testdata/${{ matrix.file }}.blt | diff testdata/${{ matrix.file }}.equalize.fixed9.log -
+          target/release/stv-rs --arithmetic fixed9 --parallel=${{ matrix.parallel }} --equalize < testdata/${{ matrix.file }}.blt | diff testdata/${{ matrix.file }}.equalize.fixed9.log -
       - name: Check Droop output
+        if: ${{ matrix.parallel == true }}
         run: |
           sed -i "s/Implementation: STV-rs/Droop package: droop v0.14/g" testdata/${{ matrix.file }}.fixed9.log
           python3 droop/Droop.py meek fixed precision=9 omega=6 defeat_batch=none testdata/${{ matrix.file }}.blt | diff testdata/${{ matrix.file }}.fixed9.log -
@@ -65,6 +69,9 @@ jobs:
         file:
           - crashes/crash
           - crashes/rand_geometric
+        parallel:
+          - false
+          - true
       fail-fast: false
     runs-on: ubuntu-latest
     env:
@@ -79,8 +86,8 @@ jobs:
       - name: Check STV-rs output
         run: |
           chmod +x target/release/stv-rs
-          target/release/stv-rs --arithmetic fixed9 --force-positive-surplus < testdata/${{ matrix.file }}.blt | diff testdata/${{ matrix.file }}.fixed9.log -
+          target/release/stv-rs --arithmetic fixed9 --parallel=${{ matrix.parallel }} --force-positive-surplus < testdata/${{ matrix.file }}.blt | diff testdata/${{ matrix.file }}.fixed9.log -
       - name: Check STV-rs output (equalized counting)
         run: |
           chmod +x target/release/stv-rs
-          target/release/stv-rs --equalize --arithmetic fixed9 --force-positive-surplus < testdata/${{ matrix.file }}.blt | diff testdata/${{ matrix.file }}.equalize.fixed9.log -
+          target/release/stv-rs --arithmetic fixed9 --parallel=${{ matrix.parallel }} --force-positive-surplus --equalize < testdata/${{ matrix.file }}.blt | diff testdata/${{ matrix.file }}.equalize.fixed9.log -
