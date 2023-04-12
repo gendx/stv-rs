@@ -49,14 +49,18 @@ jobs:
           path: target/release/
       - name: Install Droop
         run: git clone https://github.com/jklundell/droop
-      - name: Check STV-rs output
+      - name: Check STV-rs output (ballot from stdin)
         run: |
           chmod +x target/release/stv-rs
           target/release/stv-rs --arithmetic fixed9 --parallel=${{ matrix.parallel }} < testdata/${{ matrix.file }}.blt | diff testdata/${{ matrix.file }}.fixed9.log -
+      - name: Check STV-rs output (ballot from CLI)
+        run: |
+          chmod +x target/release/stv-rs
+          target/release/stv-rs --arithmetic fixed9 --parallel=${{ matrix.parallel }} --input testdata/${{ matrix.file }}.blt | diff testdata/${{ matrix.file }}.fixed9.log -
       - name: Check STV-rs output (equalized counting)
         run: |
           chmod +x target/release/stv-rs
-          target/release/stv-rs --arithmetic fixed9 --parallel=${{ matrix.parallel }} --equalize < testdata/${{ matrix.file }}.blt | diff testdata/${{ matrix.file }}.equalize.fixed9.log -
+          target/release/stv-rs --arithmetic fixed9 --parallel=${{ matrix.parallel }} --equalize --input testdata/${{ matrix.file }}.blt | diff testdata/${{ matrix.file }}.equalize.fixed9.log -
       - name: Check Droop output
         if: ${{ matrix.parallel == true }}
         run: |
@@ -86,8 +90,8 @@ jobs:
       - name: Check STV-rs output
         run: |
           chmod +x target/release/stv-rs
-          target/release/stv-rs --arithmetic fixed9 --parallel=${{ matrix.parallel }} --force-positive-surplus < testdata/${{ matrix.file }}.blt | diff testdata/${{ matrix.file }}.fixed9.log -
+          target/release/stv-rs --arithmetic fixed9 --parallel=${{ matrix.parallel }} --force-positive-surplus --input testdata/${{ matrix.file }}.blt | diff testdata/${{ matrix.file }}.fixed9.log -
       - name: Check STV-rs output (equalized counting)
         run: |
           chmod +x target/release/stv-rs
-          target/release/stv-rs --arithmetic fixed9 --parallel=${{ matrix.parallel }} --force-positive-surplus --equalize < testdata/${{ matrix.file }}.blt | diff testdata/${{ matrix.file }}.equalize.fixed9.log -
+          target/release/stv-rs --arithmetic fixed9 --parallel=${{ matrix.parallel }} --force-positive-surplus --equalize --input testdata/${{ matrix.file }}.blt | diff testdata/${{ matrix.file }}.equalize.fixed9.log -

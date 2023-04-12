@@ -18,7 +18,8 @@
 
 use clap::Parser;
 use num::{BigInt, BigRational};
-use std::io;
+use std::fs::File;
+use std::io::{self, stdin, stdout, BufReader, Write};
 use stv_rs::{
     arithmetic::{ApproxRational, BigFixedDecimal9, FixedDecimal9},
     meek::stv_droop,
@@ -41,6 +42,11 @@ struct Cli {
     /// Arithmetic to use.
     #[arg(long, value_enum)]
     arithmetic: Arithmetic,
+
+    /// Input ballot file. If no input is provided, fallback to reading from
+    /// stdin.
+    #[arg(long)]
+    input: Option<String>,
 
     /// Enable parallel ballot counting based on the rayon crate.
     #[arg(long, action = clap::ArgAction::Set, default_value = "true")]
@@ -74,7 +80,7 @@ enum Arithmetic {
 
 impl Cli {
     /// Run the given election based on the command-line parameters.
-    fn run(self, election: &Election, output: &mut impl io::Write) -> io::Result<()> {
+    fn run(self, election: &Election, output: &mut impl Write) -> io::Result<()> {
         let package_name: &str = self.package_name.as_deref().unwrap_or(if self.equalize {
             "Implementation: STV-rs (equalized counting)"
         } else {
@@ -136,9 +142,15 @@ fn main() {
 
     let cli = Cli::parse();
 
-    let election = parse_election(io::stdin().lock()).unwrap();
+    let election = match &cli.input {
+        Some(filename) => {
+            let file = File::open(filename).expect("Couldn't open input file");
+            parse_election(BufReader::new(file)).unwrap()
+        }
+        None => parse_election(stdin().lock()).unwrap(),
+    };
 
-    cli.run(&election, &mut io::stdout().lock()).unwrap();
+    cli.run(&election, &mut stdout().lock()).unwrap();
 }
 
 #[cfg(test)]
@@ -167,6 +179,7 @@ mod test {
                 package_name: None,
                 omega_exponent: 6,
                 arithmetic: Arithmetic::Fixed9,
+                input: None,
                 parallel: true,
                 force_positive_surplus: false,
                 equalize: false,
@@ -187,6 +200,7 @@ mod test {
             "--arithmetic=float64",
             "--package-name=foo bar",
             "--omega-exponent=42",
+            "--input=abc def",
             "--parallel=false",
             "--force-positive-surplus",
             "--equalize",
@@ -198,6 +212,7 @@ mod test {
                 package_name: Some("foo bar".to_owned()),
                 omega_exponent: 42,
                 arithmetic: Arithmetic::Float64,
+                input: Some("abc def".to_owned()),
                 parallel: false,
                 force_positive_surplus: true,
                 equalize: true,
@@ -210,9 +225,10 @@ mod test {
         #[rustfmt::skip]
         let cli = Cli::try_parse_from([
             "stv-rs",
-            "--arithmetic", "float64",
+            "--arithmetic", "approx",
             "--package-name", "foo bar",
             "--omega-exponent", "42",
+            "--input", "abc def",
             "--parallel", "false",
             "--force-positive-surplus",
             "--equalize",
@@ -223,7 +239,8 @@ mod test {
             Cli {
                 package_name: Some("foo bar".to_owned()),
                 omega_exponent: 42,
-                arithmetic: Arithmetic::Float64,
+                arithmetic: Arithmetic::Approx,
+                input: Some("abc def".to_owned()),
                 parallel: false,
                 force_positive_surplus: true,
                 equalize: true,
