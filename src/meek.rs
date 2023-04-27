@@ -748,7 +748,7 @@ mod test {
     use crate::arithmetic::fixed::FixedDecimal9;
     use crate::types::{Ballot, Candidate};
     use crate::util::log_tester::ThreadLocalLogger;
-    use log::Level::{self, Debug, Info};
+    use log::Level::{Debug, Info};
     use num::traits::{One, Zero};
     use num::BigRational;
 
@@ -874,38 +874,6 @@ mod test {
                 _phantom: PhantomData,
             }
         }
-    }
-
-    #[track_caller]
-    fn check_logs_debug(logger: ThreadLocalLogger, expected: &str) {
-        let mut report = String::new();
-        for record in logger.into_iter() {
-            assert_eq!(record.target, "stv_rs::meek");
-            assert_eq!(record.level, Debug);
-            report.push_str(&record.message);
-            report.push('\n');
-        }
-
-        assert_eq!(report, expected);
-    }
-
-    #[track_caller]
-    fn check_logs<'a>(
-        logger: ThreadLocalLogger,
-        expected: impl IntoIterator<Item = (Level, &'a str)>,
-    ) {
-        let mut report = Vec::new();
-        for record in logger.into_iter() {
-            assert_eq!(record.target, "stv_rs::meek");
-            report.push((record.level, record.message));
-        }
-
-        let expected_report = expected
-            .into_iter()
-            .map(|(level, msg)| (level, msg.to_owned()))
-            .collect::<Vec<_>>();
-
-        assert_eq!(report, expected_report);
     }
 
     fn make_fake_election() -> Election {
@@ -1333,8 +1301,8 @@ Action: Begin Count
 
         assert!(completed);
         assert!(buf.is_empty());
-        check_logs(
-            logger,
+        logger.check_target_logs(
+            "stv_rs::meek",
             [
                 (
                     Debug,
@@ -1363,8 +1331,8 @@ Action: Begin Count
 
         assert!(completed);
         assert!(buf.is_empty());
-        check_logs(
-            logger,
+        logger.check_target_logs(
+            "stv_rs::meek",
             [
                 (
                     Debug,
@@ -1393,20 +1361,17 @@ Action: Begin Count
 
         assert!(!completed);
         assert_eq!(std::str::from_utf8(&buf).unwrap(), "Round 42:\n");
-        check_logs(
-            logger,
-            [
-                (
-                    Debug,
-                    "Checking if count is complete: candidates=2, to_elect=1",
-                ),
-                (Debug, "Weights:"),
-                (Debug, "    [0] apple (Candidate) ~ 0"),
-                (Debug, "    [1] banana (Withdrawn) ~ 0"),
-                (Debug, "    [2] cherry (Elected) ~ 0"),
-                (Debug, "    [3] date (NotElected) ~ 0"),
-                (Debug, "    [4] eggplant (Candidate) ~ 0"),
-            ],
+        logger.check_target_level_logs(
+            "stv_rs::meek",
+            Debug,
+            r"Checking if count is complete: candidates=2, to_elect=1
+Weights:
+    [0] apple (Candidate) ~ 0
+    [1] banana (Withdrawn) ~ 0
+    [2] cherry (Elected) ~ 0
+    [3] date (NotElected) ~ 0
+    [4] eggplant (Candidate) ~ 0
+",
         );
     }
 
@@ -2305,8 +2270,9 @@ Action: Defeat remaining: Eggplant
         let next = state.next_defeated_candidate(&mut buf, &count).unwrap();
 
         assert_eq!(next, 1);
-        check_logs_debug(
-            logger,
+        logger.check_target_level_logs(
+            "stv_rs::meek",
+            Debug,
             r"Lowest vote: 0.300000000 ~ 0.3
 Low threshold: 0.400000000 ~ 0.4
 Low candidates: [1]
@@ -2330,8 +2296,9 @@ Low candidates: [1]
         let next = state.next_defeated_candidate(&mut buf, &count).unwrap();
 
         assert_eq!(next, 1);
-        check_logs_debug(
-            logger,
+        logger.check_target_level_logs(
+            "stv_rs::meek",
+            Debug,
             r"Lowest vote: 0.300000000 ~ 0.3
 Low threshold: 0.400000000 ~ 0.4
 Low candidates: [1, 3]
@@ -2380,8 +2347,9 @@ Low candidates: [1, 3]
         let count = make_fake_count();
         state.debug_count(&count);
 
-        check_logs_debug(
-            logger,
+        logger.check_target_level_logs(
+            "stv_rs::meek",
+            Debug,
             r"Sums:
     [0] grape (Elected) ~ 1.833333333
     [1] cherry (Elected) ~ 1.666666666

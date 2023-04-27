@@ -41,8 +41,49 @@ pub mod log_tester {
             ThreadLocalLogger
         }
 
-        pub fn into_iter(self) -> impl Iterator<Item = LogRecord> {
+        fn into_iter(self) -> impl Iterator<Item = LogRecord> {
             LOGS.take().into_iter()
+        }
+
+        #[track_caller]
+        pub fn check_logs<'a>(self, expected: impl IntoIterator<Item = (Level, &'a str, &'a str)>) {
+            let report = self
+                .into_iter()
+                .map(|record| (record.level, record.target, record.message))
+                .collect::<Vec<_>>();
+
+            let expected_report = expected
+                .into_iter()
+                .map(|(level, target, msg)| (level, target.to_owned(), msg.to_owned()))
+                .collect::<Vec<_>>();
+
+            assert_eq!(report, expected_report);
+        }
+
+        #[track_caller]
+        pub fn check_target_logs<'a>(
+            self,
+            target: &str,
+            expected: impl IntoIterator<Item = (Level, &'a str)>,
+        ) {
+            self.check_logs(
+                expected
+                    .into_iter()
+                    .map(|(level, msg)| (level, target, msg)),
+            );
+        }
+
+        #[track_caller]
+        pub fn check_target_level_logs(self, target: &str, level: Level, expected: &str) {
+            let mut report = String::new();
+            for record in self.into_iter() {
+                assert_eq!(record.target, target);
+                assert_eq!(record.level, level);
+                report.push_str(&record.message);
+                report.push('\n');
+            }
+
+            assert_eq!(report, expected);
         }
     }
 
