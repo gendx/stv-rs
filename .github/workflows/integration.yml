@@ -72,6 +72,7 @@ jobs:
       matrix:
         file:
           - crashes/crash
+          - crashes/minimal
           - crashes/rand_geometric
         parallel:
           - false

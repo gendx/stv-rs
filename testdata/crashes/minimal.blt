@@ -1,0 +1,9 @@
+3 2
+[nick apple banana cherry]
+1 apple=banana cherry 0
+1 apple=cherry banana 0
+0
+"Apple"
+"Banana"
+"Cherry"
+"Vegetable contest"
