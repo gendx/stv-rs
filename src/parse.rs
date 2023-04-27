@@ -56,8 +56,9 @@ pub fn parse_election(input: impl BufRead) -> Result<Election, Box<dyn std::erro
                 nicknames = Some(values);
             }
             "withdrawn" => {
-                withdrawn = items.map(|x| x.to_owned()).collect::<HashSet<String>>();
-                info!("Withdrawn: {withdrawn:?}");
+                let values = items.map(|x| x.to_owned()).collect::<Vec<String>>();
+                info!("Withdrawn: {values:?}");
+                withdrawn = values.into_iter().collect::<HashSet<String>>();
             }
             "tie" => {
                 let values = items.map(|x| x.to_owned()).collect::<Vec<String>>();
@@ -196,6 +197,8 @@ fn remove_quotes(x: &str) -> &str {
 #[cfg(test)]
 mod test {
     use super::*;
+    use crate::util::log_tester::ThreadLocalLogger;
+    use log::Level::{Info, Trace, Warn};
     use std::io::Cursor;
 
     #[test]
@@ -245,8 +248,11 @@ mod test {
 "Eggplant"
 "Vegetable contest"
 "#;
+        let logger = ThreadLocalLogger::start();
+        let election = parse_election(Cursor::new(file)).unwrap();
+
         assert_eq!(
-            parse_election(Cursor::new(file)).unwrap(),
+            election,
             Election::builder()
                 .title("Vegetable contest")
                 .num_seats(2)
@@ -267,6 +273,21 @@ mod test {
                 .tie_order([2, 0, 4, 1, 3])
                 .build()
         );
+        logger.check_target_logs(
+            "stv_rs::parse",
+            [
+                (Info, "2 seats / 5 candidates"),
+                (Info, "Nicknames: [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
+                (Info, "Tie-break order: [\"cherry\", \"apple\", \"eggplant\", \"banana\", \"date\"]"),
+                (Info, "Candidates (by nickname): [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
+                (Trace, "Parsed ballot: count 3 for [[0], [2], [4], [3], [1]]"),
+                (Trace, "Parsed ballot: count 3 for [[3, 4], [1, 2, 0]]"),
+                (Trace, "Parsed ballot: count 42 for [[2]]"),
+                (Trace, "Parsed ballot: count 123 for [[1], [3]]"),
+                (Info, "Number of ballots: 171"),
+                (Info, "Election title: Vegetable contest"),
+            ],
+        );
     }
 
     #[test]
@@ -286,8 +307,11 @@ mod test {
 "Eggplant"
 "Vegetable contest"
 "#;
+        let logger = ThreadLocalLogger::start();
+        let election = parse_election(Cursor::new(file)).unwrap();
+
         assert_eq!(
-            parse_election(Cursor::new(file)).unwrap(),
+            election,
             Election::builder()
                 .title("Vegetable contest")
                 .num_seats(2)
@@ -305,6 +329,63 @@ mod test {
                 ])
                 .check_num_ballots(129)
                 .build()
+        );
+        logger.check_target_logs(
+            "stv_rs::parse",
+            [
+                (Info, "2 seats / 5 candidates"),
+                (Info, "Nicknames: [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
+                (Info, "Withdrawn: [\"cherry\", \"eggplant\"]"),
+                (Info, "Candidates (by nickname): [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
+                (Trace, "Parsed ballot: count 3 for [[0], [3], [1]]"),
+                (Trace, "Parsed ballot: count 3 for [[3], [1, 0]]"),
+                (Trace, "Parsed ballot: count 42 for []"),
+                (Warn, "Removing ballot only containing withdrawn candidates: 42 cherry 0"),
+                (Trace, "Parsed ballot: count 123 for [[1], [3]]"),
+                (Info, "Number of ballots: 129"),
+                (Info, "Election title: Vegetable contest"),
+            ],
+        );
+    }
+
+    #[test]
+    fn test_parse_unknown_option() {
+        let file = r#"2 1
+[nick apple banana]
+[unknown foo bar]
+1 apple 0
+0
+"Apple"
+"Banana"
+"Vegetable contest"
+"#;
+        let logger = ThreadLocalLogger::start();
+        let election = parse_election(Cursor::new(file)).unwrap();
+
+        assert_eq!(
+            election,
+            Election::builder()
+                .title("Vegetable contest")
+                .num_seats(1)
+                .candidates([
+                    Candidate::new("apple", false),
+                    Candidate::new("banana", false),
+                ])
+                .ballots(vec![Ballot::new(1, [vec![0]])])
+                .check_num_ballots(1)
+                .build()
+        );
+        logger.check_target_logs(
+            "stv_rs::parse",
+            [
+                (Info, "1 seats / 2 candidates"),
+                (Info, "Nicknames: [\"apple\", \"banana\"]"),
+                (Warn, "Unknown option: unknown"),
+                (Info, "Candidates (by nickname): [\"apple\", \"banana\"]"),
+                (Trace, "Parsed ballot: count 1 for [[0]]"),
+                (Info, "Number of ballots: 1"),
+                (Info, "Election title: Vegetable contest"),
+            ],
         );
     }
 
