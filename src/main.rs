@@ -157,6 +157,7 @@ fn main() {
 mod test {
     use super::*;
     use clap::error::ErrorKind;
+    use stv_rs::types::{Ballot, Candidate};
 
     #[test]
     fn test_parse_incomplete() {
@@ -245,6 +246,225 @@ mod test {
                 force_positive_surplus: true,
                 equalize: true,
             }
+        );
+    }
+
+    /// Returns a purposefully simple [`Election`] to gather test coverage on
+    /// the CLI dispatch function.
+    fn make_simplest_election() -> Election {
+        Election::builder()
+            .title("Vegetable contest")
+            .num_seats(1)
+            .candidates([Candidate::new("apple", false)])
+            .ballots([Ballot::new(1, [vec![0]])])
+            .build()
+    }
+
+    fn make_cli(arithmetic: Arithmetic) -> Cli {
+        Cli {
+            package_name: None,
+            omega_exponent: 6,
+            arithmetic,
+            input: None,
+            parallel: false,
+            force_positive_surplus: false,
+            equalize: false,
+        }
+    }
+
+    #[test]
+    fn test_cli_run_fixed9() {
+        let election = make_simplest_election();
+
+        let cli = make_cli(Arithmetic::Fixed9);
+        let mut buf_fixed9 = Vec::new();
+        cli.run(&election, &mut buf_fixed9).unwrap();
+
+        let cli = make_cli(Arithmetic::Bigfixed9);
+        let mut buf_bigfixed9 = Vec::new();
+        cli.run(&election, &mut buf_bigfixed9).unwrap();
+
+        let expected = r"
+Election: Vegetable contest
+
+	Implementation: STV-rs
+	Rule: Meek Parametric (omega = 1/10^6)
+	Arithmetic: fixed-point decimal arithmetic (9 places)
+	Seats: 1
+	Ballots: 1
+	Quota: 0.500000001
+	Omega: 0.000001000
+
+	Add eligible: Apple
+Action: Begin Count
+	Hopeful:  Apple (1.000000000)
+	Quota: 0.500000001
+	Votes: 1.000000000
+	Residual: 0.000000000
+	Total: 1.000000000
+	Surplus: 0.000000000
+Action: Elect remaining: Apple
+	Elected:  Apple (1.000000000)
+	Quota: 0.500000001
+	Votes: 1.000000000
+	Residual: 0.000000000
+	Total: 1.000000000
+	Surplus: 0.000000000
+Action: Count Complete
+	Elected:  Apple (1.000000000)
+	Quota: 0.500000001
+	Votes: 1.000000000
+	Residual: 0.000000000
+	Total: 1.000000000
+	Surplus: 0.000000000
+
+";
+
+        assert_eq!(std::str::from_utf8(&buf_fixed9).unwrap(), expected);
+        assert_eq!(std::str::from_utf8(&buf_bigfixed9).unwrap(), expected);
+    }
+
+    #[test]
+    fn test_cli_run_exact() {
+        let election = make_simplest_election();
+
+        let cli = make_cli(Arithmetic::Exact);
+        let mut buf = Vec::new();
+        cli.run(&election, &mut buf).unwrap();
+
+        assert_eq!(
+            std::str::from_utf8(&buf).unwrap(),
+            r"
+Election: Vegetable contest
+
+	Implementation: STV-rs
+	Rule: Meek Parametric (omega = 1/10^6)
+	Arithmetic: exact rational arithmetic
+	Seats: 1
+	Ballots: 1
+	Quota: 1/2
+	Omega: 1/1000000
+
+	Add eligible: Apple
+Action: Begin Count
+	Hopeful:  Apple (1)
+	Quota: 1/2
+	Votes: 1
+	Residual: 0
+	Total: 1
+	Surplus: 0
+Action: Elect remaining: Apple
+	Elected:  Apple (1)
+	Quota: 1/2
+	Votes: 1
+	Residual: 0
+	Total: 1
+	Surplus: 0
+Action: Count Complete
+	Elected:  Apple (1)
+	Quota: 1/2
+	Votes: 1
+	Residual: 0
+	Total: 1
+	Surplus: 0
+
+"
+        );
+    }
+
+    #[test]
+    fn test_cli_run_approx() {
+        let election = make_simplest_election();
+
+        let cli = make_cli(Arithmetic::Approx);
+        let mut buf = Vec::new();
+        cli.run(&election, &mut buf).unwrap();
+
+        assert_eq!(
+            std::str::from_utf8(&buf).unwrap(),
+            r"
+Election: Vegetable contest
+
+	Implementation: STV-rs
+	Rule: Meek Parametric (omega = 1/10^6)
+	Arithmetic: exact rational arithmetic with rounding of keep factors (6 decimal places)
+	Seats: 1
+	Ballots: 1
+	Quota: 1/2
+	Omega: 1/1000000
+
+	Add eligible: Apple
+Action: Begin Count
+	Hopeful:  Apple (1)
+	Quota: 1/2
+	Votes: 1
+	Residual: 0
+	Total: 1
+	Surplus: 0
+Action: Elect remaining: Apple
+	Elected:  Apple (1)
+	Quota: 1/2
+	Votes: 1
+	Residual: 0
+	Total: 1
+	Surplus: 0
+Action: Count Complete
+	Elected:  Apple (1)
+	Quota: 1/2
+	Votes: 1
+	Residual: 0
+	Total: 1
+	Surplus: 0
+
+"
+        );
+    }
+
+    #[test]
+    fn test_cli_run_float64() {
+        let election = make_simplest_election();
+
+        let cli = make_cli(Arithmetic::Float64);
+        let mut buf = Vec::new();
+        cli.run(&election, &mut buf).unwrap();
+
+        assert_eq!(
+            std::str::from_utf8(&buf).unwrap(),
+            r"
+Election: Vegetable contest
+
+	Implementation: STV-rs
+	Rule: Meek Parametric (omega = 1/10^6)
+	Arithmetic: 64-bit floating-point arithmetic
+	Seats: 1
+	Ballots: 1
+	Quota: 0.5
+	Omega: 0.000001
+
+	Add eligible: Apple
+Action: Begin Count
+	Hopeful:  Apple (1)
+	Quota: 0.5
+	Votes: 1
+	Residual: 0
+	Total: 1
+	Surplus: 0
+Action: Elect remaining: Apple
+	Elected:  Apple (1)
+	Quota: 0.5
+	Votes: 1
+	Residual: 0
+	Total: 1
+	Surplus: 0
+Action: Count Complete
+	Elected:  Apple (1)
+	Quota: 0.5
+	Votes: 1
+	Residual: 0
+	Total: 1
+	Surplus: 0
+
+"
         );
     }
 }

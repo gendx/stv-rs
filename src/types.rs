@@ -14,7 +14,6 @@
 
 //! Types to represent an election.
 
-#[cfg(test)]
 use std::borrow::Borrow;
 use std::collections::HashMap;
 
@@ -38,16 +37,16 @@ pub struct Election {
     pub tie_order: HashMap<usize, usize>,
 }
 
-#[cfg(test)]
 impl Election {
-    pub(crate) fn builder() -> ElectionBuilder {
+    /// Returns a new builder.
+    pub fn builder() -> ElectionBuilder {
         ElectionBuilder::default()
     }
 }
 
-#[cfg(test)]
+/// Builder for the [`Election`] type.
 #[derive(Default)]
-pub(crate) struct ElectionBuilder {
+pub struct ElectionBuilder {
     title: Option<String>,
     num_seats: Option<usize>,
     num_ballots: Option<usize>,
@@ -56,9 +55,9 @@ pub(crate) struct ElectionBuilder {
     tie_order: Option<HashMap<usize, usize>>,
 }
 
-#[cfg(test)]
 impl ElectionBuilder {
-    pub(crate) fn build(self) -> Election {
+    /// Build the [`Election`] object.
+    pub fn build(self) -> Election {
         let num_ballots = self
             .num_ballots
             .unwrap_or_else(|| self.ballots.iter().map(|b| b.count).sum());
@@ -76,38 +75,46 @@ impl ElectionBuilder {
         }
     }
 
-    pub(crate) fn title(mut self, title: &str) -> Self {
+    /// Sets the name of the election.
+    pub fn title(mut self, title: &str) -> Self {
         self.title = Some(title.to_owned());
         self
     }
 
-    pub(crate) fn num_seats(mut self, num_seats: usize) -> Self {
+    /// Sets the number of elected seats.
+    pub fn num_seats(mut self, num_seats: usize) -> Self {
         self.num_seats = Some(num_seats);
         self
     }
 
-    pub(crate) fn num_ballots(mut self, num_ballots: usize) -> Self {
+    /// Sets the number of ballots cast in the election.
+    pub fn num_ballots(mut self, num_ballots: usize) -> Self {
         self.num_ballots = Some(num_ballots);
         self
     }
 
-    pub(crate) fn check_num_ballots(mut self, num_ballots: usize) -> Self {
+    /// Checks that the given number of ballots is consistent with the actual
+    /// number of ballots previously set with [`Self::ballots()`].
+    pub fn check_num_ballots(mut self, num_ballots: usize) -> Self {
         assert_eq!(num_ballots, self.ballots.iter().map(|b| b.count).sum());
         self.num_ballots = Some(num_ballots);
         self
     }
 
-    pub(crate) fn candidates(mut self, candidates: impl Into<Vec<Candidate>>) -> Self {
+    /// Sets the list of candidates in the election.
+    pub fn candidates(mut self, candidates: impl Into<Vec<Candidate>>) -> Self {
         self.candidates = candidates.into();
         self
     }
 
-    pub(crate) fn ballots(mut self, ballots: impl Into<Vec<Ballot>>) -> Self {
+    /// Sets the list of ballots in the election.
+    pub fn ballots(mut self, ballots: impl Into<Vec<Ballot>>) -> Self {
         self.ballots = ballots.into();
         self
     }
 
-    pub(crate) fn tie_order(mut self, order: impl Borrow<[usize]>) -> Self {
+    /// Sets the tie-break order of candidates in the election.
+    pub fn tie_order(mut self, order: impl Borrow<[usize]>) -> Self {
         assert_eq!(order.borrow().len(), self.candidates.len());
         let mut tie_order = HashMap::new();
         for (i, &c) in order.borrow().iter().enumerate() {
@@ -131,9 +138,9 @@ pub struct Candidate {
     pub is_withdrawn: bool,
 }
 
-#[cfg(test)]
 impl Candidate {
-    pub(crate) fn new(nickname: impl Into<String>, is_withdrawn: bool) -> Self {
+    /// Constructs a new [`Candidate`].
+    pub fn new(nickname: impl Into<String>, is_withdrawn: bool) -> Self {
         let nickname = nickname.into();
         let mut name = nickname.clone().into_bytes();
         if let Some(x) = name.first_mut() {
@@ -160,9 +167,9 @@ pub struct Ballot {
     pub order: Vec<Vec<usize>>,
 }
 
-#[cfg(test)]
 impl Ballot {
-    pub(crate) fn new(count: usize, order: impl Into<Vec<Vec<usize>>>) -> Self {
+    /// Constructs a new [`Ballot`].
+    pub fn new(count: usize, order: impl Into<Vec<Vec<usize>>>) -> Self {
         Ballot {
             count,
             order: order.into(),
