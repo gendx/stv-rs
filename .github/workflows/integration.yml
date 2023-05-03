@@ -71,6 +71,7 @@ jobs:
         file:
           - crashes/crash
           - crashes/minimal
+          - crashes/minimal10
           - crashes/rand_geometric
         parallel:
           - false
@@ -123,6 +124,7 @@ jobs:
           - crashes/crash
           - crashes/elect_too_many
           - crashes/minimal
+          - crashes/minimal10
           - crashes/rand_geometric
       fail-fast: false
     runs-on: ubuntu-latest

@@ -1,0 +1,80 @@
+
+Election: Vegetable contest
+
+	Implementation: STV-rs (equalized counting)
+	Rule: Meek Parametric (omega = 1/10^6)
+	Arithmetic: fixed-point decimal arithmetic (9 places)
+	Seats: 2
+	Ballots: 20
+	Quota: 6.666666667
+	Omega: 0.000001000
+
+	Add eligible: Apple
+	Add eligible: Banana
+	Add eligible: Cherry
+Action: Begin Count
+	Hopeful:  Apple (10.000000000)
+	Hopeful:  Banana (5.000000000)
+	Hopeful:  Cherry (5.000000000)
+	Quota: 6.666666667
+	Votes: 20.000000000
+	Residual: 0.000000000
+	Total: 20.000000000
+	Surplus: 0.000000000
+Round 1:
+Action: Elect: Apple
+	Elected:  Apple (10.000000000)
+	Hopeful:  Banana (5.000000000)
+	Hopeful:  Cherry (5.000000000)
+	Quota: 6.666666667
+	Votes: 20.000000000
+	Residual: 0.000000000
+	Total: 20.000000000
+	Surplus: 0.000000000
+Action: Iterate (elected)
+	Quota: 6.666666667
+	Votes: 20.000000000
+	Residual: 0.000000000
+	Total: 20.000000000
+	Surplus: 3.333333333
+Round 2:
+Action: Iterate (omega)
+	Quota: 6.666666661
+	Votes: 19.999999980
+	Residual: 0.000000020
+	Total: 20.000000000
+	Surplus: 0.000000000
+Action: Break tie (defeat): [Banana, Cherry] -> Banana
+	Quota: 6.666666661
+	Votes: 19.999999980
+	Residual: 0.000000020
+	Total: 20.000000000
+	Surplus: 0.000000000
+Action: Defeat (surplus 0.000000000 < omega): Banana
+	Elected:  Apple (6.666666660)
+	Hopeful:  Cherry (6.666666660)
+	Defeated: Banana (6.666666660)
+	Quota: 6.666666661
+	Votes: 19.999999980
+	Residual: 0.000000020
+	Total: 20.000000000
+	Surplus: 0.000000000
+Action: Elect remaining: Cherry
+	Elected:  Apple (10.000000000)
+	Elected:  Cherry (9.999999990)
+	Defeated: Banana (0.000000000)
+	Quota: 6.666666661
+	Votes: 19.999999990
+	Residual: 0.000000010
+	Total: 20.000000000
+	Surplus: 0.000000000
+Action: Count Complete
+	Elected:  Apple (10.000000000)
+	Elected:  Cherry (9.999999990)
+	Defeated: Banana (0.000000000)
+	Quota: 6.666666661
+	Votes: 19.999999990
+	Residual: 0.000000010
+	Total: 20.000000000
+	Surplus: 0.000000000
+
