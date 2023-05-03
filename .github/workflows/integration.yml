@@ -102,6 +102,7 @@ jobs:
       matrix:
         file:
           - crashes/crash
+          - crashes/elect_too_many
           - crashes/minimal
           - crashes/rand_geometric
       fail-fast: false
