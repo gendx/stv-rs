@@ -97,6 +97,34 @@ jobs:
         run: |
           chmod +x target/release/stv-rs
           target/release/stv-rs --arithmetic fixed9 --parallel=${{ matrix.parallel }} --force-positive-surplus --equalize --input testdata/${{ matrix.file }}.blt | diff -s testdata/${{ matrix.file }}.equalize.fixed9.log -
+  crash_approx_tests:
+    needs: build
+    strategy:
+      matrix:
+        file:
+          - crashes/elect_too_many
+        parallel:
+          - false
+          - true
+      fail-fast: false
+    runs-on: ubuntu-latest
+    env:
+      RUSTFLAGS: "-D warnings"
+      CARGO_UNSTABLE_SPARSE_REGISTRY: true
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+          path: target/release/
+      - name: Check STV-rs output
+        run: |
+          chmod +x target/release/stv-rs
+          target/release/stv-rs --arithmetic approx --parallel=${{ matrix.parallel }} --input testdata/${{ matrix.file }}.blt | diff -s testdata/${{ matrix.file }}.approx.log -
+      - name: Check STV-rs output (equalized counting)
+        run: |
+          chmod +x target/release/stv-rs
+          target/release/stv-rs --arithmetic approx --parallel=${{ matrix.parallel }} --equalize --input testdata/${{ matrix.file }}.blt | diff -s testdata/${{ matrix.file }}.equalize.approx.log -
   crash_droop_tests:
     strategy:
       matrix:

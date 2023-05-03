@@ -1,0 +1,101 @@
+
+Election: Vegetable contest
+
+	Implementation: STV-rs (equalized counting)
+	Rule: Meek Parametric (omega = 1/10^6)
+	Arithmetic: exact rational arithmetic with rounding of keep factors (6 decimal places)
+	Seats: 2
+	Ballots: 8
+	Quota: 8/3
+	Omega: 1/1000000
+
+	Add eligible: Apple
+	Add eligible: Banana
+	Add eligible: Cherry
+	Add eligible: Date
+Action: Begin Count
+	Hopeful:  Apple (2)
+	Hopeful:  Banana (3)
+	Hopeful:  Cherry (2)
+	Hopeful:  Date (1)
+	Quota: 8/3
+	Votes: 8
+	Residual: 0
+	Total: 8
+	Surplus: 0
+Round 1:
+Action: Elect: Banana
+	Elected:  Banana (3)
+	Hopeful:  Apple (2)
+	Hopeful:  Cherry (2)
+	Hopeful:  Date (1)
+	Quota: 8/3
+	Votes: 8
+	Residual: 0
+	Total: 8
+	Surplus: 0
+Action: Iterate (elected)
+	Quota: 8/3
+	Votes: 8
+	Residual: 0
+	Total: 8
+	Surplus: 1/3
+Round 2:
+Action: Iterate (omega)
+	Quota: 8/3
+	Votes: 8
+	Residual: 0
+	Total: 8
+	Surplus: 1/3000000
+Action: Defeat (surplus 1/3000000 < omega): Date
+	Elected:  Banana (2666667/1000000)
+	Hopeful:  Apple (4333333/2000000)
+	Hopeful:  Cherry (4333333/2000000)
+	Defeated: Date (1)
+	Quota: 8/3
+	Votes: 8
+	Residual: 0
+	Total: 8
+	Surplus: 1/3000000
+Round 3:
+Action: Iterate (omega)
+	Quota: 8/3
+	Votes: 8
+	Residual: 0
+	Total: 8
+	Surplus: 1/3000000
+Action: Break tie (defeat): [Apple, Cherry] -> Apple
+	Quota: 8/3
+	Votes: 8
+	Residual: 0
+	Total: 8
+	Surplus: 1/3000000
+Action: Defeat (surplus 1/3000000 < omega): Apple
+	Elected:  Banana (2666667/1000000)
+	Hopeful:  Cherry (5333333/2000000)
+	Defeated: Apple (5333333/2000000)
+	Defeated: Date (0)
+	Quota: 8/3
+	Votes: 8
+	Residual: 0
+	Total: 8
+	Surplus: 1/3000000
+Action: Elect remaining: Cherry
+	Elected:  Banana (888889/200000)
+	Elected:  Cherry (711111/200000)
+	Defeated: Apple, Date (0)
+	Quota: 8/3
+	Votes: 8
+	Residual: 0
+	Total: 8
+	Surplus: 1/3000000
+Action: Count Complete
+	Elected:  Banana (888889/200000)
+	Elected:  Cherry (711111/200000)
+	Defeated: Apple, Date (0)
+	Quota: 8/3
+	Votes: 8
+	Residual: 0
+	Total: 8
+	Surplus: 1/3000000
+
