@@ -30,6 +30,11 @@ use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd)]
 pub struct FixedDecimal9(i64);
 
+impl FixedDecimal9 {
+    const FACTOR: i64 = 1_000_000_000;
+    const FACTOR_I128: i128 = Self::FACTOR as i128;
+}
+
 #[cfg(test)]
 impl FixedDecimal9 {
     pub(crate) fn new(x: i64) -> Self {
@@ -40,7 +45,7 @@ impl FixedDecimal9 {
 impl Display for FixedDecimal9 {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
         let sign = if self.0 < 0 { "-" } else { "" };
-        let (i, rem) = self.0.abs().div_rem(&i64::from(1_000_000_000));
+        let (i, rem) = self.0.abs().div_rem(&Self::FACTOR);
         write!(f, "{sign}{i}.{rem:09}")
     }
 }
@@ -55,7 +60,7 @@ impl Zero for FixedDecimal9 {
 }
 impl One for FixedDecimal9 {
     fn one() -> Self {
-        FixedDecimal9(1_000_000_000)
+        FixedDecimal9(Self::FACTOR)
     }
 }
 
@@ -82,12 +87,12 @@ impl Mul for FixedDecimal9 {
     fn mul(self, rhs: Self) -> Self {
         #[cfg(feature = "checked_i64")]
         return FixedDecimal9(
-            ((self.0 as i128 * rhs.0 as i128) / 1_000_000_000)
+            ((self.0 as i128 * rhs.0 as i128) / Self::FACTOR_I128)
                 .try_into()
                 .unwrap(),
         );
         #[cfg(not(feature = "checked_i64"))]
-        return FixedDecimal9(((self.0 as i128 * rhs.0 as i128) / 1_000_000_000) as i64);
+        return FixedDecimal9(((self.0 as i128 * rhs.0 as i128) / Self::FACTOR_I128) as i64);
     }
 }
 impl Mul<i64> for FixedDecimal9 {
@@ -105,14 +110,14 @@ impl Div for FixedDecimal9 {
     fn div(self, rhs: Self) -> Self {
         #[cfg(feature = "checked_i64")]
         return FixedDecimal9(
-            (self.0 as i128 * 1_000_000_000)
+            (self.0 as i128 * Self::FACTOR_I128)
                 .checked_div(rhs.0 as i128)
                 .unwrap()
                 .try_into()
                 .unwrap(),
         );
         #[cfg(not(feature = "checked_i64"))]
-        return FixedDecimal9(((self.0 as i128 * 1_000_000_000) / rhs.0 as i128) as i64);
+        return FixedDecimal9(((self.0 as i128 * Self::FACTOR_I128) / rhs.0 as i128) as i64);
     }
 }
 impl Div<i64> for FixedDecimal9 {
@@ -148,12 +153,12 @@ impl Mul<&'_ Self> for FixedDecimal9 {
     fn mul(self, rhs: &'_ Self) -> Self {
         #[cfg(feature = "checked_i64")]
         return FixedDecimal9(
-            ((self.0 as i128 * rhs.0 as i128) / 1_000_000_000)
+            ((self.0 as i128 * rhs.0 as i128) / Self::FACTOR_I128)
                 .try_into()
                 .unwrap(),
         );
         #[cfg(not(feature = "checked_i64"))]
-        return FixedDecimal9(((self.0 as i128 * rhs.0 as i128) / 1_000_000_000) as i64);
+        return FixedDecimal9(((self.0 as i128 * rhs.0 as i128) / Self::FACTOR_I128) as i64);
     }
 }
 impl Div<&'_ Self> for FixedDecimal9 {
@@ -162,14 +167,14 @@ impl Div<&'_ Self> for FixedDecimal9 {
     fn div(self, rhs: &'_ Self) -> Self {
         #[cfg(feature = "checked_i64")]
         return FixedDecimal9(
-            (self.0 as i128 * 1_000_000_000)
+            (self.0 as i128 * Self::FACTOR_I128)
                 .checked_div(rhs.0 as i128)
                 .unwrap()
                 .try_into()
                 .unwrap(),
         );
         #[cfg(not(feature = "checked_i64"))]
-        return FixedDecimal9(((self.0 as i128 * 1_000_000_000) / rhs.0 as i128) as i64);
+        return FixedDecimal9(((self.0 as i128 * Self::FACTOR_I128) / rhs.0 as i128) as i64);
     }
 }
 
@@ -196,12 +201,14 @@ impl Mul<&'_ FixedDecimal9> for &'_ FixedDecimal9 {
     fn mul(self, rhs: &'_ FixedDecimal9) -> FixedDecimal9 {
         #[cfg(feature = "checked_i64")]
         return FixedDecimal9(
-            ((self.0 as i128 * rhs.0 as i128) / 1_000_000_000)
+            ((self.0 as i128 * rhs.0 as i128) / FixedDecimal9::FACTOR_I128)
                 .try_into()
                 .unwrap(),
         );
         #[cfg(not(feature = "checked_i64"))]
-        return FixedDecimal9(((self.0 as i128 * rhs.0 as i128) / 1_000_000_000) as i64);
+        return FixedDecimal9(
+            ((self.0 as i128 * rhs.0 as i128) / FixedDecimal9::FACTOR_I128) as i64,
+        );
     }
 }
 impl Mul<&'_ i64> for &'_ FixedDecimal9 {
@@ -219,14 +226,16 @@ impl Div<&'_ FixedDecimal9> for &'_ FixedDecimal9 {
     fn div(self, rhs: &'_ FixedDecimal9) -> FixedDecimal9 {
         #[cfg(feature = "checked_i64")]
         return FixedDecimal9(
-            (self.0 as i128 * 1_000_000_000)
+            (self.0 as i128 * FixedDecimal9::FACTOR_I128)
                 .checked_div(rhs.0 as i128)
                 .unwrap()
                 .try_into()
                 .unwrap(),
         );
         #[cfg(not(feature = "checked_i64"))]
-        return FixedDecimal9(((self.0 as i128 * 1_000_000_000) / rhs.0 as i128) as i64);
+        return FixedDecimal9(
+            ((self.0 as i128 * FixedDecimal9::FACTOR_I128) / rhs.0 as i128) as i64,
+        );
     }
 }
 impl Div<&'_ i64> for &'_ FixedDecimal9 {
@@ -267,13 +276,13 @@ impl MulAssign for FixedDecimal9 {
     fn mul_assign(&mut self, rhs: Self) {
         #[cfg(feature = "checked_i64")]
         {
-            self.0 = ((self.0 as i128 * rhs.0 as i128) / 1_000_000_000)
+            self.0 = ((self.0 as i128 * rhs.0 as i128) / Self::FACTOR_I128)
                 .try_into()
                 .unwrap();
         }
         #[cfg(not(feature = "checked_i64"))]
         {
-            self.0 = ((self.0 as i128 * rhs.0 as i128) / 1_000_000_000) as i64;
+            self.0 = ((self.0 as i128 * rhs.0 as i128) / Self::FACTOR_I128) as i64;
         }
     }
 }
@@ -306,13 +315,13 @@ impl MulAssign<&'_ Self> for FixedDecimal9 {
     fn mul_assign(&mut self, rhs: &'_ Self) {
         #[cfg(feature = "checked_i64")]
         {
-            self.0 = ((self.0 as i128 * rhs.0 as i128) / 1_000_000_000)
+            self.0 = ((self.0 as i128 * rhs.0 as i128) / Self::FACTOR_I128)
                 .try_into()
                 .unwrap();
         }
         #[cfg(not(feature = "checked_i64"))]
         {
-            self.0 = ((self.0 as i128 * rhs.0 as i128) / 1_000_000_000) as i64;
+            self.0 = ((self.0 as i128 * rhs.0 as i128) / Self::FACTOR_I128) as i64;
         }
     }
 }
@@ -359,26 +368,26 @@ impl<'a> Sum<&'a Self> for FixedDecimal9 {
 impl Rational<i64> for FixedDecimal9 {
     fn from_int(i: i64) -> Self {
         #[cfg(feature = "checked_i64")]
-        return FixedDecimal9(i.checked_mul(1_000_000_000).unwrap());
+        return FixedDecimal9(i.checked_mul(Self::FACTOR).unwrap());
         #[cfg(not(feature = "checked_i64"))]
-        return FixedDecimal9(i * 1_000_000_000);
+        return FixedDecimal9(i * Self::FACTOR);
     }
 
     fn ratio_i(num: i64, denom: i64) -> Self {
         #[cfg(feature = "checked_i64")]
         return FixedDecimal9(
-            (num as i128 * 1_000_000_000)
+            (num as i128 * Self::FACTOR_I128)
                 .checked_div(denom as i128)
                 .unwrap()
                 .try_into()
                 .unwrap(),
         );
         #[cfg(not(feature = "checked_i64"))]
-        return FixedDecimal9(((num as i128 * 1_000_000_000) / denom as i128) as i64);
+        return FixedDecimal9(((num as i128 * Self::FACTOR_I128) / denom as i128) as i64);
     }
 
     fn to_f64(&self) -> f64 {
-        self.0 as f64 / 1_000_000_000_f64
+        self.0 as f64 / Self::FACTOR as f64
     }
 
     fn assert_eq(a: Self, b: Self, msg: &str) {
@@ -410,22 +419,22 @@ impl Rational<i64> for FixedDecimal9 {
         #[cfg(feature = "checked_i64")]
         return FixedDecimal9(
             ((self.0 as i128 * rhs.0 as i128)
-                .checked_add(999_999_999)
+                .checked_add(Self::FACTOR_I128 - 1)
                 .unwrap()
-                / 1_000_000_000)
+                / Self::FACTOR_I128)
                 .try_into()
                 .unwrap(),
         );
         #[cfg(not(feature = "checked_i64"))]
         return FixedDecimal9(
-            ((self.0 as i128 * rhs.0 as i128 + 999_999_999) / 1_000_000_000) as i64,
+            ((self.0 as i128 * rhs.0 as i128 + Self::FACTOR_I128 - 1) / Self::FACTOR_I128) as i64,
         );
     }
 
     fn div_up(&self, rhs: &Self) -> Self {
         #[cfg(feature = "checked_i64")]
         return FixedDecimal9(
-            (self.0 as i128 * 1_000_000_000 + rhs.0 as i128 - 1)
+            (self.0 as i128 * Self::FACTOR_I128 + rhs.0 as i128 - 1)
                 .checked_div(rhs.0 as i128)
                 .unwrap()
                 .try_into()
@@ -433,7 +442,7 @@ impl Rational<i64> for FixedDecimal9 {
         );
         #[cfg(not(feature = "checked_i64"))]
         return FixedDecimal9(
-            ((self.0 as i128 * 1_000_000_000 + rhs.0 as i128 - 1) / rhs.0 as i128) as i64,
+            ((self.0 as i128 * Self::FACTOR_I128 + rhs.0 as i128 - 1) / rhs.0 as i128) as i64,
         );
     }
 
