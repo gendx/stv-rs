@@ -4,13 +4,20 @@ jobs:
   build:
     strategy:
       matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
         rust:
           - stable
           - beta
           - nightly
           - 1.73.0  # MSRV
+        include:
+          - os_cache: ""
+          - os: macos-latest
+            os_cache: "-macos"
       fail-fast: false
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     env:
       RUSTFLAGS: "-D warnings"
     steps:
@@ -25,10 +32,10 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cargo/registry
-          key: cargo-registry-${{ hashFiles('Cargo.toml') }}-${{ hashFiles('Cargo.lock') }}
+          key: cargo-registry${{ matrix.os_cache }}-${{ hashFiles('Cargo.toml') }}-${{ hashFiles('Cargo.lock') }}
           restore-keys: |
-            cargo-registry-${{ hashFiles('Cargo.toml') }}
-            cargo-registry
+            cargo-registry${{ matrix.os_cache }}-${{ hashFiles('Cargo.toml') }}
+            cargo-registry${{ matrix.os_cache }}
 
       - name: Check Cargo version
         run: cargo -V | tee cargo.version.txt
@@ -36,10 +43,10 @@ jobs:
         uses: actions/cache@v4
         with:
           path: target
-          key: cargo-target-debug-${{ hashFiles('cargo.version.txt') }}-${{ hashFiles('Cargo.toml') }}-${{ hashFiles('Cargo.lock') }}
+          key: cargo-target${{ matrix.os_cache }}-debug-${{ hashFiles('cargo.version.txt') }}-${{ hashFiles('Cargo.toml') }}-${{ hashFiles('Cargo.lock') }}
           restore-keys: |
-            cargo-target-debug-${{ hashFiles('cargo.version.txt') }}-${{ hashFiles('Cargo.toml') }}
-            cargo-target-debug-${{ hashFiles('cargo.version.txt') }}
+            cargo-target${{ matrix.os_cache }}-debug-${{ hashFiles('cargo.version.txt') }}-${{ hashFiles('Cargo.toml') }}
+            cargo-target${{ matrix.os_cache }}-debug-${{ hashFiles('cargo.version.txt') }}
 
       - name: Build without features
         run: cargo build --verbose --all --no-default-features
