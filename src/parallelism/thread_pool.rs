@@ -17,7 +17,18 @@
 use crate::arithmetic::{Integer, IntegerRef, Rational, RationalRef};
 use crate::types::Election;
 use crate::vote_count::{VoteAccumulator, VoteCount};
-use log::{debug, error};
+use log::{debug, error, warn};
+// Platforms that support `libc::sched_setaffinity()`.
+#[cfg(any(
+    target_os = "android",
+    target_os = "dragonfly",
+    target_os = "freebsd",
+    target_os = "linux"
+))]
+use nix::{
+    sched::{sched_setaffinity, CpuSet},
+    unistd::Pid,
+};
 use std::cell::Cell;
 use std::num::NonZeroUsize;
 use std::ops::{DerefMut, Range};
@@ -161,6 +172,13 @@ where
         let main_status = Arc::new(Status::new(MainStatus::Waiting));
         let keep_factors = Arc::new(RwLock::new(Vec::new()));
         let num_ballots = election.ballots.len();
+        #[cfg(not(any(
+            target_os = "android",
+            target_os = "dragonfly",
+            target_os = "freebsd",
+            target_os = "linux"
+        )))]
+        warn!("Pinning threads to CPUs is not implemented on this platform.");
         let threads: Vec<_> = (0..num_threads.into())
             .map(|id| {
                 let start = (id * num_ballots) / num_threads;
@@ -178,7 +196,25 @@ where
                     output: output.clone(),
                 };
                 Thread {
-                    handle: thread_scope.spawn(move || context.run()),
+                    handle: thread_scope.spawn(move || {
+                        #[cfg(any(
+                            target_os = "android",
+                            target_os = "dragonfly",
+                            target_os = "freebsd",
+                            target_os = "linux"
+                        ))]
+                        {
+                            let mut cpu_set = CpuSet::new();
+                            if let Err(e) = cpu_set.set(id) {
+                                warn!("Failed to set CPU affinity for thread #{id}: {e}");
+                            } else if let Err(e) = sched_setaffinity(Pid::from_raw(0), &cpu_set) {
+                                warn!("Failed to set CPU affinity for thread #{id}: {e}");
+                            } else {
+                                debug!("Pinned thread #{id} to CPU #{id}");
+                            }
+                        }
+                        context.run()
+                    }),
                     output,
                 }
             })

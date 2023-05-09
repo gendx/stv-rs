@@ -20,6 +20,10 @@ num = "0.4"
 rayon = "1"
 regex = "1.10"
 
+# Platforms that support `libc::sched_setaffinity()`.
+[target.'cfg(any(target_os = "android", target_os = "dragonfly", target_os = "freebsd", target_os = "linux"))'.dependencies]
+nix = { version = "0.28", features = ["sched"] }
+
 [dev-dependencies]
 rand = "0.8"
 rand_chacha = "0.3.1"
