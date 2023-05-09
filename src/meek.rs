@@ -214,7 +214,7 @@ where
                 break;
             }
 
-            self.election_round(stdout, &mut count, round)?;
+            self.election_round(stdout, &mut count)?;
 
             let now = Instant::now();
             debug!(
@@ -244,7 +244,10 @@ where
 
     /// Elects a candidate, and updates the state accordingly.
     fn elect_candidate(&mut self, i: usize) {
-        info!("Electing candidate {i}");
+        info!(
+            "Electing candidate #{i} ({})",
+            self.election.candidates[i].nickname
+        );
         assert!(self.to_elect != 0);
         self.elected.push(i);
         self.statuses[i] = Status::Elected;
@@ -253,7 +256,10 @@ where
 
     /// Defeats a candidate, and updates the state accordingly.
     fn defeat_candidate(&mut self, i: usize) {
-        info!("Defeating candidate {i}");
+        info!(
+            "Defeating candidate #{i} ({})",
+            self.election.candidates[i].nickname
+        );
         self.not_elected.push(i);
         self.statuses[i] = Status::NotElected;
     }
@@ -369,9 +375,8 @@ Election: {}
         &mut self,
         stdout: &mut impl io::Write,
         count: &mut VoteCount<I, R>,
-        round: usize,
     ) -> io::Result<()> {
-        let iteration = self.iterate_droop(stdout, count, round)?;
+        let iteration = self.iterate_droop(stdout, count)?;
         self.write_action(stdout, &format!("Iterate ({iteration})"), count, false)?;
 
         if let DroopIteration::Elected = iteration {
@@ -414,7 +419,6 @@ Election: {}
         &mut self,
         stdout: &mut impl io::Write,
         count: &mut VoteCount<I, R>,
-        round: usize,
     ) -> io::Result<DroopIteration> {
         let mut last_surplus = R::from_usize(self.election.num_ballots);
 
@@ -422,7 +426,7 @@ Election: {}
             *count = self.count_votes();
             self.threshold = count.threshold(self.election);
 
-            let has_elected = self.elect_candidates(stdout, count, round)?;
+            let has_elected = self.elect_candidates(stdout, count)?;
 
             self.surplus = if self.force_positive_surplus {
                 count.surplus_positive(&self.threshold, &self.elected)
@@ -479,7 +483,6 @@ Election: {}
         &mut self,
         stdout: &mut impl io::Write,
         count: &VoteCount<I, R>,
-        round: usize,
     ) -> io::Result<bool> {
         let mut has_elected = false;
         for (i, candidate) in self.election.candidates.iter().enumerate() {
@@ -490,7 +493,7 @@ Election: {}
                 Status::Elected => {
                     if count.sum[i] < self.threshold {
                         warn!(
-                            "Count for elected candidate {} is lower than the quota: {} < {} ~ {} < {}",
+                            "Count for elected candidate #{i} ({}) is lower than the quota: {} < {} ~ {} < {}",
                             candidate.nickname,
                             count.sum[i],
                             self.threshold,
@@ -511,7 +514,6 @@ Election: {}
                     if exceeds_threshold {
                         // We cannot elect more candidates than seats.
                         assert!(self.to_elect > 0);
-                        info!("Elected in round {round}: {}", candidate.nickname);
                         self.elect_candidate(i);
                         self.write_action(
                             stdout,
@@ -1418,7 +1420,7 @@ Weights:
         let mut count = make_count();
 
         let mut buf = Vec::new();
-        state.election_round(&mut buf, &mut count, 42).unwrap();
+        state.election_round(&mut buf, &mut count).unwrap();
         assert_eq!(
             (
                 state.threshold,
@@ -1480,7 +1482,7 @@ Action: Defeat (surplus 0.000000000 < omega): Apple
         let mut count = make_count();
 
         let mut buf = Vec::new();
-        state.election_round(&mut buf, &mut count, 42).unwrap();
+        state.election_round(&mut buf, &mut count).unwrap();
         assert_eq!(
             (
                 state.threshold,
@@ -1552,7 +1554,7 @@ Action: Iterate (elected)
         let mut count = make_count();
 
         let mut buf = Vec::new();
-        state.election_round(&mut buf, &mut count, 42).unwrap();
+        state.election_round(&mut buf, &mut count).unwrap();
         assert_eq!(
             (
                 state.threshold,
@@ -1629,7 +1631,7 @@ Action: Defeat (surplus 0.000000599 < omega): Apple
         let mut count = make_count();
 
         let mut buf = Vec::new();
-        state.election_round(&mut buf, &mut count, 42).unwrap();
+        state.election_round(&mut buf, &mut count).unwrap();
         assert_eq!(
             (
                 state.threshold,
@@ -1732,7 +1734,7 @@ Action: Defeat (stable surplus 0.000066666): Apple
         let mut count = make_count();
 
         let mut buf = Vec::new();
-        let iteration = state.iterate_droop(&mut buf, &mut count, 42).unwrap();
+        let iteration = state.iterate_droop(&mut buf, &mut count).unwrap();
         assert_eq!(iteration, DroopIteration::Omega);
         // TODO: Use expectations rather than assertions.
         assert_eq!(
@@ -1761,7 +1763,7 @@ Action: Defeat (stable surplus 0.000066666): Apple
         let mut count = make_count();
 
         let mut buf = Vec::new();
-        let iteration = state.iterate_droop(&mut buf, &mut count, 42).unwrap();
+        let iteration = state.iterate_droop(&mut buf, &mut count).unwrap();
         assert_eq!(iteration, DroopIteration::Elected);
         assert_eq!(
             (
@@ -1823,7 +1825,7 @@ Action: Defeat (stable surplus 0.000066666): Apple
         let mut count = make_count();
 
         let mut buf = Vec::new();
-        let iteration = state.iterate_droop(&mut buf, &mut count, 42).unwrap();
+        let iteration = state.iterate_droop(&mut buf, &mut count).unwrap();
         assert_eq!(iteration, DroopIteration::Elected);
         assert_eq!(
             (
@@ -1890,7 +1892,7 @@ Action: Defeat (stable surplus 0.000066666): Apple
         let mut count = make_count();
 
         let mut buf = Vec::new();
-        let iteration = state.iterate_droop(&mut buf, &mut count, 42).unwrap();
+        let iteration = state.iterate_droop(&mut buf, &mut count).unwrap();
         assert_eq!(iteration, DroopIteration::Stable);
         assert_eq!(
             (
@@ -1983,7 +1985,7 @@ Action: Defeat (stable surplus 0.000066666): Apple
         );
 
         let mut buf = Vec::new();
-        state.elect_candidates(&mut buf, &count, 42).unwrap();
+        state.elect_candidates(&mut buf, &count).unwrap();
 
         assert_eq!(
             state.statuses,
@@ -2083,7 +2085,7 @@ Action: Elect: Grape
         );
 
         let mut buf = Vec::new();
-        state.elect_candidates(&mut buf, &count, 42).unwrap();
+        state.elect_candidates(&mut buf, &count).unwrap();
 
         assert_eq!(
             state.statuses,
