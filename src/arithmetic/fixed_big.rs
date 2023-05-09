@@ -61,156 +61,138 @@ impl One for BigFixedDecimal9 {
 impl Add for BigFixedDecimal9 {
     type Output = Self;
     fn add(self, rhs: Self) -> Self {
-        BigFixedDecimal9(self.0.add(rhs.0))
+        BigFixedDecimal9(self.0 + rhs.0)
     }
 }
 impl Sub for BigFixedDecimal9 {
     type Output = Self;
     fn sub(self, rhs: Self) -> Self {
-        BigFixedDecimal9(self.0.sub(rhs.0))
+        BigFixedDecimal9(self.0 - rhs.0)
     }
 }
 impl Mul for BigFixedDecimal9 {
     type Output = Self;
     fn mul(self, rhs: Self) -> Self {
-        let ratio = BigRational::new(self.0.mul(rhs.0), BigInt::from(Self::FACTOR));
-        BigFixedDecimal9(ratio.floor().numer().clone())
+        BigFixedDecimal9((self.0 * rhs.0) / Self::FACTOR)
     }
 }
 impl Mul<BigInt> for BigFixedDecimal9 {
     type Output = Self;
     fn mul(self, rhs: BigInt) -> Self {
-        BigFixedDecimal9(self.0.mul(rhs))
+        BigFixedDecimal9(self.0 * rhs)
     }
 }
 impl Div for BigFixedDecimal9 {
     type Output = Self;
-    #[allow(clippy::suspicious_arithmetic_impl)]
     fn div(self, rhs: Self) -> Self {
-        let ratio = BigRational::new(self.0 * BigInt::from(Self::FACTOR), rhs.0);
-        BigFixedDecimal9(ratio.floor().numer().clone())
+        BigFixedDecimal9((self.0 * Self::FACTOR) / rhs.0)
     }
 }
 impl Div<BigInt> for BigFixedDecimal9 {
     type Output = Self;
     fn div(self, rhs: BigInt) -> Self {
-        let ratio = BigRational::new(self.0, rhs);
-        BigFixedDecimal9(ratio.floor().numer().clone())
+        BigFixedDecimal9(self.0 / rhs)
     }
 }
 
 impl Add<&'_ Self> for BigFixedDecimal9 {
     type Output = Self;
     fn add(self, rhs: &'_ Self) -> Self {
-        BigFixedDecimal9(self.0.add(&rhs.0))
+        BigFixedDecimal9(self.0 + &rhs.0)
     }
 }
 impl Sub<&'_ Self> for BigFixedDecimal9 {
     type Output = Self;
     fn sub(self, rhs: &'_ Self) -> Self {
-        BigFixedDecimal9(self.0.sub(&rhs.0))
+        BigFixedDecimal9(self.0 - &rhs.0)
     }
 }
 impl Mul<&'_ Self> for BigFixedDecimal9 {
     type Output = Self;
     fn mul(self, rhs: &'_ Self) -> Self {
-        let ratio = BigRational::new(self.0.mul(&rhs.0), BigInt::from(Self::FACTOR));
-        BigFixedDecimal9(ratio.floor().numer().clone())
+        BigFixedDecimal9((self.0 * &rhs.0) / Self::FACTOR)
     }
 }
 impl Div<&'_ Self> for BigFixedDecimal9 {
     type Output = Self;
-    #[allow(clippy::suspicious_arithmetic_impl)]
     fn div(self, rhs: &'_ Self) -> Self {
-        let ratio = BigRational::new(self.0 * BigInt::from(Self::FACTOR), rhs.0.clone());
-        BigFixedDecimal9(ratio.floor().numer().clone())
+        BigFixedDecimal9((self.0 * Self::FACTOR) / &rhs.0)
     }
 }
 
 impl Add<&'_ BigFixedDecimal9> for &'_ BigFixedDecimal9 {
     type Output = BigFixedDecimal9;
     fn add(self, rhs: &'_ BigFixedDecimal9) -> BigFixedDecimal9 {
-        BigFixedDecimal9((&self.0).add(&rhs.0))
+        BigFixedDecimal9(&self.0 + &rhs.0)
     }
 }
 impl Sub<&'_ BigFixedDecimal9> for &'_ BigFixedDecimal9 {
     type Output = BigFixedDecimal9;
     fn sub(self, rhs: &'_ BigFixedDecimal9) -> BigFixedDecimal9 {
-        BigFixedDecimal9((&self.0).sub(&rhs.0))
+        BigFixedDecimal9(&self.0 - &rhs.0)
     }
 }
 impl Mul<&'_ BigFixedDecimal9> for &'_ BigFixedDecimal9 {
     type Output = BigFixedDecimal9;
     fn mul(self, rhs: &'_ BigFixedDecimal9) -> BigFixedDecimal9 {
-        let ratio = BigRational::new(
-            (&self.0).mul(&rhs.0),
-            BigInt::from(BigFixedDecimal9::FACTOR),
-        );
-        BigFixedDecimal9(ratio.floor().numer().clone())
+        BigFixedDecimal9((&self.0 * &rhs.0) / BigFixedDecimal9::FACTOR)
     }
 }
 impl Mul<&'_ BigInt> for &'_ BigFixedDecimal9 {
     type Output = BigFixedDecimal9;
     fn mul(self, rhs: &'_ BigInt) -> BigFixedDecimal9 {
-        BigFixedDecimal9((&self.0).mul(rhs))
+        BigFixedDecimal9(&self.0 * rhs)
     }
 }
 impl Div<&'_ BigFixedDecimal9> for &'_ BigFixedDecimal9 {
     type Output = BigFixedDecimal9;
-    #[allow(clippy::suspicious_arithmetic_impl)]
     fn div(self, rhs: &'_ BigFixedDecimal9) -> BigFixedDecimal9 {
-        let ratio = BigRational::new(
-            self.0.clone() * BigInt::from(BigFixedDecimal9::FACTOR),
-            rhs.0.clone(),
-        );
-        BigFixedDecimal9(ratio.floor().numer().clone())
+        BigFixedDecimal9((&self.0 * BigFixedDecimal9::FACTOR) / &rhs.0)
     }
 }
 impl Div<&'_ BigInt> for &'_ BigFixedDecimal9 {
     type Output = BigFixedDecimal9;
     fn div(self, rhs: &'_ BigInt) -> BigFixedDecimal9 {
-        let ratio = BigRational::new(self.0.clone(), rhs.clone());
-        BigFixedDecimal9(ratio.floor().numer().clone())
+        BigFixedDecimal9(&self.0 / rhs)
     }
 }
 
 impl AddAssign for BigFixedDecimal9 {
     fn add_assign(&mut self, rhs: Self) {
-        self.0.add_assign(rhs.0)
+        self.0 += rhs.0
     }
 }
 impl SubAssign for BigFixedDecimal9 {
     fn sub_assign(&mut self, rhs: Self) {
-        self.0.sub_assign(rhs.0)
+        self.0 -= rhs.0
     }
 }
 impl MulAssign for BigFixedDecimal9 {
     fn mul_assign(&mut self, rhs: Self) {
-        let ratio = BigRational::new(self.0.clone().mul(rhs.0), BigInt::from(Self::FACTOR));
-        self.0.clone_from(ratio.floor().numer());
+        self.0 *= rhs.0;
+        self.0 /= Self::FACTOR;
     }
 }
 
 impl AddAssign<&'_ Self> for BigFixedDecimal9 {
     fn add_assign(&mut self, rhs: &'_ Self) {
-        self.0.add_assign(&rhs.0)
+        self.0 += &rhs.0
     }
 }
 impl SubAssign<&'_ Self> for BigFixedDecimal9 {
     fn sub_assign(&mut self, rhs: &'_ Self) {
-        self.0.sub_assign(&rhs.0)
+        self.0 -= &rhs.0
     }
 }
 impl MulAssign<&'_ Self> for BigFixedDecimal9 {
     fn mul_assign(&mut self, rhs: &'_ Self) {
-        let ratio = BigRational::new(self.0.clone().mul(&rhs.0), BigInt::from(Self::FACTOR));
-        self.0.clone_from(ratio.floor().numer());
+        self.0 *= &rhs.0;
+        self.0 /= Self::FACTOR;
     }
 }
 impl DivAssign<&'_ BigInt> for BigFixedDecimal9 {
     fn div_assign(&mut self, rhs: &'_ BigInt) {
-        let ratio = BigRational::new(self.0.clone(), rhs.clone());
-        self.0.clone_from(ratio.floor().numer());
+        self.0 /= rhs;
     }
 }
 
@@ -245,11 +227,11 @@ impl RationalRef<&BigInt, BigFixedDecimal9> for &BigFixedDecimal9 {}
 
 impl Rational<BigInt> for BigFixedDecimal9 {
     fn from_int(i: BigInt) -> Self {
-        BigFixedDecimal9(i * BigInt::from(Self::FACTOR))
+        BigFixedDecimal9(i * Self::FACTOR)
     }
 
     fn ratio_i(num: BigInt, denom: BigInt) -> Self {
-        BigFixedDecimal9((num * BigInt::from(Self::FACTOR)) / denom)
+        BigFixedDecimal9((num * Self::FACTOR) / denom)
     }
 
     fn to_f64(&self) -> f64 {
@@ -272,13 +254,11 @@ impl Rational<BigInt> for BigFixedDecimal9 {
     }
 
     fn mul_up(&self, rhs: &Self) -> Self {
-        let ratio = BigRational::new(&self.0 * &rhs.0, BigInt::from(Self::FACTOR));
-        BigFixedDecimal9(ratio.ceil().numer().clone())
+        BigFixedDecimal9((&self.0 * &rhs.0 + Self::FACTOR - 1) / Self::FACTOR)
     }
 
     fn div_up(&self, rhs: &Self) -> Self {
-        let ratio = BigRational::new(&self.0 * BigInt::from(Self::FACTOR), rhs.0.clone());
-        BigFixedDecimal9(ratio.ceil().numer().clone())
+        BigFixedDecimal9((&self.0 * Self::FACTOR + &rhs.0 - 1) / &rhs.0)
     }
 
     #[cfg(test)]
