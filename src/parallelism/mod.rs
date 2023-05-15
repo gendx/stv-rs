@@ -14,6 +14,7 @@
 
 //! Hand-rolled parallelism utilities for vote counting.
 
+mod range;
 mod thread_pool;
 
-pub use thread_pool::ThreadPool;
+pub use thread_pool::{RangeStrategy, ThreadPool};
