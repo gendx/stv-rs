@@ -676,6 +676,7 @@ where
 mod test {
     use super::*;
     use crate::arithmetic::{ApproxRational, BigFixedDecimal9, FixedDecimal9, Integer64};
+    use crate::parallelism::RangeStrategy;
     use crate::types::Candidate;
     use ::test::Bencher;
     use num::rational::Ratio;
@@ -1095,6 +1096,7 @@ mod test {
                         let thread_pool = ThreadPool::new(
                             thread_scope,
                             NonZeroUsize::new(num_threads).unwrap(),
+                            RangeStrategy::WorkStealing,
                             &election,
                             None,
                         );

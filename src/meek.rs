@@ -17,7 +17,7 @@
 
 use crate::arithmetic::{Integer, IntegerRef, Rational, RationalRef};
 use crate::cli::Parallel;
-use crate::parallelism::ThreadPool;
+use crate::parallelism::{RangeStrategy, ThreadPool};
 use crate::types::{Election, ElectionResult};
 use crate::vote_count::{self, VoteCount};
 use log::{debug, info, warn};
@@ -37,6 +37,7 @@ pub fn stv_droop<I, R>(
     omega_exponent: usize,
     parallel: Parallel,
     num_threads: Option<NonZeroUsize>,
+    disable_work_stealing: bool,
     force_positive_surplus: bool,
     equalize: bool,
 ) -> io::Result<ElectionResult>
@@ -110,7 +111,17 @@ where
                     .expect("A positive number of threads must be spawned, but the available parallelism is zero threads")
             });
             info!("Spawning {num_threads} threads");
-            let thread_pool = ThreadPool::new(thread_scope, num_threads, election, pascal);
+            let thread_pool = ThreadPool::new(
+                thread_scope,
+                num_threads,
+                if disable_work_stealing {
+                    RangeStrategy::Fixed
+                } else {
+                    RangeStrategy::WorkStealing
+                },
+                election,
+                pascal,
+            );
 
             let state = State::<I, R>::new(
                 election,
@@ -1041,6 +1052,7 @@ mod test {
             None,
             false,
             false,
+            false,
         )
         .unwrap();
 
@@ -1266,6 +1278,7 @@ Action: Count Complete
             parallel,
             None,
             false,
+            false,
             true,
         )
         .unwrap();
@@ -1432,6 +1445,7 @@ Action: Count Complete
             None,
             false,
             false,
+            false,
         )
         .unwrap();
 
@@ -1580,6 +1594,7 @@ Action: Count Complete
             /* num_threads = */ Some(NonZeroUsize::new(2).unwrap()),
             false,
             false,
+            false,
         );
     }
 
@@ -1595,6 +1610,7 @@ Action: Count Complete
                 6,
                 Parallel::Custom,
                 /* num_threads = */ Some(NonZeroUsize::new(2).unwrap()),
+                false,
                 false,
                 false,
             )
