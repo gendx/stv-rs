@@ -9,6 +9,8 @@ Options:
           Enable parallel ballot counting [default: rayon] [possible values: no, rayon, custom]
       --num-threads <NUM_THREADS>
           Explicitly specify the number of threads to use in `--parallel` modes. Ignored if parallelism is disabled
+      --disable-work-stealing
+          Disable work stealing and use a simple partitioning strategy. Ignored if `--parallel` isn't set to "custom"
       --force-positive-surplus
           Enable a bug-fix in the surplus calculation, preventing it from being negative. Results may differ from Droop.py, but this prevents crashes
       --equalize

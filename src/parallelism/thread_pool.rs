@@ -15,6 +15,9 @@
 //! A hand-rolled thread pool, customized for the vote counting problem.
 
 use crate::arithmetic::{Integer, IntegerRef, Rational, RationalRef};
+use crate::parallelism::range::{
+    FixedRangeFactory, Range, RangeFactory, RangeOrchestrator, WorkStealingRangeFactory,
+};
 use crate::types::Election;
 use crate::vote_count::{VoteAccumulator, VoteCount};
 use log::{debug, error, warn};
@@ -31,7 +34,7 @@ use nix::{
 };
 use std::cell::Cell;
 use std::num::NonZeroUsize;
-use std::ops::{DerefMut, Range};
+use std::ops::DerefMut;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Condvar, Mutex, MutexGuard, PoisonError, RwLock};
 use std::thread::{Scope, ScopedJoinHandle};
@@ -141,6 +144,10 @@ pub struct ThreadPool<'scope, I, R> {
     /// Storage for the keep factors, used as input of the current round by the
     /// worker threads.
     keep_factors: Arc<RwLock<Vec<R>>>,
+    /// Orchestrator for the work ranges distributed to the threads. This is a
+    /// dynamic object to avoid making the range type a parameter of
+    /// everything.
+    range_orchestrator: Box<dyn RangeOrchestrator>,
 }
 
 /// Handle to a thread in the pool.
@@ -149,6 +156,14 @@ struct Thread<'scope, I, R> {
     handle: ScopedJoinHandle<'scope, ()>,
     /// Storage for this thread's computation output.
     output: Arc<Mutex<Option<VoteAccumulator<I, R>>>>,
+}
+
+/// Strategy to distribute ranges of work items among threads.
+pub enum RangeStrategy {
+    /// Each thread processes a fixed range of items.
+    Fixed,
+    /// Threads can steal work from each other.
+    WorkStealing,
 }
 
 impl<'scope, I, R> ThreadPool<'scope, I, R>
@@ -163,15 +178,47 @@ where
     pub fn new<'e>(
         thread_scope: &'scope Scope<'scope, 'e>,
         num_threads: NonZeroUsize,
+        range_strategy: RangeStrategy,
         election: &'e Election,
         pascal: Option<&'e [Vec<I>]>,
     ) -> Self {
+        let num_threads: usize = num_threads.into();
+        let num_ballots = election.ballots.len();
+        match range_strategy {
+            RangeStrategy::Fixed => Self::new_with_factory(
+                thread_scope,
+                num_threads,
+                FixedRangeFactory::new(num_ballots, num_threads),
+                election,
+                pascal,
+            ),
+            RangeStrategy::WorkStealing => Self::new_with_factory(
+                thread_scope,
+                num_threads,
+                WorkStealingRangeFactory::new(num_ballots, num_threads),
+                election,
+                pascal,
+            ),
+        }
+    }
+
+    fn new_with_factory<'e, RnFactory: RangeFactory>(
+        thread_scope: &'scope Scope<'scope, 'e>,
+        num_threads: usize,
+        range_factory: RnFactory,
+        election: &'e Election,
+        pascal: Option<&'e [Vec<I>]>,
+    ) -> Self
+    where
+        RnFactory::Rn: 'scope + Send,
+        RnFactory::Orchestrator: 'static,
+    {
         let color = RoundColor::Blue;
         let num_active_threads = Arc::new(AtomicUsize::new(0));
         let worker_status = Arc::new(Status::new(WorkerStatus::Round(color)));
         let main_status = Arc::new(Status::new(MainStatus::Waiting));
         let keep_factors = Arc::new(RwLock::new(Vec::new()));
-        let num_ballots = election.ballots.len();
+
         #[cfg(not(any(
             target_os = "android",
             target_os = "dragonfly",
@@ -179,10 +226,8 @@ where
             target_os = "linux"
         )))]
         warn!("Pinning threads to CPUs is not implemented on this platform.");
-        let threads: Vec<_> = (0..num_threads.into())
+        let threads = (0..num_threads)
             .map(|id| {
-                let start = (id * num_ballots) / num_threads;
-                let end = ((id + 1) * num_ballots) / num_threads;
                 let output = Arc::new(Mutex::new(None));
                 let context = ThreadContext {
                     id,
@@ -192,7 +237,7 @@ where
                     election,
                     pascal,
                     keep_factors: keep_factors.clone(),
-                    range: start..end,
+                    range: range_factory.range(id),
                     output: output.clone(),
                 };
                 Thread {
@@ -228,6 +273,7 @@ where
             worker_status,
             main_status,
             keep_factors,
+            range_orchestrator: Box::new(range_factory.orchestrator()),
         }
     }
 
@@ -239,6 +285,7 @@ where
             keep_factors_guard.clear();
             keep_factors_guard.extend_from_slice(keep_factors);
         }
+        self.range_orchestrator.reset_ranges();
 
         let num_threads = self.threads.len();
         self.num_active_threads.store(num_threads, Ordering::SeqCst);
@@ -294,7 +341,7 @@ impl<I, R> Drop for ThreadPool<'_, I, R> {
 }
 
 /// Context object owned by a worker thread.
-struct ThreadContext<'e, I, R> {
+struct ThreadContext<'e, I, R, Rn: Range> {
     /// Thread index.
     id: usize,
     /// Number of worker threads active in the current round.
@@ -310,12 +357,12 @@ struct ThreadContext<'e, I, R> {
     /// Keep factors used in the current round.
     keep_factors: Arc<RwLock<Vec<R>>>,
     /// Range of ballots that this worker thread needs to count.
-    range: Range<usize>,
+    range: Rn,
     /// Storage for the votes accumulated by this thread.
     output: Arc<Mutex<Option<VoteAccumulator<I, R>>>>,
 }
 
-impl<I, R> ThreadContext<'_, I, R>
+impl<I, R, Rn: Range> ThreadContext<'_, I, R, Rn>
 where
     I: Integer,
     for<'a> &'a I: IntegerRef<I>,
@@ -403,7 +450,7 @@ where
             .insert(VoteAccumulator::new(self.election.num_candidates));
         let keep_factors = self.keep_factors.read().unwrap();
 
-        for i in self.range.clone() {
+        for i in self.range.iter() {
             let ballot = &self.election.ballots[i];
             VoteCount::<I, R>::process_ballot(
                 vote_accumulator,

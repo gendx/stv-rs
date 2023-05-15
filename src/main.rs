@@ -80,6 +80,11 @@ struct MeekParams {
     #[arg(long)]
     num_threads: Option<NonZeroUsize>,
 
+    /// Disable work stealing and use a simple partitioning strategy. Ignored if
+    /// `--parallel` isn't set to "custom".
+    #[arg(long)]
+    disable_work_stealing: bool,
+
     /// Enable a bug-fix in the surplus calculation, preventing it from being
     /// negative. Results may differ from Droop.py, but this prevents
     /// crashes.
@@ -191,6 +196,7 @@ impl Cli {
                     meek_params.omega_exponent,
                     meek_params.parallel,
                     meek_params.num_threads,
+                    meek_params.disable_work_stealing,
                     meek_params.force_positive_surplus,
                     meek_params.equalize,
                 )?;
@@ -258,6 +264,7 @@ mod test {
                     omega_exponent: 6,
                     parallel: Parallel::Rayon,
                     num_threads: None,
+                    disable_work_stealing: false,
                     force_positive_surplus: false,
                     equalize: false,
                 })
@@ -290,6 +297,7 @@ mod test {
             "--omega-exponent=42",
             "--parallel=no",
             "--num-threads=37",
+            "--disable-work-stealing",
             "--force-positive-surplus",
             "--equalize",
         ])
@@ -304,6 +312,7 @@ mod test {
                     omega_exponent: 42,
                     parallel: Parallel::No,
                     num_threads: Some(NonZeroUsize::new(37).unwrap()),
+                    disable_work_stealing: true,
                     force_positive_surplus: true,
                     equalize: true,
                 }),
@@ -323,6 +332,7 @@ mod test {
             "--omega-exponent", "42",
             "--parallel", "rayon",
             "--num-threads", "37",
+            "--disable-work-stealing",
             "--force-positive-surplus",
             "--equalize",
         ])
@@ -337,6 +347,7 @@ mod test {
                     omega_exponent: 42,
                     parallel: Parallel::Rayon,
                     num_threads: Some(NonZeroUsize::new(37).unwrap()),
+                    disable_work_stealing: true,
                     force_positive_surplus: true,
                     equalize: true,
                 }),
@@ -410,6 +421,7 @@ mod test {
                 omega_exponent: 6,
                 parallel: Parallel::No,
                 num_threads: None,
+                disable_work_stealing: false,
                 force_positive_surplus: false,
                 equalize,
             }),
