@@ -474,4 +474,26 @@ mod test {
             .collect();
         assert_eq!(actual_displays, expected_displays);
     }
+
+    /// Check that [`BigFixedDecimal9`] correctly handles inputs that would
+    /// overflow with [`FixedDecimal9`], which is backed by [`i64`].
+    #[test]
+    fn test_i64_overflow() {
+        // The intermediate result of 10^19 is just between 2^63 and 2^64.
+        assert_eq!(
+            BigFixedDecimal9::from_int(5.into()) * BigFixedDecimal9::from_int(2.into()),
+            BigFixedDecimal9::from_int(10.into())
+        );
+        // The intermediate result is above 2^64.
+        assert_eq!(
+            BigFixedDecimal9::from_int(1_000.into()) * BigFixedDecimal9::from_int(1_000.into()),
+            BigFixedDecimal9::from_int(1_000_000.into())
+        );
+        // The final result exceeds 2^64.
+        assert_eq!(
+            BigFixedDecimal9::from_int(1_000_000.into())
+                * BigFixedDecimal9::from_int(1_000_000.into()),
+            BigFixedDecimal9::from_int(1_000_000_000_000_i64.into())
+        );
+    }
 }

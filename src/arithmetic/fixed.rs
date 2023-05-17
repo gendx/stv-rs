@@ -581,4 +581,60 @@ mod test {
             .collect();
         assert_eq!(actual_displays, expected_displays);
     }
+
+    #[test]
+    fn test_intermediate_overflow() {
+        // Even though the intermediate multiplication overflows a i64, the result
+        // doesn't and is correct.
+        assert_eq!(
+            FixedDecimal9::from_int(1_000) * FixedDecimal9::from_int(1_000),
+            FixedDecimal9::from_int(1_000_000)
+        );
+        // The intermediate result of 10^19 is just between 2^63 and 2^64. Therefore it
+        // overflows i64 as well.
+        assert_eq!(
+            FixedDecimal9::from_int(5) * FixedDecimal9::from_int(2),
+            FixedDecimal9::from_int(10)
+        );
+        assert_eq!(
+            FixedDecimal9::from_int(9_000_000_000) / FixedDecimal9::from_int(3),
+            FixedDecimal9::from_int(3_000_000_000)
+        );
+
+        // Same check for MulAssign.
+        let mut x = FixedDecimal9::from_int(1_000);
+        x *= FixedDecimal9::from_int(1_000);
+        assert_eq!(x, FixedDecimal9::from_int(1_000_000));
+    }
+
+    #[cfg(feature = "checked_i64")]
+    #[test]
+    #[should_panic(expected = "called `Result::unwrap()` on an `Err` value: TryFromIntError(())")]
+    fn test_mul_overflow() {
+        // The result overflows an i64, which is caught by checked_i64.
+        let _ = FixedDecimal9::from_int(1_000_000) * FixedDecimal9::from_int(1_000_000);
+    }
+
+    #[cfg(feature = "checked_i64")]
+    #[test]
+    #[should_panic(expected = "called `Result::unwrap()` on an `Err` value: TryFromIntError(())")]
+    fn test_mul_assign_overflow() {
+        // The result overflows an i64, which is caught by checked_i64.
+        let mut x = FixedDecimal9::from_int(1_000_000);
+        x *= FixedDecimal9::from_int(1_000_000);
+    }
+
+    #[cfg(not(feature = "checked_i64"))]
+    #[test]
+    fn test_overflow() {
+        // When checked_i64 is disabled, overflow leads to incorrect values.
+        assert_eq!(
+            FixedDecimal9::from_int(1_000_000) * FixedDecimal9::from_int(1_000_000),
+            FixedDecimal9(3_875_820_019_684_212_736)
+        );
+
+        let mut x = FixedDecimal9::from_int(1_000_000);
+        x *= FixedDecimal9::from_int(1_000_000);
+        assert_eq!(x, FixedDecimal9(3_875_820_019_684_212_736));
+    }
 }
