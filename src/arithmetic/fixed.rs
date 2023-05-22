@@ -30,6 +30,7 @@ use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 pub struct Integer64(i64);
 
 impl Debug for Integer64 {
+    #[inline(always)]
     fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
         write!(f, "{}", self.0)
     }
@@ -43,14 +44,17 @@ impl Display for Integer64 {
 }
 
 impl Zero for Integer64 {
+    #[inline(always)]
     fn zero() -> Self {
         Integer64(i64::zero())
     }
+    #[inline(always)]
     fn is_zero(&self) -> bool {
         self.0.is_zero()
     }
 }
 impl One for Integer64 {
+    #[inline(always)]
     fn one() -> Self {
         Integer64(1)
     }
@@ -58,6 +62,7 @@ impl One for Integer64 {
 
 impl Add for Integer64 {
     type Output = Self;
+    #[inline(always)]
     fn add(self, rhs: Self) -> Self {
         #[cfg(feature = "checked_i64")]
         return Integer64(self.0.checked_add(rhs.0).unwrap());
@@ -67,6 +72,7 @@ impl Add for Integer64 {
 }
 impl Sub for Integer64 {
     type Output = Self;
+    #[inline(always)]
     fn sub(self, rhs: Self) -> Self {
         #[cfg(feature = "checked_i64")]
         return Integer64(self.0.checked_sub(rhs.0).unwrap());
@@ -76,6 +82,7 @@ impl Sub for Integer64 {
 }
 impl Mul for Integer64 {
     type Output = Self;
+    #[inline(always)]
     fn mul(self, rhs: Self) -> Self {
         #[cfg(feature = "checked_i64")]
         return Integer64(self.0.checked_mul(rhs.0).unwrap());
@@ -86,24 +93,28 @@ impl Mul for Integer64 {
 
 impl Add<&'_ Integer64> for &'_ Integer64 {
     type Output = Integer64;
+    #[inline(always)]
     fn add(self, rhs: &'_ Integer64) -> Integer64 {
         *self + *rhs
     }
 }
 impl Sub<&'_ Integer64> for &'_ Integer64 {
     type Output = Integer64;
+    #[inline(always)]
     fn sub(self, rhs: &'_ Integer64) -> Integer64 {
         *self - *rhs
     }
 }
 impl Mul<&'_ Integer64> for &'_ Integer64 {
     type Output = Integer64;
+    #[inline(always)]
     fn mul(self, rhs: &'_ Integer64) -> Integer64 {
         *self * *rhs
     }
 }
 
 impl Integer for Integer64 {
+    #[inline(always)]
     fn from_usize(i: usize) -> Self {
         #[cfg(feature = "checked_i64")]
         return Integer64(i.try_into().unwrap());
@@ -136,6 +147,7 @@ impl FixedDecimal9 {
 
 #[cfg(test)]
 impl FixedDecimal9 {
+    #[inline(always)]
     pub(crate) fn new(x: i64) -> Self {
         FixedDecimal9(x)
     }
@@ -146,6 +158,7 @@ impl FixedDecimal9 {
 }
 
 impl Display for FixedDecimal9 {
+    #[inline(always)]
     fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
         let sign = if self.0 < 0 { "-" } else { "" };
         let (i, rem) = self.0.abs().div_rem(&Self::FACTOR);
@@ -154,14 +167,17 @@ impl Display for FixedDecimal9 {
 }
 
 impl Zero for FixedDecimal9 {
+    #[inline(always)]
     fn zero() -> Self {
         FixedDecimal9(i64::zero())
     }
+    #[inline(always)]
     fn is_zero(&self) -> bool {
         self.0.is_zero()
     }
 }
 impl One for FixedDecimal9 {
+    #[inline(always)]
     fn one() -> Self {
         FixedDecimal9(Self::FACTOR)
     }
@@ -169,6 +185,7 @@ impl One for FixedDecimal9 {
 
 impl Add for FixedDecimal9 {
     type Output = Self;
+    #[inline(always)]
     fn add(self, rhs: Self) -> Self {
         #[cfg(feature = "checked_i64")]
         return FixedDecimal9(self.0.checked_add(rhs.0).unwrap());
@@ -178,6 +195,7 @@ impl Add for FixedDecimal9 {
 }
 impl Sub for FixedDecimal9 {
     type Output = Self;
+    #[inline(always)]
     fn sub(self, rhs: Self) -> Self {
         #[cfg(feature = "checked_i64")]
         return FixedDecimal9(self.0.checked_sub(rhs.0).unwrap());
@@ -187,6 +205,7 @@ impl Sub for FixedDecimal9 {
 }
 impl Mul for FixedDecimal9 {
     type Output = Self;
+    #[inline(always)]
     fn mul(self, rhs: Self) -> Self {
         FixedDecimal9(match self.0.checked_mul(rhs.0) {
             Some(product) => product / Self::FACTOR,
@@ -203,6 +222,7 @@ impl Mul for FixedDecimal9 {
 }
 impl Mul<Integer64> for FixedDecimal9 {
     type Output = Self;
+    #[inline(always)]
     fn mul(self, rhs: Integer64) -> Self {
         #[cfg(feature = "checked_i64")]
         return FixedDecimal9(self.0.checked_mul(rhs.0).unwrap());
@@ -212,12 +232,14 @@ impl Mul<Integer64> for FixedDecimal9 {
 }
 impl Div for FixedDecimal9 {
     type Output = Self;
+    #[inline(always)]
     fn div(self, rhs: Self) -> Self {
         FixedDecimal9::ratio_i(Integer64(self.0), Integer64(rhs.0))
     }
 }
 impl Div<Integer64> for FixedDecimal9 {
     type Output = Self;
+    #[inline(always)]
     fn div(self, rhs: Integer64) -> Self {
         #[cfg(feature = "checked_i64")]
         return FixedDecimal9(self.0.checked_div(rhs.0).unwrap());
@@ -228,24 +250,28 @@ impl Div<Integer64> for FixedDecimal9 {
 
 impl Add<&'_ Self> for FixedDecimal9 {
     type Output = Self;
+    #[inline(always)]
     fn add(self, rhs: &'_ Self) -> Self {
         self + *rhs
     }
 }
 impl Sub<&'_ Self> for FixedDecimal9 {
     type Output = Self;
+    #[inline(always)]
     fn sub(self, rhs: &'_ Self) -> Self {
         self - *rhs
     }
 }
 impl Mul<&'_ Self> for FixedDecimal9 {
     type Output = Self;
+    #[inline(always)]
     fn mul(self, rhs: &'_ Self) -> Self {
         self * *rhs
     }
 }
 impl Div<&'_ Self> for FixedDecimal9 {
     type Output = Self;
+    #[inline(always)]
     fn div(self, rhs: &'_ Self) -> Self {
         self / *rhs
     }
@@ -253,79 +279,93 @@ impl Div<&'_ Self> for FixedDecimal9 {
 
 impl Add<&'_ FixedDecimal9> for &'_ FixedDecimal9 {
     type Output = FixedDecimal9;
+    #[inline(always)]
     fn add(self, rhs: &'_ FixedDecimal9) -> FixedDecimal9 {
         *self + *rhs
     }
 }
 impl Sub<&'_ FixedDecimal9> for &'_ FixedDecimal9 {
     type Output = FixedDecimal9;
+    #[inline(always)]
     fn sub(self, rhs: &'_ FixedDecimal9) -> FixedDecimal9 {
         *self - *rhs
     }
 }
 impl Mul<&'_ FixedDecimal9> for &'_ FixedDecimal9 {
     type Output = FixedDecimal9;
+    #[inline(always)]
     fn mul(self, rhs: &'_ FixedDecimal9) -> FixedDecimal9 {
         *self * *rhs
     }
 }
 impl Mul<&'_ Integer64> for &'_ FixedDecimal9 {
     type Output = FixedDecimal9;
+    #[inline(always)]
     fn mul(self, rhs: &'_ Integer64) -> FixedDecimal9 {
         *self * *rhs
     }
 }
 impl Div<&'_ FixedDecimal9> for &'_ FixedDecimal9 {
     type Output = FixedDecimal9;
+    #[inline(always)]
     fn div(self, rhs: &'_ FixedDecimal9) -> FixedDecimal9 {
         *self / *rhs
     }
 }
 impl Div<&'_ Integer64> for &'_ FixedDecimal9 {
     type Output = FixedDecimal9;
+    #[inline(always)]
     fn div(self, rhs: &'_ Integer64) -> FixedDecimal9 {
         *self / *rhs
     }
 }
 
 impl AddAssign for FixedDecimal9 {
+    #[inline(always)]
     fn add_assign(&mut self, rhs: Self) {
         *self = *self + rhs
     }
 }
 impl SubAssign for FixedDecimal9 {
+    #[inline(always)]
     fn sub_assign(&mut self, rhs: Self) {
         *self = *self - rhs
     }
 }
 impl MulAssign for FixedDecimal9 {
+    #[inline(always)]
     fn mul_assign(&mut self, rhs: Self) {
         *self = *self * rhs
     }
 }
 
 impl AddAssign<&'_ Self> for FixedDecimal9 {
+    #[inline(always)]
     fn add_assign(&mut self, rhs: &'_ Self) {
         *self = *self + *rhs
     }
 }
 impl SubAssign<&'_ Self> for FixedDecimal9 {
+    #[inline(always)]
     fn sub_assign(&mut self, rhs: &'_ Self) {
         *self = *self - *rhs
     }
 }
 impl MulAssign<&'_ Self> for FixedDecimal9 {
+    #[inline(always)]
     fn mul_assign(&mut self, rhs: &'_ Self) {
         *self = *self * *rhs
     }
 }
 impl DivAssign<&'_ Integer64> for FixedDecimal9 {
+    #[inline(always)]
     fn div_assign(&mut self, rhs: &'_ Integer64) {
         *self = *self / *rhs
     }
 }
 
 impl Sum for FixedDecimal9 {
+    #[inline(always)]
     fn sum<I>(iter: I) -> Self
     where
         I: Iterator<Item = Self>,
@@ -335,6 +375,7 @@ impl Sum for FixedDecimal9 {
 }
 
 impl Product for FixedDecimal9 {
+    #[inline(always)]
     fn product<I>(iter: I) -> Self
     where
         I: Iterator<Item = Self>,
@@ -344,6 +385,7 @@ impl Product for FixedDecimal9 {
 }
 
 impl<'a> Sum<&'a Self> for FixedDecimal9 {
+    #[inline(always)]
     fn sum<I>(iter: I) -> Self
     where
         I: Iterator<Item = &'a Self>,
@@ -355,6 +397,7 @@ impl<'a> Sum<&'a Self> for FixedDecimal9 {
 impl RationalRef<&Integer64, FixedDecimal9> for &FixedDecimal9 {}
 
 impl Rational<Integer64> for FixedDecimal9 {
+    #[inline(always)]
     fn from_int(i: Integer64) -> Self {
         #[cfg(feature = "checked_i64")]
         return FixedDecimal9(i.0.checked_mul(Self::FACTOR).unwrap());
@@ -362,6 +405,7 @@ impl Rational<Integer64> for FixedDecimal9 {
         return FixedDecimal9(i.0 * Self::FACTOR);
     }
 
+    #[inline(always)]
     fn ratio_i(num: Integer64, denom: Integer64) -> Self {
         FixedDecimal9(match num.0.checked_mul(Self::FACTOR) {
             Some(product) => {
@@ -386,22 +430,27 @@ impl Rational<Integer64> for FixedDecimal9 {
         })
     }
 
+    #[inline(always)]
     fn to_f64(&self) -> f64 {
         self.0 as f64 / Self::FACTOR as f64
     }
 
+    #[inline(always)]
     fn epsilon() -> Self {
         FixedDecimal9(1)
     }
 
+    #[inline(always)]
     fn is_exact() -> bool {
         false
     }
 
+    #[inline(always)]
     fn description() -> &'static str {
         "fixed-point decimal arithmetic (9 places)"
     }
 
+    #[inline(always)]
     fn mul_up(&self, rhs: &Self) -> Self {
         FixedDecimal9(
             match self
@@ -426,6 +475,7 @@ impl Rational<Integer64> for FixedDecimal9 {
         )
     }
 
+    #[inline(always)]
     fn div_up(&self, rhs: &Self) -> Self {
         FixedDecimal9(
             match self

@@ -34,6 +34,7 @@ impl BigFixedDecimal9 {
 }
 
 impl Display for BigFixedDecimal9 {
+    #[inline(always)]
     fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
         let sign = match self.0.sign() {
             Sign::Plus | Sign::NoSign => "",
@@ -45,14 +46,17 @@ impl Display for BigFixedDecimal9 {
 }
 
 impl Zero for BigFixedDecimal9 {
+    #[inline(always)]
     fn zero() -> Self {
         BigFixedDecimal9(BigInt::zero())
     }
+    #[inline(always)]
     fn is_zero(&self) -> bool {
         self.0.is_zero()
     }
 }
 impl One for BigFixedDecimal9 {
+    #[inline(always)]
     fn one() -> Self {
         BigFixedDecimal9(BigInt::from(Self::FACTOR))
     }
@@ -60,36 +64,42 @@ impl One for BigFixedDecimal9 {
 
 impl Add for BigFixedDecimal9 {
     type Output = Self;
+    #[inline(always)]
     fn add(self, rhs: Self) -> Self {
         BigFixedDecimal9(self.0 + rhs.0)
     }
 }
 impl Sub for BigFixedDecimal9 {
     type Output = Self;
+    #[inline(always)]
     fn sub(self, rhs: Self) -> Self {
         BigFixedDecimal9(self.0 - rhs.0)
     }
 }
 impl Mul for BigFixedDecimal9 {
     type Output = Self;
+    #[inline(always)]
     fn mul(self, rhs: Self) -> Self {
         BigFixedDecimal9((self.0 * rhs.0) / Self::FACTOR)
     }
 }
 impl Mul<BigInt> for BigFixedDecimal9 {
     type Output = Self;
+    #[inline(always)]
     fn mul(self, rhs: BigInt) -> Self {
         BigFixedDecimal9(self.0 * rhs)
     }
 }
 impl Div for BigFixedDecimal9 {
     type Output = Self;
+    #[inline(always)]
     fn div(self, rhs: Self) -> Self {
         BigFixedDecimal9((self.0 * Self::FACTOR) / rhs.0)
     }
 }
 impl Div<BigInt> for BigFixedDecimal9 {
     type Output = Self;
+    #[inline(always)]
     fn div(self, rhs: BigInt) -> Self {
         BigFixedDecimal9(self.0 / rhs)
     }
@@ -97,24 +107,28 @@ impl Div<BigInt> for BigFixedDecimal9 {
 
 impl Add<&'_ Self> for BigFixedDecimal9 {
     type Output = Self;
+    #[inline(always)]
     fn add(self, rhs: &'_ Self) -> Self {
         BigFixedDecimal9(self.0 + &rhs.0)
     }
 }
 impl Sub<&'_ Self> for BigFixedDecimal9 {
     type Output = Self;
+    #[inline(always)]
     fn sub(self, rhs: &'_ Self) -> Self {
         BigFixedDecimal9(self.0 - &rhs.0)
     }
 }
 impl Mul<&'_ Self> for BigFixedDecimal9 {
     type Output = Self;
+    #[inline(always)]
     fn mul(self, rhs: &'_ Self) -> Self {
         BigFixedDecimal9((self.0 * &rhs.0) / Self::FACTOR)
     }
 }
 impl Div<&'_ Self> for BigFixedDecimal9 {
     type Output = Self;
+    #[inline(always)]
     fn div(self, rhs: &'_ Self) -> Self {
         BigFixedDecimal9((self.0 * Self::FACTOR) / &rhs.0)
     }
@@ -122,52 +136,61 @@ impl Div<&'_ Self> for BigFixedDecimal9 {
 
 impl Add<&'_ BigFixedDecimal9> for &'_ BigFixedDecimal9 {
     type Output = BigFixedDecimal9;
+    #[inline(always)]
     fn add(self, rhs: &'_ BigFixedDecimal9) -> BigFixedDecimal9 {
         BigFixedDecimal9(&self.0 + &rhs.0)
     }
 }
 impl Sub<&'_ BigFixedDecimal9> for &'_ BigFixedDecimal9 {
     type Output = BigFixedDecimal9;
+    #[inline(always)]
     fn sub(self, rhs: &'_ BigFixedDecimal9) -> BigFixedDecimal9 {
         BigFixedDecimal9(&self.0 - &rhs.0)
     }
 }
 impl Mul<&'_ BigFixedDecimal9> for &'_ BigFixedDecimal9 {
     type Output = BigFixedDecimal9;
+    #[inline(always)]
     fn mul(self, rhs: &'_ BigFixedDecimal9) -> BigFixedDecimal9 {
         BigFixedDecimal9((&self.0 * &rhs.0) / BigFixedDecimal9::FACTOR)
     }
 }
 impl Mul<&'_ BigInt> for &'_ BigFixedDecimal9 {
     type Output = BigFixedDecimal9;
+    #[inline(always)]
     fn mul(self, rhs: &'_ BigInt) -> BigFixedDecimal9 {
         BigFixedDecimal9(&self.0 * rhs)
     }
 }
 impl Div<&'_ BigFixedDecimal9> for &'_ BigFixedDecimal9 {
     type Output = BigFixedDecimal9;
+    #[inline(always)]
     fn div(self, rhs: &'_ BigFixedDecimal9) -> BigFixedDecimal9 {
         BigFixedDecimal9((&self.0 * BigFixedDecimal9::FACTOR) / &rhs.0)
     }
 }
 impl Div<&'_ BigInt> for &'_ BigFixedDecimal9 {
     type Output = BigFixedDecimal9;
+    #[inline(always)]
     fn div(self, rhs: &'_ BigInt) -> BigFixedDecimal9 {
         BigFixedDecimal9(&self.0 / rhs)
     }
 }
 
 impl AddAssign for BigFixedDecimal9 {
+    #[inline(always)]
     fn add_assign(&mut self, rhs: Self) {
         self.0 += rhs.0
     }
 }
 impl SubAssign for BigFixedDecimal9 {
+    #[inline(always)]
     fn sub_assign(&mut self, rhs: Self) {
         self.0 -= rhs.0
     }
 }
 impl MulAssign for BigFixedDecimal9 {
+    #[inline(always)]
     fn mul_assign(&mut self, rhs: Self) {
         self.0 *= rhs.0;
         self.0 /= Self::FACTOR;
@@ -175,28 +198,33 @@ impl MulAssign for BigFixedDecimal9 {
 }
 
 impl AddAssign<&'_ Self> for BigFixedDecimal9 {
+    #[inline(always)]
     fn add_assign(&mut self, rhs: &'_ Self) {
         self.0 += &rhs.0
     }
 }
 impl SubAssign<&'_ Self> for BigFixedDecimal9 {
+    #[inline(always)]
     fn sub_assign(&mut self, rhs: &'_ Self) {
         self.0 -= &rhs.0
     }
 }
 impl MulAssign<&'_ Self> for BigFixedDecimal9 {
+    #[inline(always)]
     fn mul_assign(&mut self, rhs: &'_ Self) {
         self.0 *= &rhs.0;
         self.0 /= Self::FACTOR;
     }
 }
 impl DivAssign<&'_ BigInt> for BigFixedDecimal9 {
+    #[inline(always)]
     fn div_assign(&mut self, rhs: &'_ BigInt) {
         self.0 /= rhs;
     }
 }
 
 impl Sum for BigFixedDecimal9 {
+    #[inline(always)]
     fn sum<I>(iter: I) -> Self
     where
         I: Iterator<Item = Self>,
@@ -206,6 +234,7 @@ impl Sum for BigFixedDecimal9 {
 }
 
 impl Product for BigFixedDecimal9 {
+    #[inline(always)]
     fn product<I>(iter: I) -> Self
     where
         I: Iterator<Item = Self>,
@@ -215,6 +244,7 @@ impl Product for BigFixedDecimal9 {
 }
 
 impl<'a> Sum<&'a Self> for BigFixedDecimal9 {
+    #[inline(always)]
     fn sum<I>(iter: I) -> Self
     where
         I: Iterator<Item = &'a Self>,
@@ -226,14 +256,17 @@ impl<'a> Sum<&'a Self> for BigFixedDecimal9 {
 impl RationalRef<&BigInt, BigFixedDecimal9> for &BigFixedDecimal9 {}
 
 impl Rational<BigInt> for BigFixedDecimal9 {
+    #[inline(always)]
     fn from_int(i: BigInt) -> Self {
         BigFixedDecimal9(i * Self::FACTOR)
     }
 
+    #[inline(always)]
     fn ratio_i(num: BigInt, denom: BigInt) -> Self {
         BigFixedDecimal9((num * Self::FACTOR) / denom)
     }
 
+    #[inline(always)]
     fn to_f64(&self) -> f64 {
         Rational::to_f64(&BigRational::new(
             self.0.clone(),
@@ -241,22 +274,27 @@ impl Rational<BigInt> for BigFixedDecimal9 {
         ))
     }
 
+    #[inline(always)]
     fn epsilon() -> Self {
         BigFixedDecimal9(BigInt::from(1))
     }
 
+    #[inline(always)]
     fn is_exact() -> bool {
         false
     }
 
+    #[inline(always)]
     fn description() -> &'static str {
         "fixed-point decimal arithmetic (9 places)"
     }
 
+    #[inline(always)]
     fn mul_up(&self, rhs: &Self) -> Self {
         BigFixedDecimal9((&self.0 * &rhs.0 + Self::FACTOR - 1) / Self::FACTOR)
     }
 
+    #[inline(always)]
     fn div_up(&self, rhs: &Self) -> Self {
         BigFixedDecimal9((&self.0 * Self::FACTOR + &rhs.0 - 1) / &rhs.0)
     }

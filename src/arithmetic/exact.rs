@@ -24,6 +24,7 @@ use std::fmt::{Debug, Display};
 
 #[cfg(test)]
 impl Integer for i64 {
+    #[inline(always)]
     fn from_usize(i: usize) -> Self {
         i as i64
     }
@@ -42,6 +43,7 @@ impl Integer for i64 {
 impl IntegerRef<i64> for &i64 {}
 
 impl Integer for BigInt {
+    #[inline(always)]
     fn from_usize(i: usize) -> Self {
         BigInt::from(i)
     }
