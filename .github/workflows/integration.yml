@@ -34,6 +34,9 @@ jobs:
       - name: Check help output
         run: |
           target/release/stv-rs --help | diff -s man/help.txt -
+      - name: Check version output
+        run: |
+          target/release/stv-rs --version | diff -s man/version.txt -
   integration_tests:
     needs: build
     strategy:

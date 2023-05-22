@@ -29,6 +29,7 @@ use stv_rs::{
 
 /// Rust implementation of Single Transferable Vote counting.
 #[derive(Parser, Debug, PartialEq, Eq)]
+#[command(version)]
 struct Cli {
     /// Package name to show in the election report.
     #[arg(long)]
