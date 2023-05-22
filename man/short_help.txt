@@ -1,0 +1,21 @@
+Rust implementation of Single Transferable Vote counting
+
+Usage: stv-rs [OPTIONS] --arithmetic <ARITHMETIC>
+
+Options:
+      --package-name <PACKAGE_NAME>
+          Package name to show in the election report
+      --omega-exponent <OMEGA_EXPONENT>
+          Base-10 logarithm of the "omega" value, i.e. `omega = 10^omega_exponent` [default: 6]
+      --arithmetic <ARITHMETIC>
+          Arithmetic to use [possible values: fixed9, bigfixed9, exact, approx, float64]
+      --input <INPUT>
+          Input ballot file. If no input is provided, fallback to reading from stdin
+      --parallel <PARALLEL>
+          Enable parallel ballot counting based on the rayon crate [default: true] [possible values: true, false]
+      --force-positive-surplus
+          Enable a bug-fix in the surplus calculation, preventing it from being negative. Results may differ from Droop.py, but this prevents crashes
+      --equalize
+          Enable "equalized counting"
+  -h, --help
+          Print help (see more with '--help')

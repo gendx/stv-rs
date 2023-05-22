@@ -17,6 +17,23 @@ jobs:
           path: |
             target/release/stv-rs
           if-no-files-found: error
+  help_tests:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+          path: target/release/
+      - name: Prepare STV-rs binary
+        run: chmod +x target/release/stv-rs
+      - name: Check short help output
+        run: |
+          target/release/stv-rs -h | diff -s man/short_help.txt -
+      - name: Check help output
+        run: |
+          target/release/stv-rs --help | diff -s man/help.txt -
   integration_tests:
     needs: build
     strategy:
@@ -46,17 +63,16 @@ jobs:
           path: target/release/
       - name: Install Droop
         run: git clone https://github.com/jklundell/droop
+      - name: Prepare STV-rs binary
+        run: chmod +x target/release/stv-rs
       - name: Check STV-rs output (ballot from stdin)
         run: |
-          chmod +x target/release/stv-rs
           target/release/stv-rs --arithmetic fixed9 --parallel=${{ matrix.parallel }} < testdata/${{ matrix.file }}.blt | diff -s testdata/${{ matrix.file }}.fixed9.log -
       - name: Check STV-rs output (ballot from CLI)
         run: |
-          chmod +x target/release/stv-rs
           target/release/stv-rs --arithmetic fixed9 --parallel=${{ matrix.parallel }} --input testdata/${{ matrix.file }}.blt | diff -s testdata/${{ matrix.file }}.fixed9.log -
       - name: Check STV-rs output (equalized counting)
         run: |
-          chmod +x target/release/stv-rs
           target/release/stv-rs --arithmetic fixed9 --parallel=${{ matrix.parallel }} --equalize --input testdata/${{ matrix.file }}.blt | diff -s testdata/${{ matrix.file }}.equalize.fixed9.log -
       - name: Check Droop output
         if: ${{ matrix.parallel == true }}
@@ -84,13 +100,13 @@ jobs:
         with:
           name: build-artifacts
           path: target/release/
+      - name: Prepare STV-rs binary
+        run: chmod +x target/release/stv-rs
       - name: Check STV-rs output
         run: |
-          chmod +x target/release/stv-rs
           target/release/stv-rs --arithmetic fixed9 --parallel=${{ matrix.parallel }} --force-positive-surplus --input testdata/${{ matrix.file }}.blt | diff -s testdata/${{ matrix.file }}.fixed9.log -
       - name: Check STV-rs output (equalized counting)
         run: |
-          chmod +x target/release/stv-rs
           target/release/stv-rs --arithmetic fixed9 --parallel=${{ matrix.parallel }} --force-positive-surplus --equalize --input testdata/${{ matrix.file }}.blt | diff -s testdata/${{ matrix.file }}.equalize.fixed9.log -
   crash_approx_tests:
     needs: build
@@ -109,13 +125,13 @@ jobs:
         with:
           name: build-artifacts
           path: target/release/
+      - name: Prepare STV-rs binary
+        run: chmod +x target/release/stv-rs
       - name: Check STV-rs output
         run: |
-          chmod +x target/release/stv-rs
           target/release/stv-rs --arithmetic approx --parallel=${{ matrix.parallel }} --input testdata/${{ matrix.file }}.blt | diff -s testdata/${{ matrix.file }}.approx.log -
       - name: Check STV-rs output (equalized counting)
         run: |
-          chmod +x target/release/stv-rs
           target/release/stv-rs --arithmetic approx --parallel=${{ matrix.parallel }} --equalize --input testdata/${{ matrix.file }}.blt | diff -s testdata/${{ matrix.file }}.equalize.approx.log -
   crash_droop_tests:
     strategy:
