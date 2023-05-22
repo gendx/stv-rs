@@ -188,14 +188,17 @@ impl Sub for FixedDecimal9 {
 impl Mul for FixedDecimal9 {
     type Output = Self;
     fn mul(self, rhs: Self) -> Self {
-        #[cfg(feature = "checked_i64")]
-        return FixedDecimal9(
-            ((self.0 as i128 * rhs.0 as i128) / Self::FACTOR_I128)
-                .try_into()
-                .unwrap(),
-        );
-        #[cfg(not(feature = "checked_i64"))]
-        return FixedDecimal9(((self.0 as i128 * rhs.0 as i128) / Self::FACTOR_I128) as i64);
+        FixedDecimal9(match self.0.checked_mul(rhs.0) {
+            Some(product) => product / Self::FACTOR,
+            None => {
+                let result: i128 = (self.0 as i128 * rhs.0 as i128) / Self::FACTOR_I128;
+                #[cfg(feature = "checked_i64")]
+                let result: i64 = result.try_into().unwrap();
+                #[cfg(not(feature = "checked_i64"))]
+                let result: i64 = result as i64;
+                result
+            }
+        })
     }
 }
 impl Mul<Integer64> for FixedDecimal9 {
@@ -209,18 +212,8 @@ impl Mul<Integer64> for FixedDecimal9 {
 }
 impl Div for FixedDecimal9 {
     type Output = Self;
-    #[allow(clippy::suspicious_arithmetic_impl)]
     fn div(self, rhs: Self) -> Self {
-        #[cfg(feature = "checked_i64")]
-        return FixedDecimal9(
-            (self.0 as i128 * Self::FACTOR_I128)
-                .checked_div(rhs.0 as i128)
-                .unwrap()
-                .try_into()
-                .unwrap(),
-        );
-        #[cfg(not(feature = "checked_i64"))]
-        return FixedDecimal9(((self.0 as i128 * Self::FACTOR_I128) / rhs.0 as i128) as i64);
+        FixedDecimal9::ratio_i(Integer64(self.0), Integer64(rhs.0))
     }
 }
 impl Div<Integer64> for FixedDecimal9 {
@@ -370,16 +363,27 @@ impl Rational<Integer64> for FixedDecimal9 {
     }
 
     fn ratio_i(num: Integer64, denom: Integer64) -> Self {
-        #[cfg(feature = "checked_i64")]
-        return FixedDecimal9(
-            (num.0 as i128 * Self::FACTOR_I128)
-                .checked_div(denom.0 as i128)
-                .unwrap()
-                .try_into()
-                .unwrap(),
-        );
-        #[cfg(not(feature = "checked_i64"))]
-        return FixedDecimal9(((num.0 as i128 * Self::FACTOR_I128) / denom.0 as i128) as i64);
+        FixedDecimal9(match num.0.checked_mul(Self::FACTOR) {
+            Some(product) => {
+                #[cfg(feature = "checked_i64")]
+                let result: i64 = product.checked_div(denom.0).unwrap();
+                #[cfg(not(feature = "checked_i64"))]
+                let result: i64 = product / denom.0;
+                result
+            }
+            None => {
+                let product: i128 = num.0 as i128 * Self::FACTOR_I128;
+                #[cfg(feature = "checked_i64")]
+                let result: i64 = product
+                    .checked_div(denom.0 as i128)
+                    .unwrap()
+                    .try_into()
+                    .unwrap();
+                #[cfg(not(feature = "checked_i64"))]
+                let result: i64 = (product / denom.0 as i128) as i64;
+                result
+            }
+        })
     }
 
     fn to_f64(&self) -> f64 {
@@ -399,34 +403,57 @@ impl Rational<Integer64> for FixedDecimal9 {
     }
 
     fn mul_up(&self, rhs: &Self) -> Self {
-        #[cfg(feature = "checked_i64")]
-        return FixedDecimal9(
-            ((self.0 as i128 * rhs.0 as i128)
-                .checked_add(Self::FACTOR_I128 - 1)
-                .unwrap()
-                / Self::FACTOR_I128)
-                .try_into()
-                .unwrap(),
-        );
-        #[cfg(not(feature = "checked_i64"))]
-        return FixedDecimal9(
-            ((self.0 as i128 * rhs.0 as i128 + Self::FACTOR_I128 - 1) / Self::FACTOR_I128) as i64,
-        );
+        FixedDecimal9(
+            match self
+                .0
+                .checked_mul(rhs.0)
+                .and_then(|product| product.checked_add(Self::FACTOR - 1))
+            {
+                Some(value) => value / Self::FACTOR,
+                None => {
+                    let product: i128 = self.0 as i128 * rhs.0 as i128;
+                    #[cfg(feature = "checked_i64")]
+                    let result: i64 = (product.checked_add(Self::FACTOR_I128 - 1).unwrap()
+                        / Self::FACTOR_I128)
+                        .try_into()
+                        .unwrap();
+                    #[cfg(not(feature = "checked_i64"))]
+                    let result: i64 =
+                        ((product + Self::FACTOR_I128 - 1) / Self::FACTOR_I128) as i64;
+                    result
+                }
+            },
+        )
     }
 
     fn div_up(&self, rhs: &Self) -> Self {
-        #[cfg(feature = "checked_i64")]
-        return FixedDecimal9(
-            (self.0 as i128 * Self::FACTOR_I128 + rhs.0 as i128 - 1)
-                .checked_div(rhs.0 as i128)
-                .unwrap()
-                .try_into()
-                .unwrap(),
-        );
-        #[cfg(not(feature = "checked_i64"))]
-        return FixedDecimal9(
-            ((self.0 as i128 * Self::FACTOR_I128 + rhs.0 as i128 - 1) / rhs.0 as i128) as i64,
-        );
+        FixedDecimal9(
+            match self
+                .0
+                .checked_mul(Self::FACTOR)
+                .and_then(|product| product.checked_add(rhs.0 - 1))
+            {
+                Some(value) => {
+                    #[cfg(feature = "checked_i64")]
+                    let result: i64 = value.checked_div(rhs.0).unwrap();
+                    #[cfg(not(feature = "checked_i64"))]
+                    let result: i64 = value / rhs.0;
+                    result
+                }
+                None => {
+                    let value: i128 = self.0 as i128 * Self::FACTOR_I128 + rhs.0 as i128 - 1;
+                    #[cfg(feature = "checked_i64")]
+                    let result: i64 = value
+                        .checked_div(rhs.0 as i128)
+                        .unwrap()
+                        .try_into()
+                        .unwrap();
+                    #[cfg(not(feature = "checked_i64"))]
+                    let result: i64 = (value / rhs.0 as i128) as i64;
+                    result
+                }
+            },
+        )
     }
 
     #[cfg(test)]
