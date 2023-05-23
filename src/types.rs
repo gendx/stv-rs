@@ -128,7 +128,6 @@ impl ElectionBuilder {
 
 /// Candidate in an election.
 #[derive(Debug, PartialEq, Eq)]
-#[cfg_attr(test, derive(Clone))]
 pub struct Candidate {
     /// Nickname, used for parsing ballots.
     pub nickname: String,
@@ -157,7 +156,6 @@ impl Candidate {
 
 /// Ballot cast in the election.
 #[derive(Debug, PartialEq, Eq)]
-#[cfg_attr(test, derive(Clone))]
 pub struct Ballot {
     /// Number of electors that have cast this ballot.
     pub count: usize,
