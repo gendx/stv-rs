@@ -15,8 +15,8 @@ Options:
           Arithmetic to use
 
           Possible values:
-          - fixed9:    Fixed-point precisions with 9 decimals
-          - bigfixed9: Fixed-point precisions with 9 decimals, backed by a [`BigInt`]
+          - fixed9:    Fixed-point with 9 decimals of precision, backed by a [`i64`]
+          - bigfixed9: Fixed-point with 9 decimals of precision, backed by a [`BigInt`]
           - exact:     Exact rational arithmetic
           - approx:    Exact rational arithmetic, with rounding of keep factors
           - float64:   64-bit floating-point arithmetic
