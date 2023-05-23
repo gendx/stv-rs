@@ -59,10 +59,6 @@ where
         ToPrimitive::to_f64(self).unwrap()
     }
 
-    fn assert_eq(a: Self, b: Self, msg: &str) {
-        assert_eq!(a, b, "{msg}");
-    }
-
     fn epsilon() -> Self {
         Self::zero()
     }

@@ -112,7 +112,9 @@ where
 
     /// Allows to customize equality assertion to inexact types such as [`f64`].
     #[track_caller]
-    fn assert_eq(a: Self, b: Self, msg: &str);
+    fn assert_eq(a: Self, b: Self, msg: &str) {
+        assert_eq!(a, b, "{msg}");
+    }
 
     /// Minimal representable value for non-exact arithmetic.
     fn epsilon() -> Self;

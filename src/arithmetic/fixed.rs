@@ -18,7 +18,6 @@
 //! if the `checked_i64` feature is enabled.
 
 use super::Rational;
-use log::{trace, warn};
 use num::traits::{One, Zero};
 use num::Integer;
 use std::fmt::{Debug, Display};
@@ -280,19 +279,6 @@ impl Rational<i64> for FixedDecimal9 {
 
     fn to_f64(&self) -> f64 {
         self.0 as f64 / Self::FACTOR as f64
-    }
-
-    fn assert_eq(a: Self, b: Self, msg: &str) {
-        if a.0 != b.0 {
-            let error_eps: i64 = (a.0 - b.0).abs();
-            if error_eps <= 10 {
-                trace!("{msg}: Failed comparison {a} != {b} (error = {error_eps} * eps)");
-            } else if error_eps <= 10_000_000 {
-                warn!("{msg}: Failed comparison {a} != {b} (error = {error_eps} * eps)");
-            } else {
-                panic!("{msg}: Failed comparison {a} != {b} (error = {error_eps} * eps)");
-            }
-        }
     }
 
     fn epsilon() -> Self {

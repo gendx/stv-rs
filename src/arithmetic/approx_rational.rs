@@ -221,10 +221,6 @@ impl Rational<BigInt> for ApproxRational {
         Rational::to_f64(&self.0)
     }
 
-    fn assert_eq(a: Self, b: Self, msg: &str) {
-        Rational::assert_eq(a.0, b.0, msg);
-    }
-
     fn epsilon() -> Self {
         Self::zero()
     }

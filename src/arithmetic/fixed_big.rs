@@ -17,7 +17,6 @@
 //! This implementation is backed by a [`BigInt`].
 
 use super::Rational;
-use log::{trace, warn};
 use num::bigint::Sign;
 use num::traits::{One, Zero};
 use num::{BigInt, BigRational, Integer, Signed};
@@ -256,19 +255,6 @@ impl Rational<BigInt> for BigFixedDecimal9 {
             self.0.clone(),
             BigInt::from(Self::FACTOR),
         ))
-    }
-
-    fn assert_eq(a: Self, b: Self, msg: &str) {
-        if a.0 != b.0 {
-            let error_eps = (&a.0 - &b.0).abs();
-            if error_eps <= BigInt::from(10) {
-                trace!("{msg}: Failed comparison {a} != {b} (error = {error_eps} * eps)");
-            } else if error_eps <= BigInt::from(10_000_000) {
-                warn!("{msg}: Failed comparison {a} != {b} (error = {error_eps} * eps)");
-            } else {
-                panic!("{msg}: Failed comparison {a} != {b} (error = {error_eps} * eps)");
-            }
-        }
     }
 
     fn epsilon() -> Self {
