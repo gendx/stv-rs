@@ -1165,6 +1165,172 @@ Action: Count Complete
     }
 
     #[test]
+    fn test_stv_droop_equalize() {
+        let election = Election::builder()
+            .title("Vegetable contest")
+            .num_seats(3)
+            .candidates([
+                Candidate::new("apple", false),
+                Candidate::new("banana", false),
+                Candidate::new("cherry", false),
+                Candidate::new("date", false),
+                Candidate::new("eggplant", false),
+            ])
+            .ballots([
+                Ballot::new(1, [vec![0, 1], vec![2, 3, 4]]),
+                Ballot::new(2, [vec![1, 2], vec![3, 4, 0]]),
+                Ballot::new(3, [vec![2, 3], vec![4, 0, 1]]),
+                Ballot::new(4, [vec![3, 4], vec![0, 1, 2]]),
+                Ballot::new(5, [vec![4, 0], vec![1, 2, 3]]),
+            ])
+            .build();
+
+        let mut buf = Vec::new();
+        let result = stv_droop::<i64, FixedDecimal9>(
+            &mut buf,
+            &election,
+            "package name",
+            6,
+            false,
+            false,
+            true,
+        )
+        .unwrap();
+        assert_eq!(
+            result,
+            ElectionResult {
+                elected: vec![4, 3, 0],
+                not_elected: vec![1, 2]
+            }
+        );
+        assert_eq!(
+            std::str::from_utf8(&buf).unwrap(),
+            r"
+Election: Vegetable contest
+
+	package name
+	Rule: Meek Parametric (omega = 1/10^6)
+	Arithmetic: fixed-point decimal arithmetic (9 places)
+	Seats: 3
+	Ballots: 15
+	Quota: 3.750000001
+	Omega: 0.000001000
+
+	Add eligible: Apple
+	Add eligible: Banana
+	Add eligible: Cherry
+	Add eligible: Date
+	Add eligible: Eggplant
+Action: Begin Count
+	Hopeful:  Apple (3.000000000)
+	Hopeful:  Banana (1.500000000)
+	Hopeful:  Cherry (2.500000000)
+	Hopeful:  Date (3.500000000)
+	Hopeful:  Eggplant (4.500000000)
+	Quota: 3.750000001
+	Votes: 15.000000000
+	Residual: 0.000000000
+	Total: 15.000000000
+	Surplus: 0.000000000
+Round 1:
+Action: Elect: Eggplant
+	Elected:  Eggplant (4.500000000)
+	Hopeful:  Apple (3.000000000)
+	Hopeful:  Banana (1.500000000)
+	Hopeful:  Cherry (2.500000000)
+	Hopeful:  Date (3.500000000)
+	Quota: 3.750000001
+	Votes: 15.000000000
+	Residual: 0.000000000
+	Total: 15.000000000
+	Surplus: 0.000000000
+Action: Iterate (elected)
+	Quota: 3.750000001
+	Votes: 15.000000000
+	Residual: 0.000000000
+	Total: 15.000000000
+	Surplus: 0.749999999
+Round 2:
+Action: Elect: Date
+	Elected:  Date (3.833333332)
+	Elected:  Eggplant (3.750000003)
+	Hopeful:  Apple (3.416666665)
+	Hopeful:  Banana (1.500000000)
+	Hopeful:  Cherry (2.500000000)
+	Quota: 3.750000001
+	Votes: 15.000000000
+	Residual: 0.000000000
+	Total: 15.000000000
+	Surplus: 0.749999999
+Action: Iterate (elected)
+	Quota: 3.750000001
+	Votes: 15.000000000
+	Residual: 0.000000000
+	Total: 15.000000000
+	Surplus: 0.083333333
+Round 3:
+Action: Iterate (omega)
+	Quota: 3.749999996
+	Votes: 14.999999983
+	Residual: 0.000000017
+	Total: 15.000000000
+	Surplus: 0.000000588
+Action: Defeat (surplus 0.000000588 < omega): Banana
+	Elected:  Date (3.750000581)
+	Elected:  Eggplant (3.749999999)
+	Hopeful:  Apple (3.447382656)
+	Hopeful:  Cherry (2.546334971)
+	Defeated: Banana (1.506281776)
+	Quota: 3.749999996
+	Votes: 14.999999983
+	Residual: 0.000000017
+	Total: 15.000000000
+	Surplus: 0.000000588
+Round 4:
+Action: Elect: Apple
+	Elected:  Apple (3.950523544)
+	Elected:  Date (3.750000581)
+	Elected:  Eggplant (3.749999999)
+	Hopeful:  Cherry (3.549475859)
+	Defeated: Banana (0.000000000)
+	Quota: 3.749999996
+	Votes: 14.999999983
+	Residual: 0.000000017
+	Total: 15.000000000
+	Surplus: 0.000000588
+Action: Iterate (elected)
+	Quota: 3.749999996
+	Votes: 14.999999983
+	Residual: 0.000000017
+	Total: 15.000000000
+	Surplus: 0.200524136
+Action: Defeat remaining: Cherry
+	Elected:  Apple (3.950523544)
+	Elected:  Date (3.750000581)
+	Elected:  Eggplant (3.749999999)
+	Defeated: Cherry (3.549475859)
+	Defeated: Banana (0.000000000)
+	Quota: 3.749999996
+	Votes: 14.999999983
+	Residual: 0.000000017
+	Total: 15.000000000
+	Surplus: 0.200524136
+Action: Count Complete
+	Elected:  Apple (4.744588121)
+	Elected:  Date (5.916055638)
+	Elected:  Eggplant (4.339356223)
+	Defeated: Banana, Cherry (0.000000000)
+	Quota: 3.749999996
+	Votes: 14.999999982
+	Residual: 0.000000018
+	Total: 15.000000000
+	Surplus: 0.200524136
+
+"
+        );
+    }
+
+    #[test]
     fn test_start_election() {
         let election = Election::builder()
             .title("Vegetable contest")
