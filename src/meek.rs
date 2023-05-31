@@ -379,27 +379,23 @@ Election: {}
         let iteration = self.iterate_droop(stdout, count)?;
         self.write_action(stdout, &format!("Iterate ({iteration})"), count, false)?;
 
-        if let DroopIteration::Elected = iteration {
-            debug!("Iteration returned Elected, continuing the loop");
-        } else {
+        let reason = match iteration {
+            DroopIteration::Elected => {
+                debug!("Iteration returned Elected, continuing the loop");
+                None
+            }
+            DroopIteration::Stable => Some(format!("stable surplus {}", self.surplus)),
+            DroopIteration::Omega => Some(format!("surplus {} < omega", self.surplus)),
+        };
+
+        if let Some(reason) = reason {
             let not_elected = self.next_defeated_candidate(stdout, count)?;
 
             self.defeat_candidate(not_elected);
-            let message = match iteration {
-                DroopIteration::Stable => {
-                    format!(
-                        "Defeat (stable surplus {}): {}",
-                        self.surplus, self.election.candidates[not_elected].name
-                    )
-                }
-                DroopIteration::Omega => {
-                    format!(
-                        "Defeat (surplus {} < omega): {}",
-                        self.surplus, self.election.candidates[not_elected].name
-                    )
-                }
-                DroopIteration::Elected => unreachable!(),
-            };
+            let message = format!(
+                "Defeat ({reason}): {}",
+                self.election.candidates[not_elected].name
+            );
             self.write_action(stdout, &message, count, true)?;
 
             self.keep_factors[not_elected] = R::zero();
