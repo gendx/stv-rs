@@ -261,7 +261,7 @@ mod test {
             .build()
     }
 
-    fn make_cli(arithmetic: Arithmetic) -> Cli {
+    fn make_cli(arithmetic: Arithmetic, equalize: bool) -> Cli {
         Cli {
             package_name: None,
             omega_exponent: 6,
@@ -269,7 +269,7 @@ mod test {
             input: None,
             parallel: false,
             force_positive_surplus: false,
-            equalize: false,
+            equalize,
         }
     }
 
@@ -277,11 +277,11 @@ mod test {
     fn test_cli_run_fixed9() {
         let election = make_simplest_election();
 
-        let cli = make_cli(Arithmetic::Fixed9);
+        let cli = make_cli(Arithmetic::Fixed9, false);
         let mut buf_fixed9 = Vec::new();
         cli.run(&election, &mut buf_fixed9).unwrap();
 
-        let cli = make_cli(Arithmetic::Bigfixed9);
+        let cli = make_cli(Arithmetic::Bigfixed9, false);
         let mut buf_bigfixed9 = Vec::new();
         cli.run(&election, &mut buf_bigfixed9).unwrap();
 
@@ -326,10 +326,62 @@ Action: Count Complete
     }
 
     #[test]
+    fn test_cli_run_equalize_fixed9() {
+        let election = make_simplest_election();
+
+        let cli = make_cli(Arithmetic::Fixed9, true);
+        let mut buf_fixed9 = Vec::new();
+        cli.run(&election, &mut buf_fixed9).unwrap();
+
+        let cli = make_cli(Arithmetic::Bigfixed9, true);
+        let mut buf_bigfixed9 = Vec::new();
+        cli.run(&election, &mut buf_bigfixed9).unwrap();
+
+        let expected = r"
+Election: Vegetable contest
+
+	Implementation: STV-rs (equalized counting)
+	Rule: Meek Parametric (omega = 1/10^6)
+	Arithmetic: fixed-point decimal arithmetic (9 places)
+	Seats: 1
+	Ballots: 1
+	Quota: 0.500000001
+	Omega: 0.000001000
+
+	Add eligible: Apple
+Action: Begin Count
+	Hopeful:  Apple (1.000000000)
+	Quota: 0.500000001
+	Votes: 1.000000000
+	Residual: 0.000000000
+	Total: 1.000000000
+	Surplus: 0.000000000
+Action: Elect remaining: Apple
+	Elected:  Apple (1.000000000)
+	Quota: 0.500000001
+	Votes: 1.000000000
+	Residual: 0.000000000
+	Total: 1.000000000
+	Surplus: 0.000000000
+Action: Count Complete
+	Elected:  Apple (1.000000000)
+	Quota: 0.500000001
+	Votes: 1.000000000
+	Residual: 0.000000000
+	Total: 1.000000000
+	Surplus: 0.000000000
+
+";
+
+        assert_eq!(std::str::from_utf8(&buf_fixed9).unwrap(), expected);
+        assert_eq!(std::str::from_utf8(&buf_bigfixed9).unwrap(), expected);
+    }
+
+    #[test]
     fn test_cli_run_exact() {
         let election = make_simplest_election();
 
-        let cli = make_cli(Arithmetic::Exact);
+        let cli = make_cli(Arithmetic::Exact, false);
         let mut buf = Vec::new();
         cli.run(&election, &mut buf).unwrap();
 
@@ -377,7 +429,7 @@ Action: Count Complete
     fn test_cli_run_approx() {
         let election = make_simplest_election();
 
-        let cli = make_cli(Arithmetic::Approx);
+        let cli = make_cli(Arithmetic::Approx, false);
         let mut buf = Vec::new();
         cli.run(&election, &mut buf).unwrap();
 
@@ -425,7 +477,7 @@ Action: Count Complete
     fn test_cli_run_float64() {
         let election = make_simplest_election();
 
-        let cli = make_cli(Arithmetic::Float64);
+        let cli = make_cli(Arithmetic::Float64, false);
         let mut buf = Vec::new();
         cli.run(&election, &mut buf).unwrap();
 
