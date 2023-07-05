@@ -30,17 +30,19 @@ With Cargo:
 $ RUST_LOG=$LOG_LEVEL cargo run \
   --release -- \
   --arithmetic $ARITHMETIC \
-  --parallel=<true|false> \
-  --input ballots.txt
+  --input ballots.txt \
+  meek \
+  --parallel=<true|false>
 ```
 
 ```bash
 $ RUST_LOG=$LOG_LEVEL cargo run \
   --release -- \
   --arithmetic $ARITHMETIC \
+  --input ballots.txt \
+  meek \
   --parallel=<true|false> \
-  --equalize \
-  --input ballots.txt
+  --equalize
 ```
 
 ### Arithmetic implementations

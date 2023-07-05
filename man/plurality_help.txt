@@ -1,0 +1,9 @@
+Simulate Plurality Block Voting based on ranked ballots
+
+Usage: stv-rs --arithmetic <ARITHMETIC> plurality [OPTIONS]
+
+Options:
+      --votes-per-ballot <VOTES_PER_BALLOT>
+          Maximum number of candidates that a ballot is allowed to rank. Defaults to the number of seats
+  -h, --help
+          Print help

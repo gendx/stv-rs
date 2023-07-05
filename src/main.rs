@@ -16,14 +16,16 @@
 
 #![forbid(missing_docs, unsafe_code)]
 
-use clap::Parser;
+use clap::{ArgAction, Parser, Subcommand, ValueEnum};
 use num::{BigInt, BigRational};
 use std::fs::File;
 use std::io::{self, stdin, stdout, BufRead, BufReader, Write};
+use std::ops::{Add, Div, Mul, Sub};
 use stv_rs::{
-    arithmetic::{ApproxRational, BigFixedDecimal9, FixedDecimal9},
+    arithmetic::{ApproxRational, BigFixedDecimal9, FixedDecimal9, Integer, Rational},
     meek::stv_droop,
     parse::{parse_election, ParsingOptions},
+    pbv::plurality_block_voting,
     types::Election,
 };
 
@@ -35,11 +37,6 @@ struct Cli {
     #[arg(long)]
     package_name: Option<String>,
 
-    /// Base-10 logarithm of the "omega" value, i.e. `omega =
-    /// 10^omega_exponent`.
-    #[arg(long, default_value_t = 6)]
-    omega_exponent: usize,
-
     /// Arithmetic to use.
     #[arg(long, value_enum)]
     arithmetic: Arithmetic,
@@ -49,8 +46,29 @@ struct Cli {
     #[arg(long)]
     input: Option<String>,
 
+    /// Counting algorithm to use.
+    #[command(subcommand)]
+    algorithm: Algorithm,
+}
+
+#[derive(Subcommand, Debug, PartialEq, Eq)]
+enum Algorithm {
+    /// Use Meek's flavor of Single Transferable Vote.
+    Meek(MeekParams),
+
+    /// Simulate Plurality Block Voting based on ranked ballots.
+    Plurality(PluralityParams),
+}
+
+#[derive(Parser, Debug, PartialEq, Eq)]
+struct MeekParams {
+    /// Base-10 logarithm of the "omega" value, i.e. `omega =
+    /// 10^omega_exponent`.
+    #[arg(long, default_value_t = 6)]
+    omega_exponent: usize,
+
     /// Enable parallel ballot counting based on the rayon crate.
-    #[arg(long, action = clap::ArgAction::Set, default_value = "true")]
+    #[arg(long, action = ArgAction::Set, default_value = "true")]
     parallel: bool,
 
     /// Enable a bug-fix in the surplus calculation, preventing it from being
@@ -64,8 +82,16 @@ struct Cli {
     equalize: bool,
 }
 
+#[derive(Parser, Debug, PartialEq, Eq)]
+struct PluralityParams {
+    /// Maximum number of candidates that a ballot is allowed to rank. Defaults
+    /// to the number of seats.
+    #[arg(long)]
+    votes_per_ballot: Option<usize>,
+}
+
 /// Arithmetic for rational numbers.
-#[derive(clap::ValueEnum, Clone, Debug, PartialEq, Eq)]
+#[derive(ValueEnum, Clone, Debug, PartialEq, Eq)]
 enum Arithmetic {
     /// Fixed-point with 9 decimals of precision, backed by a [`i64`].
     Fixed9,
@@ -99,57 +125,71 @@ impl Cli {
 
     /// Run the given election based on the command-line parameters.
     fn run_election(self, election: &Election, output: &mut impl Write) -> io::Result<()> {
-        let package_name: &str = self.package_name.as_deref().unwrap_or(if self.equalize {
-            "Implementation: STV-rs (equalized counting)"
-        } else {
-            "Implementation: STV-rs"
-        });
         match self.arithmetic {
-            Arithmetic::Fixed9 => stv_droop::<i64, FixedDecimal9>(
-                output,
-                election,
-                package_name,
-                self.omega_exponent,
-                self.parallel,
-                self.force_positive_surplus,
-                self.equalize,
-            )?,
-            Arithmetic::Bigfixed9 => stv_droop::<BigInt, BigFixedDecimal9>(
-                output,
-                election,
-                package_name,
-                self.omega_exponent,
-                self.parallel,
-                self.force_positive_surplus,
-                self.equalize,
-            )?,
-            Arithmetic::Exact => stv_droop::<BigInt, BigRational>(
-                output,
-                election,
-                package_name,
-                self.omega_exponent,
-                self.parallel,
-                self.force_positive_surplus,
-                self.equalize,
-            )?,
-            Arithmetic::Approx => stv_droop::<BigInt, ApproxRational>(
-                output,
-                election,
-                package_name,
-                self.omega_exponent,
-                self.parallel,
-                self.force_positive_surplus,
-                self.equalize,
-            )?,
-            Arithmetic::Float64 => stv_droop::<f64, f64>(
-                output,
-                election,
-                package_name,
-                self.omega_exponent,
-                self.parallel,
-                self.force_positive_surplus,
-                self.equalize,
-            )?,
+            Arithmetic::Fixed9 => self.dispatch_algorithm::<i64, FixedDecimal9>(election, output),
+            Arithmetic::Bigfixed9 => {
+                self.dispatch_algorithm::<BigInt, BigFixedDecimal9>(election, output)
+            }
+            Arithmetic::Exact => self.dispatch_algorithm::<BigInt, BigRational>(election, output),
+            Arithmetic::Approx => {
+                self.dispatch_algorithm::<BigInt, ApproxRational>(election, output)
+            }
+            Arithmetic::Float64 => self.dispatch_algorithm::<f64, f64>(election, output),
+        }
+    }
+
+    /// Run the given election based on the command-line parameters, using the
+    /// arithmetic given by the generic parameters.
+    fn dispatch_algorithm<I, R>(
+        self,
+        election: &Election,
+        output: &mut impl Write,
+    ) -> io::Result<()>
+    where
+        I: Integer + Send + Sync,
+        for<'a> &'a I: Add<&'a I, Output = I>,
+        for<'a> &'a I: Sub<&'a I, Output = I>,
+        for<'a> &'a I: Mul<&'a I, Output = I>,
+        R: Rational<I> + Send + Sync,
+        for<'a> &'a R: Add<&'a R, Output = R>,
+        for<'a> &'a R: Sub<&'a R, Output = R>,
+        for<'a> &'a R: Mul<&'a R, Output = R>,
+        for<'a> &'a R: Mul<&'a I, Output = R>,
+        for<'a> &'a R: Div<&'a R, Output = R>,
+        for<'a> &'a R: Div<&'a I, Output = R>,
+    {
+        match self.algorithm {
+            Algorithm::Meek(meek_params) => {
+                let package_name: &str =
+                    self.package_name
+                        .as_deref()
+                        .unwrap_or(if meek_params.equalize {
+                            "Implementation: STV-rs (equalized counting)"
+                        } else {
+                            "Implementation: STV-rs"
+                        });
+                stv_droop::<I, R>(
+                    output,
+                    election,
+                    package_name,
+                    meek_params.omega_exponent,
+                    meek_params.parallel,
+                    meek_params.force_positive_surplus,
+                    meek_params.equalize,
+                )?;
+            }
+            Algorithm::Plurality(plurality_params) => {
+                let package_name: &str = self
+                    .package_name
+                    .as_deref()
+                    .unwrap_or("Implementation: STV-rs");
+                plurality_block_voting::<I, R>(
+                    output,
+                    election,
+                    package_name,
+                    plurality_params.votes_per_ballot,
+                )?;
+            }
         };
         Ok(())
     }
@@ -176,9 +216,12 @@ mod test {
     use stv_rs::types::{Ballot, Candidate};
 
     #[test]
-    fn test_parse_incomplete() {
+    fn test_parse_missing_subcommand() {
         let error = Cli::try_parse_from(["stv-rs"]).unwrap_err();
-        assert_eq!(error.kind(), ErrorKind::MissingRequiredArgument);
+        assert_eq!(
+            error.kind(),
+            ErrorKind::DisplayHelpOnMissingArgumentOrSubcommand
+        );
     }
 
     #[test]
@@ -188,36 +231,45 @@ mod test {
     }
 
     #[test]
-    fn test_parse_minimal() {
-        let cli = Cli::try_parse_from(["stv-rs", "--arithmetic=fixed9"]).unwrap();
+    fn test_parse_meek_incomplete() {
+        let error = Cli::try_parse_from(["stv-rs", "meek"]).unwrap_err();
+        assert_eq!(error.kind(), ErrorKind::MissingRequiredArgument);
+    }
+
+    #[test]
+    fn test_parse_meek_minimal() {
+        let cli = Cli::try_parse_from(["stv-rs", "--arithmetic=fixed9", "meek"]).unwrap();
         assert_eq!(
             cli,
             Cli {
                 package_name: None,
-                omega_exponent: 6,
                 arithmetic: Arithmetic::Fixed9,
                 input: None,
-                parallel: true,
-                force_positive_surplus: false,
-                equalize: false,
+                algorithm: Algorithm::Meek(MeekParams {
+                    omega_exponent: 6,
+                    parallel: true,
+                    force_positive_surplus: false,
+                    equalize: false,
+                })
             }
         );
     }
 
     #[test]
-    fn test_parse_typo() {
-        let error = Cli::try_parse_from(["stv-rs", "--arithmetic=Fixed9"]).unwrap_err();
+    fn test_parse_meek_typo() {
+        let error = Cli::try_parse_from(["stv-rs", "--arithmetic=Fixed9", "meek"]).unwrap_err();
         assert_eq!(error.kind(), ErrorKind::InvalidValue);
     }
 
     #[test]
-    fn test_parse_full() {
+    fn test_parse_meek_full() {
         let cli = Cli::try_parse_from([
             "stv-rs",
             "--arithmetic=float64",
             "--package-name=foo bar",
-            "--omega-exponent=42",
             "--input=abc def",
+            "meek",
+            "--omega-exponent=42",
             "--parallel=false",
             "--force-positive-surplus",
             "--equalize",
@@ -227,25 +279,28 @@ mod test {
             cli,
             Cli {
                 package_name: Some("foo bar".to_owned()),
-                omega_exponent: 42,
                 arithmetic: Arithmetic::Float64,
                 input: Some("abc def".to_owned()),
-                parallel: false,
-                force_positive_surplus: true,
-                equalize: true,
+                algorithm: Algorithm::Meek(MeekParams {
+                    omega_exponent: 42,
+                    parallel: false,
+                    force_positive_surplus: true,
+                    equalize: true,
+                }),
             }
         );
     }
 
     #[test]
-    fn test_parse_full_spaces() {
+    fn test_parse_meek_full_spaces() {
         #[rustfmt::skip]
         let cli = Cli::try_parse_from([
             "stv-rs",
             "--arithmetic", "approx",
             "--package-name", "foo bar",
-            "--omega-exponent", "42",
             "--input", "abc def",
+            "meek",
+            "--omega-exponent", "42",
             "--parallel", "false",
             "--force-positive-surplus",
             "--equalize",
@@ -255,12 +310,60 @@ mod test {
             cli,
             Cli {
                 package_name: Some("foo bar".to_owned()),
-                omega_exponent: 42,
                 arithmetic: Arithmetic::Approx,
                 input: Some("abc def".to_owned()),
-                parallel: false,
-                force_positive_surplus: true,
-                equalize: true,
+                algorithm: Algorithm::Meek(MeekParams {
+                    omega_exponent: 42,
+                    parallel: false,
+                    force_positive_surplus: true,
+                    equalize: true,
+                }),
+            }
+        );
+    }
+
+    #[test]
+    fn test_parse_plurality_incomplete() {
+        let error = Cli::try_parse_from(["stv-rs", "plurality"]).unwrap_err();
+        assert_eq!(error.kind(), ErrorKind::MissingRequiredArgument);
+    }
+
+    #[test]
+    fn test_parse_plurality_minimal() {
+        let cli = Cli::try_parse_from(["stv-rs", "--arithmetic=fixed9", "plurality"]).unwrap();
+        assert_eq!(
+            cli,
+            Cli {
+                package_name: None,
+                arithmetic: Arithmetic::Fixed9,
+                input: None,
+                algorithm: Algorithm::Plurality(PluralityParams {
+                    votes_per_ballot: None,
+                })
+            }
+        );
+    }
+
+    #[test]
+    fn test_parse_plurality_full() {
+        let cli = Cli::try_parse_from([
+            "stv-rs",
+            "--arithmetic=float64",
+            "--package-name=foo bar",
+            "--input=abc def",
+            "plurality",
+            "--votes-per-ballot=5",
+        ])
+        .unwrap();
+        assert_eq!(
+            cli,
+            Cli {
+                package_name: Some("foo bar".to_owned()),
+                arithmetic: Arithmetic::Float64,
+                input: Some("abc def".to_owned()),
+                algorithm: Algorithm::Plurality(PluralityParams {
+                    votes_per_ballot: Some(5),
+                })
             }
         );
     }
@@ -276,21 +379,34 @@ mod test {
             .build()
     }
 
-    fn make_cli(arithmetic: Arithmetic, equalize: bool) -> Cli {
+    fn make_cli_meek(arithmetic: Arithmetic, equalize: bool) -> Cli {
         Cli {
             package_name: None,
-            omega_exponent: 6,
             arithmetic,
             input: None,
-            parallel: false,
-            force_positive_surplus: false,
-            equalize,
+            algorithm: Algorithm::Meek(MeekParams {
+                omega_exponent: 6,
+                parallel: false,
+                force_positive_surplus: false,
+                equalize,
+            }),
+        }
+    }
+
+    fn make_cli_plurality(arithmetic: Arithmetic) -> Cli {
+        Cli {
+            package_name: None,
+            arithmetic,
+            input: None,
+            algorithm: Algorithm::Plurality(PluralityParams {
+                votes_per_ballot: None,
+            }),
         }
     }
 
     #[test]
-    fn test_cli_run() {
-        let cli = make_cli(Arithmetic::Fixed9, false);
+    fn test_cli_run_meek() {
+        let cli = make_cli_meek(Arithmetic::Fixed9, false);
 
         let input = r#"1 1
 [nick apple]
@@ -344,14 +460,14 @@ Action: Count Complete
     }
 
     #[test]
-    fn test_cli_run_election_fixed9() {
+    fn test_cli_run_election_meek_fixed9() {
         let election = make_simplest_election();
 
-        let cli = make_cli(Arithmetic::Fixed9, false);
+        let cli = make_cli_meek(Arithmetic::Fixed9, false);
         let mut buf_fixed9 = Vec::new();
         cli.run_election(&election, &mut buf_fixed9).unwrap();
 
-        let cli = make_cli(Arithmetic::Bigfixed9, false);
+        let cli = make_cli_meek(Arithmetic::Bigfixed9, false);
         let mut buf_bigfixed9 = Vec::new();
         cli.run_election(&election, &mut buf_bigfixed9).unwrap();
 
@@ -396,14 +512,14 @@ Action: Count Complete
     }
 
     #[test]
-    fn test_cli_run_election_equalize_fixed9() {
+    fn test_cli_run_election_meek_equalize_fixed9() {
         let election = make_simplest_election();
 
-        let cli = make_cli(Arithmetic::Fixed9, true);
+        let cli = make_cli_meek(Arithmetic::Fixed9, true);
         let mut buf_fixed9 = Vec::new();
         cli.run_election(&election, &mut buf_fixed9).unwrap();
 
-        let cli = make_cli(Arithmetic::Bigfixed9, true);
+        let cli = make_cli_meek(Arithmetic::Bigfixed9, true);
         let mut buf_bigfixed9 = Vec::new();
         cli.run_election(&election, &mut buf_bigfixed9).unwrap();
 
@@ -448,10 +564,10 @@ Action: Count Complete
     }
 
     #[test]
-    fn test_cli_run_election_exact() {
+    fn test_cli_run_election_meek_exact() {
         let election = make_simplest_election();
 
-        let cli = make_cli(Arithmetic::Exact, false);
+        let cli = make_cli_meek(Arithmetic::Exact, false);
         let mut buf = Vec::new();
         cli.run_election(&election, &mut buf).unwrap();
 
@@ -496,10 +612,10 @@ Action: Count Complete
     }
 
     #[test]
-    fn test_cli_run_election_approx() {
+    fn test_cli_run_election_meek_approx() {
         let election = make_simplest_election();
 
-        let cli = make_cli(Arithmetic::Approx, false);
+        let cli = make_cli_meek(Arithmetic::Approx, false);
         let mut buf = Vec::new();
         cli.run_election(&election, &mut buf).unwrap();
 
@@ -544,10 +660,10 @@ Action: Count Complete
     }
 
     #[test]
-    fn test_cli_run_election_float64() {
+    fn test_cli_run_election_meek_float64() {
         let election = make_simplest_election();
 
-        let cli = make_cli(Arithmetic::Float64, false);
+        let cli = make_cli_meek(Arithmetic::Float64, false);
         let mut buf = Vec::new();
         cli.run_election(&election, &mut buf).unwrap();
 
@@ -589,5 +705,37 @@ Action: Count Complete
 
 "
         );
+    }
+
+    #[test]
+    fn test_cli_run_election_plurality_fixed9() {
+        let election = make_simplest_election();
+
+        let cli = make_cli_plurality(Arithmetic::Fixed9);
+        let mut buf_fixed9 = Vec::new();
+        cli.run_election(&election, &mut buf_fixed9).unwrap();
+
+        let cli = make_cli_plurality(Arithmetic::Bigfixed9);
+        let mut buf_bigfixed9 = Vec::new();
+        cli.run_election(&election, &mut buf_bigfixed9).unwrap();
+
+        let expected = r"
+Election: Vegetable contest
+
+	Implementation: STV-rs
+	Rule: Simulated Plurality Block Voting
+	Arithmetic: fixed-point decimal arithmetic (9 places)
+	Seats: 1
+	Ballots: 1
+	Votes per ballot: 1
+
+Action: Count Complete
+Action: Elect: Apple
+Action: Count Complete
+	Elected:  Apple (1.000000000)
+";
+
+        assert_eq!(std::str::from_utf8(&buf_fixed9).unwrap(), expected);
+        assert_eq!(std::str::from_utf8(&buf_bigfixed9).unwrap(), expected);
     }
 }

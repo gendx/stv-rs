@@ -12,7 +12,7 @@ exclude = ["man/*", "testdata/*", ".github/*"]
 edition = "2021"
 
 [dependencies]
-clap = { version = "4", features = ["derive"] }
+clap = { version = "=4.1", features = ["derive"] }
 env_logger = "0.9"
 log = "0.4"
 num = "0.4"
