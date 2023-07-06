@@ -658,10 +658,12 @@ where
             // We start from `P = p[0] X^k + p[1] X^k-1 + ... + p[k]` and want to compute
             // `Q = P * (X + a)`. The resulting coefficients are given by:
             //
+            // ```
             //    p[0] X^k+1 +   p[1] X^k + ... +     p[k] X
             // +               a*p[0] X^k + ... + a*p[k-1] X + a*p[k]
             // ------------------------------------------------------
             // =  q[0] X^k+1 +   q[1] X^k + ... +     q[k] X + q[k+1]
+            // ```
             //
             // In other words, for each entry q[j], we take p[j], and add to it p[j-1] * a.
             // We do that in one pass with a simple loop.
