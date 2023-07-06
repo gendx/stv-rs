@@ -23,6 +23,17 @@ jobs:
             cargo-registry-${{ hashFiles('Cargo.toml') }}
             cargo-registry
 
+      - name: Check Cargo version
+        run: cargo -V > cargo.version.txt
+      - name: Cache Cargo target
+        uses: actions/cache@v3
+        with:
+          path: target
+          key: cargo-target-check-${{ hashFiles('cargo.version.txt') }}-${{ hashFiles('Cargo.toml') }}-${{ hashFiles('Cargo.lock') }}
+          restore-keys: |
+            cargo-target-check-${{ hashFiles('cargo.version.txt') }}-${{ hashFiles('Cargo.toml') }}
+            cargo-target-check-${{ hashFiles('cargo.version.txt') }}
+
       - name: Check Clippy lints
         run: cargo clippy --verbose
       - name: Check Clippy lints on tests

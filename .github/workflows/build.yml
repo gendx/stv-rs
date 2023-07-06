@@ -31,6 +31,17 @@ jobs:
             cargo-registry-${{ hashFiles('Cargo.toml') }}
             cargo-registry
 
+      - name: Check Cargo version
+        run: cargo -V > cargo.version.txt
+      - name: Cache Cargo target
+        uses: actions/cache@v3
+        with:
+          path: target
+          key: cargo-target-debug-${{ hashFiles('cargo.version.txt') }}-${{ hashFiles('Cargo.toml') }}-${{ hashFiles('Cargo.lock') }}
+          restore-keys: |
+            cargo-target-debug-${{ hashFiles('cargo.version.txt') }}-${{ hashFiles('Cargo.toml') }}
+            cargo-target-debug-${{ hashFiles('cargo.version.txt') }}
+
       - name: Build without features
         run: cargo build --no-default-features --verbose
       - name: Build with default features
