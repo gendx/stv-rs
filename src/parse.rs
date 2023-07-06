@@ -20,12 +20,25 @@ use regex::Regex;
 use std::collections::{HashMap, HashSet};
 use std::io::BufRead;
 
+/// Options to control the parsing process.
+pub struct ParsingOptions {
+    /// Whether to remove withdrawn candidates from the ballots they appear in.
+    pub remove_withdrawn_candidates: bool,
+    /// Whether to remove ballots that rank no candidate. When
+    /// `remove_withdrawn_candidates` is true, this also removes ballots
+    /// that only rank withdrawn candidates.
+    pub remove_empty_ballots: bool,
+}
+
 // TODO: Remove unwrap()s.
 /// Parses a ballot file into an election input.
-pub fn parse_election(input: impl BufRead) -> Result<Election, Box<dyn std::error::Error>> {
+pub fn parse_election(
+    input: impl BufRead,
+    options: ParsingOptions,
+) -> Result<Election, Box<dyn std::error::Error>> {
     let re_count = Regex::new(r"^([0-9]+) ([0-9]+)$").unwrap();
     let re_option = Regex::new(r"^\[[a-z]+(?: [a-z]+)+\]$").unwrap();
-    let re_ballot = Regex::new(r"^([0-9]+) ([a-z= ]+) 0$").unwrap();
+    let re_ballot = Regex::new(r"^([0-9]+)((?: [a-z=]+)*) 0$").unwrap();
 
     let mut lines = input.lines().peekable();
 
@@ -121,27 +134,33 @@ pub fn parse_election(input: impl BufRead) -> Result<Election, Box<dyn std::erro
                 let order: Vec<Vec<usize>> = order_str
                     .split(' ')
                     .filter_map(|level| {
-                        let level_candidates: Vec<usize> = level
-                            .split('=')
-                            .filter_map(|candidate| {
-                                if withdrawn.contains(candidate) {
-                                    None
-                                } else {
-                                    Some(*hash_nicknames.get(candidate).unwrap())
-                                }
-                            })
-                            .collect();
-                        if level_candidates.is_empty() {
+                        if level.is_empty() {
                             None
                         } else {
-                            Some(level_candidates)
+                            let level_candidates: Vec<usize> = level
+                                .split('=')
+                                .filter_map(|candidate| {
+                                    if options.remove_withdrawn_candidates
+                                        && withdrawn.contains(candidate)
+                                    {
+                                        None
+                                    } else {
+                                        Some(*hash_nicknames.get(candidate).unwrap())
+                                    }
+                                })
+                                .collect();
+                            if level_candidates.is_empty() {
+                                None
+                            } else {
+                                Some(level_candidates)
+                            }
                         }
                     })
                     .collect();
 
                 trace!("Parsed ballot: count {count} for {order:?}");
-                if order.is_empty() {
-                    warn!("Removing ballot only containing withdrawn candidates: {line}");
+                if options.remove_empty_ballots && order.is_empty() {
+                    warn!("Removing ballot that is empty or contains only withdrawn candidates: {line}");
                 } else {
                     let ballot = Ballot { count, order };
                     ballot.validate();
@@ -231,6 +250,14 @@ mod test {
         remove_quotes("\u{1234}foo\"");
     }
 
+    /// Returns baseline parsing options for tests where they don't matter.
+    fn basic_parsing_options() -> ParsingOptions {
+        ParsingOptions {
+            remove_withdrawn_candidates: true,
+            remove_empty_ballots: true,
+        }
+    }
+
     #[test]
     fn test_parse_election() {
         let file = r#"5 2
@@ -249,7 +276,7 @@ mod test {
 "Vegetable contest"
 "#;
         let logger = ThreadLocalLogger::start();
-        let election = parse_election(Cursor::new(file)).unwrap();
+        let election = parse_election(Cursor::new(file), basic_parsing_options()).unwrap();
 
         assert_eq!(
             election,
@@ -291,7 +318,7 @@ mod test {
     }
 
     #[test]
-    fn test_parse_withdrawn() {
+    fn test_parse_withdrawn_keep_all() {
         let file = r#"5 2
 [nick apple banana cherry date eggplant]
 [withdrawn cherry eggplant]
@@ -299,6 +326,7 @@ mod test {
 3 date=eggplant banana=cherry=apple 0
 42 cherry 0
 123 banana date 0
+17 0
 0
 "Apple"
 "Banana"
@@ -308,7 +336,218 @@ mod test {
 "Vegetable contest"
 "#;
         let logger = ThreadLocalLogger::start();
-        let election = parse_election(Cursor::new(file)).unwrap();
+        let election = parse_election(
+            Cursor::new(file),
+            ParsingOptions {
+                remove_withdrawn_candidates: false,
+                remove_empty_ballots: false,
+            },
+        )
+        .unwrap();
+
+        assert_eq!(
+            election,
+            Election::builder()
+                .title("Vegetable contest")
+                .num_seats(2)
+                .candidates([
+                    Candidate::new("apple", false),
+                    Candidate::new("banana", false),
+                    Candidate::new("cherry", true),
+                    Candidate::new("date", false),
+                    Candidate::new("eggplant", true),
+                ])
+                .ballots(vec![
+                    Ballot::new(3, [vec![0], vec![2], vec![4], vec![3], vec![1]]),
+                    Ballot::new(3, [vec![3, 4], vec![1, 2, 0]]),
+                    Ballot::new(42, [vec![2]]),
+                    Ballot::new(123, [vec![1], vec![3]]),
+                    Ballot::new(17, []),
+                ])
+                .check_num_ballots(188)
+                .build()
+        );
+        logger.check_target_logs(
+            "stv_rs::parse",
+            [
+                (Info, "2 seats / 5 candidates"),
+                (Info, "Nicknames: [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
+                (Info, "Withdrawn: [\"cherry\", \"eggplant\"]"),
+                (Info, "Candidates (by nickname): [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
+                (Trace, "Parsed ballot: count 3 for [[0], [2], [4], [3], [1]]"),
+                (Trace, "Parsed ballot: count 3 for [[3, 4], [1, 2, 0]]"),
+                (Trace, "Parsed ballot: count 42 for [[2]]"),
+                (Trace, "Parsed ballot: count 123 for [[1], [3]]"),
+                (Trace, "Parsed ballot: count 17 for []"),
+                (Info, "Number of ballots: 188"),
+                (Info, "Election title: Vegetable contest"),
+            ],
+        );
+    }
+
+    #[test]
+    fn test_parse_withdrawn_remove_withdrawn() {
+        let file = r#"5 2
+[nick apple banana cherry date eggplant]
+[withdrawn cherry eggplant]
+3 apple cherry eggplant date banana 0
+3 date=eggplant banana=cherry=apple 0
+42 cherry 0
+123 banana date 0
+17 0
+0
+"Apple"
+"Banana"
+"Cherry"
+"Date"
+"Eggplant"
+"Vegetable contest"
+"#;
+        let logger = ThreadLocalLogger::start();
+        let election = parse_election(
+            Cursor::new(file),
+            ParsingOptions {
+                remove_withdrawn_candidates: true,
+                remove_empty_ballots: false,
+            },
+        )
+        .unwrap();
+
+        assert_eq!(
+            election,
+            Election::builder()
+                .title("Vegetable contest")
+                .num_seats(2)
+                .candidates([
+                    Candidate::new("apple", false),
+                    Candidate::new("banana", false),
+                    Candidate::new("cherry", true),
+                    Candidate::new("date", false),
+                    Candidate::new("eggplant", true),
+                ])
+                .ballots(vec![
+                    Ballot::new(3, [vec![0], vec![3], vec![1]]),
+                    Ballot::new(3, [vec![3], vec![1, 0]]),
+                    Ballot::new(42, []),
+                    Ballot::new(123, [vec![1], vec![3]]),
+                    Ballot::new(17, []),
+                ])
+                .check_num_ballots(188)
+                .build()
+        );
+        logger.check_target_logs(
+            "stv_rs::parse",
+            [
+                (Info, "2 seats / 5 candidates"),
+                (Info, "Nicknames: [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
+                (Info, "Withdrawn: [\"cherry\", \"eggplant\"]"),
+                (Info, "Candidates (by nickname): [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
+                (Trace, "Parsed ballot: count 3 for [[0], [3], [1]]"),
+                (Trace, "Parsed ballot: count 3 for [[3], [1, 0]]"),
+                (Trace, "Parsed ballot: count 42 for []"),
+                (Trace, "Parsed ballot: count 123 for [[1], [3]]"),
+                (Trace, "Parsed ballot: count 17 for []"),
+                (Info, "Number of ballots: 188"),
+                (Info, "Election title: Vegetable contest"),
+            ],
+        );
+    }
+
+    #[test]
+    fn test_parse_withdrawn_remove_empty_ballots() {
+        let file = r#"5 2
+[nick apple banana cherry date eggplant]
+[withdrawn cherry eggplant]
+3 apple cherry eggplant date banana 0
+3 date=eggplant banana=cherry=apple 0
+42 cherry 0
+123 banana date 0
+17 0
+0
+"Apple"
+"Banana"
+"Cherry"
+"Date"
+"Eggplant"
+"Vegetable contest"
+"#;
+        let logger = ThreadLocalLogger::start();
+        let election = parse_election(
+            Cursor::new(file),
+            ParsingOptions {
+                remove_withdrawn_candidates: false,
+                remove_empty_ballots: true,
+            },
+        )
+        .unwrap();
+
+        assert_eq!(
+            election,
+            Election::builder()
+                .title("Vegetable contest")
+                .num_seats(2)
+                .candidates([
+                    Candidate::new("apple", false),
+                    Candidate::new("banana", false),
+                    Candidate::new("cherry", true),
+                    Candidate::new("date", false),
+                    Candidate::new("eggplant", true),
+                ])
+                .ballots(vec![
+                    Ballot::new(3, [vec![0], vec![2], vec![4], vec![3], vec![1]]),
+                    Ballot::new(3, [vec![3, 4], vec![1, 2, 0]]),
+                    Ballot::new(42, [vec![2]]),
+                    Ballot::new(123, [vec![1], vec![3]]),
+                ])
+                .check_num_ballots(171)
+                .build()
+        );
+        logger.check_target_logs(
+            "stv_rs::parse",
+            [
+                (Info, "2 seats / 5 candidates"),
+                (Info, "Nicknames: [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
+                (Info, "Withdrawn: [\"cherry\", \"eggplant\"]"),
+                (Info, "Candidates (by nickname): [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
+                (Trace, "Parsed ballot: count 3 for [[0], [2], [4], [3], [1]]"),
+                (Trace, "Parsed ballot: count 3 for [[3, 4], [1, 2, 0]]"),
+                (Trace, "Parsed ballot: count 42 for [[2]]"),
+                (Trace, "Parsed ballot: count 123 for [[1], [3]]"),
+                (Trace, "Parsed ballot: count 17 for []"),
+                (Warn, "Removing ballot that is empty or contains only withdrawn candidates: 17 0"),
+                (Info, "Number of ballots: 171"),
+                (Info, "Election title: Vegetable contest"),
+            ],
+        );
+    }
+
+    #[test]
+    fn test_parse_withdrawn_remove_all() {
+        let file = r#"5 2
+[nick apple banana cherry date eggplant]
+[withdrawn cherry eggplant]
+3 apple cherry eggplant date banana 0
+3 date=eggplant banana=cherry=apple 0
+42 cherry 0
+123 banana date 0
+17 0
+0
+"Apple"
+"Banana"
+"Cherry"
+"Date"
+"Eggplant"
+"Vegetable contest"
+"#;
+        let logger = ThreadLocalLogger::start();
+        let election = parse_election(
+            Cursor::new(file),
+            ParsingOptions {
+                remove_withdrawn_candidates: true,
+                remove_empty_ballots: true,
+            },
+        )
+        .unwrap();
 
         assert_eq!(
             election,
@@ -340,8 +579,10 @@ mod test {
                 (Trace, "Parsed ballot: count 3 for [[0], [3], [1]]"),
                 (Trace, "Parsed ballot: count 3 for [[3], [1, 0]]"),
                 (Trace, "Parsed ballot: count 42 for []"),
-                (Warn, "Removing ballot only containing withdrawn candidates: 42 cherry 0"),
+                (Warn, "Removing ballot that is empty or contains only withdrawn candidates: 42 cherry 0"),
                 (Trace, "Parsed ballot: count 123 for [[1], [3]]"),
+                (Trace, "Parsed ballot: count 17 for []"),
+                (Warn, "Removing ballot that is empty or contains only withdrawn candidates: 17 0"),
                 (Info, "Number of ballots: 129"),
                 (Info, "Election title: Vegetable contest"),
             ],
@@ -360,7 +601,7 @@ mod test {
 "Vegetable contest"
 "#;
         let logger = ThreadLocalLogger::start();
-        let election = parse_election(Cursor::new(file)).unwrap();
+        let election = parse_election(Cursor::new(file), basic_parsing_options()).unwrap();
 
         assert_eq!(
             election,
@@ -403,7 +644,7 @@ mod test {
 "Banana"
 "Vegetable contest"
 "#;
-        let _ = parse_election(Cursor::new(file));
+        let _ = parse_election(Cursor::new(file), basic_parsing_options());
     }
 
     #[test]
@@ -418,7 +659,7 @@ mod test {
 "Banana"
 "Vegetable contest"
 "#;
-        let _ = parse_election(Cursor::new(file));
+        let _ = parse_election(Cursor::new(file), basic_parsing_options());
     }
 
     #[test]
@@ -432,7 +673,7 @@ mod test {
 "Banana"
 "Vegetable contest"
 "#;
-        let _ = parse_election(Cursor::new(file));
+        let _ = parse_election(Cursor::new(file), basic_parsing_options());
     }
 
     #[test]
@@ -446,6 +687,6 @@ mod test {
 "bananaaaaa"
 "Vegetable contest"
 "#;
-        let _ = parse_election(Cursor::new(file));
+        let _ = parse_election(Cursor::new(file), basic_parsing_options());
     }
 }

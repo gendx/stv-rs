@@ -14,6 +14,8 @@
 
 //! Script to generate random ballot files.
 
+#![forbid(missing_docs, unsafe_code)]
+
 use rand::distributions::{Distribution, Uniform};
 use rand::seq::index::sample;
 use rand::thread_rng;

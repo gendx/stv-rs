@@ -11,6 +11,7 @@ It is organized as follows.
 -   `equal_preference/`: simple cases of ballots containing candidates ranked
     equally, to observe the effect of various counting methods on the election
     outcome.
+-   `numeric/`: ballot files in numeric format, without nicknames.
 -   `random/`: ballot files created using various random distributions, intended
     for load testing and benchmarking. These were created by the
     [random_ballots.rs](https://github.com/gendx/stv-rs/blob/main/examples/random_ballots.rs)

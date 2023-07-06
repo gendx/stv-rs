@@ -23,7 +23,7 @@ use std::io::{self, stdin, stdout, BufReader, Write};
 use stv_rs::{
     arithmetic::{ApproxRational, BigFixedDecimal9, FixedDecimal9},
     meek::stv_droop,
-    parse::parse_election,
+    parse::{parse_election, ParsingOptions},
     types::Election,
 };
 
@@ -143,12 +143,16 @@ fn main() {
 
     let cli = Cli::parse();
 
+    let parsing_options = ParsingOptions {
+        remove_withdrawn_candidates: true,
+        remove_empty_ballots: true,
+    };
     let election = match &cli.input {
         Some(filename) => {
             let file = File::open(filename).expect("Couldn't open input file");
-            parse_election(BufReader::new(file)).unwrap()
+            parse_election(BufReader::new(file), parsing_options).unwrap()
         }
-        None => parse_election(stdin().lock()).unwrap(),
+        None => parse_election(stdin().lock(), parsing_options).unwrap(),
     };
 
     cli.run(&election, &mut stdout().lock()).unwrap();

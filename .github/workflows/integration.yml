@@ -34,14 +34,32 @@ jobs:
 
       - name: Build STV-rs
         run: cargo build --release
+      - name: Build remove_nicknames
+        run: cargo build --release --example remove_nicknames
       - uses: actions/upload-artifact@v3
         with:
           name: build-artifacts
           path: |
             target/release/stv-rs
+            target/release/examples/remove_nicknames
           if-no-files-found: error
+
   help_tests:
     needs: build
+    strategy:
+      matrix:
+        file:
+          - short_help
+          - help
+          - version
+        include:
+          - file: short_help
+            flags: "-h"
+          - file: help
+            flags: "--help"
+          - file: version
+            flags: "--version"
+      fail-fast: false
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -51,15 +69,11 @@ jobs:
           path: target/release/
       - name: Prepare STV-rs binary
         run: chmod +x target/release/stv-rs
-      - name: Check short help output
+
+      - name: Check output
         run: |
-          target/release/stv-rs -h | diff -s man/short_help.txt -
-      - name: Check help output
-        run: |
-          target/release/stv-rs --help | diff -s man/help.txt -
-      - name: Check version output
-        run: |
-          target/release/stv-rs --version | diff -s man/version.txt -
+          target/release/stv-rs ${{ matrix.flags }} | diff -s man/${{ matrix.file }}.txt -
+
   integration_tests:
     needs: build
     strategy:
@@ -88,9 +102,11 @@ jobs:
           name: build-artifacts
           path: target/release/
       - name: Install Droop
+        if: ${{ matrix.parallel == true }}
         run: git clone https://github.com/jklundell/droop
       - name: Prepare STV-rs binary
         run: chmod +x target/release/stv-rs
+
       - name: Check STV-rs output (ballot from stdin)
         run: |
           target/release/stv-rs --arithmetic fixed9 --parallel=${{ matrix.parallel }} < testdata/${{ matrix.file }}.blt | diff -s testdata/${{ matrix.file }}.fixed9.log -
@@ -106,6 +122,49 @@ jobs:
           sed -i "s/Implementation: STV-rs/Droop package: droop v0.14/g" testdata/${{ matrix.file }}.fixed9.log
           python3 droop/Droop.py meek fixed precision=9 omega=6 defeat_batch=none testdata/${{ matrix.file }}.blt 2> droop.err | diff -s testdata/${{ matrix.file }}.fixed9.log -
           echo -n "" | diff -s - droop.err
+
+  numeric_tests:
+    needs: build
+    strategy:
+      matrix:
+        file:
+          - equal_preference
+          - vegetables.keep_withdrawn
+          - vegetables.remove_withdrawn
+        include:
+          - file: equal_preference
+            src: equal_preference/equal_preference
+            flags: ""
+          - file: vegetables.keep_withdrawn
+            src: vegetables
+            flags: ""
+          - file: vegetables.remove_withdrawn
+            src: vegetables
+            flags: "--remove-withdrawn-candidates"
+      fail-fast: false
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+          path: target/release/
+      - name: Install Droop
+        if: ${{ matrix.flags == '' }}
+        run: git clone https://github.com/jklundell/droop
+      - name: Prepare remove_nicknames binary
+        run: chmod +x target/release/examples/remove_nicknames
+
+      - name: Check numeric ballot
+        run: |
+          target/release/examples/remove_nicknames ${{ matrix.flags }} < testdata/${{ matrix.src }}.blt | diff -s testdata/numeric/${{ matrix.file }}.blt -
+      - name: Check Droop output
+        if: ${{ matrix.flags == '' }}
+        run: |
+          sed -i "s/Implementation: STV-rs/Droop package: droop v0.14/g" testdata/${{ matrix.src }}.fixed9.log
+          python3 droop/Droop.py meek fixed precision=9 omega=6 defeat_batch=none testdata/numeric/${{ matrix.file }}.blt 2> droop.err | diff -s testdata/${{ matrix.src }}.fixed9.log -
+          echo -n "" | diff -s - droop.err
+
   crash_fixed9_tests:
     needs: build
     strategy:
@@ -128,12 +187,14 @@ jobs:
           path: target/release/
       - name: Prepare STV-rs binary
         run: chmod +x target/release/stv-rs
+
       - name: Check STV-rs output
         run: |
           target/release/stv-rs --arithmetic fixed9 --parallel=${{ matrix.parallel }} --force-positive-surplus --input testdata/${{ matrix.file }}.blt | diff -s testdata/${{ matrix.file }}.fixed9.log -
       - name: Check STV-rs output (equalized counting)
         run: |
           target/release/stv-rs --arithmetic fixed9 --parallel=${{ matrix.parallel }} --force-positive-surplus --equalize --input testdata/${{ matrix.file }}.blt | diff -s testdata/${{ matrix.file }}.equalize.fixed9.log -
+
   crash_approx_tests:
     needs: build
     strategy:
@@ -153,12 +214,14 @@ jobs:
           path: target/release/
       - name: Prepare STV-rs binary
         run: chmod +x target/release/stv-rs
+
       - name: Check STV-rs output
         run: |
           target/release/stv-rs --arithmetic approx --parallel=${{ matrix.parallel }} --input testdata/${{ matrix.file }}.blt | diff -s testdata/${{ matrix.file }}.approx.log -
       - name: Check STV-rs output (equalized counting)
         run: |
           target/release/stv-rs --arithmetic approx --parallel=${{ matrix.parallel }} --equalize --input testdata/${{ matrix.file }}.blt | diff -s testdata/${{ matrix.file }}.equalize.approx.log -
+
   crash_droop_tests:
     strategy:
       matrix:
@@ -174,6 +237,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: Install Droop
         run: git clone https://github.com/jklundell/droop
+
       - name: Check that Droop fails
         run: |
           python3 droop/Droop.py meek fixed precision=9 omega=6 defeat_batch=none testdata/${{ matrix.file }}.blt > droop.log 2> droop.err || true
