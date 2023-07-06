@@ -11,6 +11,18 @@ jobs:
       - uses: dtolnay/rust-toolchain@nightly
         with:
           components: clippy
+
+      - name: Create Cargo.lock file
+        run: cargo generate-lockfile
+      - name: Cache Cargo registry
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo/registry
+          key: cargo-registry-${{ hashFiles('Cargo.toml') }}-${{ hashFiles('Cargo.lock') }}
+          restore-keys: |
+            cargo-registry-${{ hashFiles('Cargo.toml') }}
+            cargo-registry
+
       - name: Check Clippy lints
         run: cargo clippy --verbose
       - name: Check Clippy lints on tests

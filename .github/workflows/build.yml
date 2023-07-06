@@ -19,6 +19,18 @@ jobs:
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.rust }}
+
+      - name: Create Cargo.lock file
+        run: cargo generate-lockfile
+      - name: Cache Cargo registry
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo/registry
+          key: cargo-registry-${{ hashFiles('Cargo.toml') }}-${{ hashFiles('Cargo.lock') }}
+          restore-keys: |
+            cargo-registry-${{ hashFiles('Cargo.toml') }}
+            cargo-registry
+
       - name: Build without features
         run: cargo build --no-default-features --verbose
       - name: Build with default features
