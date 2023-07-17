@@ -26,6 +26,8 @@ pub type Ballot = BallotImpl<VecOrder<usize>>;
 pub struct BallotImpl<O: Order> {
     /// Number of electors that have cast this ballot.
     count: usize,
+    /// Whether this ballot contains candidates ranked equally.
+    has_tie: bool,
     /// Ordering of candidates in this ballot.
     order: O,
 }
@@ -37,9 +39,12 @@ impl<O: Order> BallotImpl<O> {
         count: usize,
         order: impl IntoIterator<Item = impl IntoIterator<Item = usize>>,
     ) -> Self {
+        let order = O::new(order);
+        let has_tie = order.order().any(|ranking| ranking.len() != 1);
         Self {
             count,
-            order: O::new(order),
+            has_tie,
+            order,
         }
     }
 
@@ -48,6 +53,7 @@ impl<O: Order> BallotImpl<O> {
     pub(crate) fn empty() -> Self {
         Self {
             count: 0,
+            has_tie: false,
             order: O::empty(),
         }
     }
@@ -57,6 +63,7 @@ impl<O: Order> BallotImpl<O> {
     pub(crate) fn empties(count: usize) -> Self {
         Self {
             count,
+            has_tie: false,
             order: O::empty(),
         }
     }
@@ -96,7 +103,7 @@ impl<O: Order> BallotImpl<O> {
     /// Returns whether this ballot contains candidates ranked equally.
     #[inline(always)]
     pub fn has_tie(&self) -> bool {
-        self.order().any(|ranking| ranking.len() != 1)
+        self.has_tie
     }
 
     /// Checks that a ballot is valid, i.e. that no candidate appears twice in
