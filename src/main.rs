@@ -17,6 +17,8 @@
 #![forbid(missing_docs, unsafe_code)]
 
 use clap::{ArgAction, Parser, Subcommand, ValueEnum};
+#[cfg(feature = "jemalloc")]
+use jemallocator::Jemalloc;
 use num::{BigInt, BigRational};
 use std::fs::File;
 use std::io::{self, stdin, stdout, BufRead, BufReader, Write};
@@ -32,6 +34,10 @@ use stv_rs::{
     pbv::plurality_block_voting,
     types::Election,
 };
+
+#[cfg(feature = "jemalloc")]
+#[global_allocator]
+static GLOBAL: Jemalloc = Jemalloc;
 
 /// Rust implementation of Single Transferable Vote counting.
 #[derive(Parser, Debug, PartialEq, Eq)]
@@ -142,6 +148,9 @@ impl Cli {
         input: impl BufRead,
         mut output: impl Write,
     ) -> Result<(), Box<dyn std::error::Error>> {
+        #[cfg(feature = "jemalloc")]
+        log::info!("Using jemalloc");
+
         let election = parse_election(
             input,
             ParsingOptions {
