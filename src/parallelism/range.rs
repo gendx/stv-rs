@@ -220,6 +220,7 @@ impl Range for WorkStealingRange {
 }
 
 /// A [start, end) pair that can atomically be modified.
+#[repr(align(64))]
 struct AtomicRange(AtomicU64);
 
 impl Default for AtomicRange {
