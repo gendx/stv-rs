@@ -33,6 +33,10 @@ jobs:
             cargo-target-release-${{ hashFiles('cargo.version.txt') }}
 
       - name: Tests without features
-        run: cargo test --release --no-default-features --verbose
+        run: cargo test --release --all --no-default-features --verbose
+      - name: Tests examples without features
+        run: cargo test --release --examples --no-default-features --verbose
       - name: Tests with default features
-        run: cargo test --release --verbose
+        run: cargo test --release --all --verbose
+      - name: Tests examples with default features
+        run: cargo test --release --examples --verbose

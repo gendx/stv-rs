@@ -22,6 +22,7 @@
 extern crate test;
 
 pub mod arithmetic;
+pub mod blt;
 pub mod meek;
 pub mod parse;
 pub mod types;

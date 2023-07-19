@@ -43,8 +43,10 @@ jobs:
             cargo-target-debug-${{ hashFiles('cargo.version.txt') }}
 
       - name: Build without features
-        run: cargo build --no-default-features --verbose
+        run: cargo build --all --no-default-features --verbose
+      - name: Build examples without features
+        run: cargo build --examples --no-default-features --verbose
       - name: Build with default features
-        run: cargo build --verbose
-      - name: Build examples
-        run: cargo build --examples
+        run: cargo build --all --verbose
+      - name: Build examples with default features
+        run: cargo build --examples --verbose

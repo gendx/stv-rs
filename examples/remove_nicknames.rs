@@ -23,6 +23,7 @@ use clap::Parser;
 use log::info;
 use std::io::{stdin, stdout, BufWriter, Write};
 use stv_rs::{
+    blt::{write_blt, CandidateFormat, WriteTieOrder},
     parse::{parse_election, ParsingOptions},
     types::Election,
 };
@@ -42,7 +43,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     );
 
     let election = parse_election(stdin().lock(), cli.parsing_options())?;
-    cli.write_election(BufWriter::new(stdout().lock()), &election)?;
+    cli.write_election(BufWriter::new(stdout().lock()), election)?;
     Ok(())
 }
 
@@ -75,75 +76,26 @@ impl Cli {
     }
 
     fn write_election(
-        &self,
+        self,
         mut output: impl Write,
-        election: &Election,
+        mut election: Election,
     ) -> Result<(), Box<dyn std::error::Error>> {
-        writeln!(output, "{} {}", election.num_candidates, election.num_seats)?;
-
-        if !self.remove_withdrawn_candidates
-            && election
-                .candidates
-                .iter()
-                .any(|candidate| candidate.is_withdrawn)
-        {
-            write!(output, "[withdrawn")?;
-            for candidate in election
-                .candidates
-                .iter()
-                .enumerate()
-                .filter_map(|(i, candidate)| {
-                    if candidate.is_withdrawn {
-                        Some(i + 1)
-                    } else {
-                        None
-                    }
-                })
-            {
-                write!(output, " {candidate}")?;
-            }
-            writeln!(output, "]")?;
+        if let Some(title) = self.set_title {
+            election.title = title;
         }
 
-        let has_tie_order = election.tie_order.iter().any(|(x, y)| x != y);
-        if has_tie_order {
-            let mut tie_order = vec![0; election.num_candidates];
-            for (&candidate, &rank) in &election.tie_order {
-                tie_order[rank] = candidate + 1;
+        if self.remove_withdrawn_candidates {
+            for candidate in &mut election.candidates {
+                candidate.is_withdrawn = false;
             }
-
-            write!(output, "[tie")?;
-            for candidate in tie_order {
-                assert_ne!(candidate, 0);
-                write!(output, " {candidate}")?;
-            }
-            writeln!(output, "]")?;
         }
 
-        for ballot in &election.ballots {
-            write!(output, "{}", ballot.count)?;
-            for ranking in &ballot.order {
-                write!(output, " ")?;
-                for (i, candidate) in ranking.iter().enumerate() {
-                    if i != 0 {
-                        write!(output, "=")?;
-                    }
-                    write!(output, "{}", candidate + 1)?;
-                }
-            }
-            writeln!(output, " 0")?;
-        }
-
-        writeln!(output, "0")?;
-        for candidate in &election.candidates {
-            writeln!(output, "\"{}\"", candidate.name)?;
-        }
-        writeln!(
-            output,
-            "\"{}\"",
-            self.set_title.as_ref().unwrap_or(&election.title)
+        write_blt(
+            &mut output,
+            &election,
+            WriteTieOrder::OnlyNonTrivial,
+            CandidateFormat::Numeric,
         )?;
-
         Ok(())
     }
 }
