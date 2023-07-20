@@ -38,10 +38,10 @@ jobs:
         uses: actions/cache@v3
         with:
           path: target
-          key: cargo-target-release-${{ hashFiles('cargo.version.txt') }}-${{ hashFiles('Cargo.toml') }}-${{ hashFiles('Cargo.lock') }}
+          key: cargo-target-bench-${{ matrix.cpu }}-${{ hashFiles('cargo.version.txt') }}-${{ hashFiles('Cargo.toml') }}-${{ hashFiles('Cargo.lock') }}
           restore-keys: |
-            cargo-target-release-${{ hashFiles('cargo.version.txt') }}-${{ hashFiles('Cargo.toml') }}
-            cargo-target-release-${{ hashFiles('cargo.version.txt') }}
+            cargo-target-bench-${{ matrix.cpu }}-${{ hashFiles('cargo.version.txt') }}-${{ hashFiles('Cargo.toml') }}
+            cargo-target-bench-${{ matrix.cpu }}-${{ hashFiles('cargo.version.txt') }}
 
       - name: Run benchmarks
         run: cargo bench --verbose
