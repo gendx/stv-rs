@@ -170,6 +170,50 @@ mod test {
     }
 
     #[test]
+    fn test_write_blt_withdrawn() {
+        let election = Election::builder()
+            .title("Vegetable contest")
+            .num_seats(2)
+            .candidates([
+                Candidate::new("apple", true),
+                Candidate::new("banana", false),
+                Candidate::new("cherry", true),
+                Candidate::new("date", false),
+            ])
+            .ballots([
+                Ballot::new(1, [vec![0]]),
+                Ballot::new(2, [vec![2, 1], vec![3]]),
+            ])
+            .build();
+
+        let mut buf = Vec::new();
+        write_blt(
+            &mut buf,
+            &election,
+            WriteTieOrder::Always,
+            CandidateFormat::Nicknames,
+        )
+        .unwrap();
+
+        assert_eq!(
+            std::str::from_utf8(&buf).unwrap(),
+            r#"4 2
+[nick apple banana cherry date]
+[withdrawn apple cherry]
+[tie apple banana cherry date]
+1 apple 0
+2 cherry=banana date 0
+0
+"Apple"
+"Banana"
+"Cherry"
+"Date"
+"Vegetable contest"
+"#
+        );
+    }
+
+    #[test]
     fn test_write_blt_with_ties_trivial_ties() {
         let mut buf = Vec::new();
         write_blt(
