@@ -19,7 +19,7 @@
 use clap::Parser;
 use num::{BigInt, BigRational};
 use std::fs::File;
-use std::io::{self, stdin, stdout, BufReader, Write};
+use std::io::{self, stdin, stdout, BufRead, BufReader, Write};
 use stv_rs::{
     arithmetic::{ApproxRational, BigFixedDecimal9, FixedDecimal9},
     meek::stv_droop,
@@ -80,8 +80,25 @@ enum Arithmetic {
 }
 
 impl Cli {
+    /// Parses and runs an election based on the command-line parameters.
+    fn run(
+        self,
+        input: impl BufRead,
+        mut output: impl Write,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        let election = parse_election(
+            input,
+            ParsingOptions {
+                remove_withdrawn_candidates: true,
+                remove_empty_ballots: true,
+            },
+        )?;
+        self.run_election(&election, &mut output)?;
+        Ok(())
+    }
+
     /// Run the given election based on the command-line parameters.
-    fn run(self, election: &Election, output: &mut impl Write) -> io::Result<()> {
+    fn run_election(self, election: &Election, output: &mut impl Write) -> io::Result<()> {
         let package_name: &str = self.package_name.as_deref().unwrap_or(if self.equalize {
             "Implementation: STV-rs (equalized counting)"
         } else {
@@ -142,26 +159,20 @@ fn main() {
     env_logger::init();
 
     let cli = Cli::parse();
-
-    let parsing_options = ParsingOptions {
-        remove_withdrawn_candidates: true,
-        remove_empty_ballots: true,
-    };
-    let election = match &cli.input {
+    match &cli.input {
         Some(filename) => {
             let file = File::open(filename).expect("Couldn't open input file");
-            parse_election(BufReader::new(file), parsing_options).unwrap()
+            cli.run(BufReader::new(file), stdout().lock()).unwrap();
         }
-        None => parse_election(stdin().lock(), parsing_options).unwrap(),
+        None => cli.run(stdin().lock(), stdout().lock()).unwrap(),
     };
-
-    cli.run(&election, &mut stdout().lock()).unwrap();
 }
 
 #[cfg(test)]
 mod test {
     use super::*;
     use clap::error::ErrorKind;
+    use std::io::Cursor;
     use stv_rs::types::{Ballot, Candidate};
 
     #[test]
@@ -278,16 +289,71 @@ mod test {
     }
 
     #[test]
-    fn test_cli_run_fixed9() {
+    fn test_cli_run() {
+        let cli = make_cli(Arithmetic::Fixed9, false);
+
+        let input = r#"1 1
+[nick apple]
+1 apple 0
+0
+"Apple"
+"Vegetable contest"
+"#;
+
+        let mut buf = Vec::new();
+        cli.run(Cursor::new(&input), &mut buf).unwrap();
+
+        assert_eq!(
+            std::str::from_utf8(&buf).unwrap(),
+            r"
+Election: Vegetable contest
+
+	Implementation: STV-rs
+	Rule: Meek Parametric (omega = 1/10^6)
+	Arithmetic: fixed-point decimal arithmetic (9 places)
+	Seats: 1
+	Ballots: 1
+	Quota: 0.500000001
+	Omega: 0.000001000
+
+	Add eligible: Apple
+Action: Begin Count
+	Hopeful:  Apple (1.000000000)
+	Quota: 0.500000001
+	Votes: 1.000000000
+	Residual: 0.000000000
+	Total: 1.000000000
+	Surplus: 0.000000000
+Action: Elect remaining: Apple
+	Elected:  Apple (1.000000000)
+	Quota: 0.500000001
+	Votes: 1.000000000
+	Residual: 0.000000000
+	Total: 1.000000000
+	Surplus: 0.000000000
+Action: Count Complete
+	Elected:  Apple (1.000000000)
+	Quota: 0.500000001
+	Votes: 1.000000000
+	Residual: 0.000000000
+	Total: 1.000000000
+	Surplus: 0.000000000
+
+"
+        );
+    }
+
+    #[test]
+    fn test_cli_run_election_fixed9() {
         let election = make_simplest_election();
 
         let cli = make_cli(Arithmetic::Fixed9, false);
         let mut buf_fixed9 = Vec::new();
-        cli.run(&election, &mut buf_fixed9).unwrap();
+        cli.run_election(&election, &mut buf_fixed9).unwrap();
 
         let cli = make_cli(Arithmetic::Bigfixed9, false);
         let mut buf_bigfixed9 = Vec::new();
-        cli.run(&election, &mut buf_bigfixed9).unwrap();
+        cli.run_election(&election, &mut buf_bigfixed9).unwrap();
 
         let expected = r"
 Election: Vegetable contest
@@ -330,16 +396,16 @@ Action: Count Complete
     }
 
     #[test]
-    fn test_cli_run_equalize_fixed9() {
+    fn test_cli_run_election_equalize_fixed9() {
         let election = make_simplest_election();
 
         let cli = make_cli(Arithmetic::Fixed9, true);
         let mut buf_fixed9 = Vec::new();
-        cli.run(&election, &mut buf_fixed9).unwrap();
+        cli.run_election(&election, &mut buf_fixed9).unwrap();
 
         let cli = make_cli(Arithmetic::Bigfixed9, true);
         let mut buf_bigfixed9 = Vec::new();
-        cli.run(&election, &mut buf_bigfixed9).unwrap();
+        cli.run_election(&election, &mut buf_bigfixed9).unwrap();
 
         let expected = r"
 Election: Vegetable contest
@@ -382,12 +448,12 @@ Action: Count Complete
     }
 
     #[test]
-    fn test_cli_run_exact() {
+    fn test_cli_run_election_exact() {
         let election = make_simplest_election();
 
         let cli = make_cli(Arithmetic::Exact, false);
         let mut buf = Vec::new();
-        cli.run(&election, &mut buf).unwrap();
+        cli.run_election(&election, &mut buf).unwrap();
 
         assert_eq!(
             std::str::from_utf8(&buf).unwrap(),
@@ -430,12 +496,12 @@ Action: Count Complete
     }
 
     #[test]
-    fn test_cli_run_approx() {
+    fn test_cli_run_election_approx() {
         let election = make_simplest_election();
 
         let cli = make_cli(Arithmetic::Approx, false);
         let mut buf = Vec::new();
-        cli.run(&election, &mut buf).unwrap();
+        cli.run_election(&election, &mut buf).unwrap();
 
         assert_eq!(
             std::str::from_utf8(&buf).unwrap(),
@@ -478,12 +544,12 @@ Action: Count Complete
     }
 
     #[test]
-    fn test_cli_run_float64() {
+    fn test_cli_run_election_float64() {
         let election = make_simplest_election();
 
         let cli = make_cli(Arithmetic::Float64, false);
         let mut buf = Vec::new();
-        cli.run(&election, &mut buf).unwrap();
+        cli.run_election(&election, &mut buf).unwrap();
 
         assert_eq!(
             std::str::from_utf8(&buf).unwrap(),
