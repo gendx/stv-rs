@@ -746,7 +746,7 @@ mod test {
     use crate::arithmetic::fixed::FixedDecimal9;
     use crate::types::{Ballot, Candidate};
     use crate::util::log_tester::ThreadLocalLogger;
-    use log::Level::{Debug, Info};
+    use log::Level::{Debug, Info, Warn};
     use num::traits::{One, Zero};
     use num::BigRational;
 
@@ -982,6 +982,7 @@ mod test {
             false,
         )
         .unwrap();
+
         assert_eq!(
             result,
             ElectionResult {
@@ -1192,6 +1193,7 @@ Action: Count Complete
             true,
         )
         .unwrap();
+
         assert_eq!(
             result,
             ElectionResult {
@@ -1321,6 +1323,145 @@ Action: Count Complete
 	Residual: 0.000000018
 	Total: 15.000000000
 	Surplus: 0.200524136
+
+"
+        );
+    }
+
+    #[test]
+    fn test_stv_droop_below_quota() {
+        let election = Election::builder()
+            .title("Vegetable contest")
+            .num_seats(2)
+            .candidates([
+                Candidate::new("apple", false),
+                Candidate::new("banana", false),
+                Candidate::new("cherry", false),
+                Candidate::new("date", false),
+            ])
+            .ballots([
+                Ballot::new(3, [vec![0, 1], vec![2]]),
+                Ballot::new(2, [vec![0, 3], vec![1]]),
+            ])
+            .build();
+
+        let logger = ThreadLocalLogger::start();
+        let mut buf = Vec::new();
+        let result = stv_droop::<i64, FixedDecimal9>(
+            &mut buf,
+            &election,
+            "package name",
+            6,
+            false,
+            false,
+            false,
+        )
+        .unwrap();
+
+        assert_eq!(
+            result,
+            ElectionResult {
+                elected: vec![0, 1],
+                not_elected: vec![2, 3]
+            }
+        );
+        logger.check_logs_at_target_level(
+            "stv_rs::meek",
+            Warn,
+            r"Count for elected candidate #0 (apple) is lower than the quota: 1.666666665 < 1.666666666 ~ 1.666666665 < 1.666666666
+",
+        );
+
+        assert_eq!(
+            std::str::from_utf8(&buf).unwrap(),
+            r"
+Election: Vegetable contest
+
+	package name
+	Rule: Meek Parametric (omega = 1/10^6)
+	Arithmetic: fixed-point decimal arithmetic (9 places)
+	Seats: 2
+	Ballots: 5
+	Quota: 1.666666667
+	Omega: 0.000001000
+
+	Add eligible: Apple
+	Add eligible: Banana
+	Add eligible: Cherry
+	Add eligible: Date
+Action: Begin Count
+	Hopeful:  Apple (2.500000000)
+	Hopeful:  Banana (1.500000000)
+	Hopeful:  Cherry (0.000000000)
+	Hopeful:  Date (1.000000000)
+	Quota: 1.666666667
+	Votes: 5.000000000
+	Residual: 0.000000000
+	Total: 5.000000000
+	Surplus: 0.000000000
+Round 1:
+Action: Elect: Apple
+	Elected:  Apple (2.500000000)
+	Hopeful:  Banana (1.500000000)
+	Hopeful:  Cherry (0.000000000)
+	Hopeful:  Date (1.000000000)
+	Quota: 1.666666667
+	Votes: 5.000000000
+	Residual: 0.000000000
+	Total: 5.000000000
+	Surplus: 0.000000000
+Action: Iterate (elected)
+	Quota: 1.666666667
+	Votes: 5.000000000
+	Residual: 0.000000000
+	Total: 5.000000000
+	Surplus: 0.833333333
+Round 2:
+Action: Elect: Banana
+	Elected:  Apple (1.666666665)
+	Elected:  Banana (1.833333332)
+	Hopeful:  Cherry (0.499999998)
+	Hopeful:  Date (1.000000000)
+	Quota: 1.666666666
+	Votes: 4.999999995
+	Residual: 0.000000005
+	Total: 5.000000000
+	Surplus: 0.833333333
+Action: Iterate (elected)
+	Quota: 1.666666666
+	Votes: 4.999999995
+	Residual: 0.000000005
+	Total: 5.000000000
+	Surplus: 0.166666665
+Action: Defeat remaining: Cherry
+	Elected:  Apple (1.666666665)
+	Elected:  Banana (1.833333332)
+	Hopeful:  Date (1.000000000)
+	Defeated: Cherry (0.499999998)
+	Quota: 1.666666666
+	Votes: 4.999999995
+	Residual: 0.000000005
+	Total: 5.000000000
+	Surplus: 0.166666665
+Action: Defeat remaining: Date
+	Elected:  Apple (1.666666665)
+	Elected:  Banana (1.833333332)
+	Defeated: Date (1.000000000)
+	Defeated: Cherry (0.000000000)
+	Quota: 1.666666666
+	Votes: 4.499999997
+	Residual: 0.500000003
+	Total: 5.000000000
+	Surplus: 0.166666665
+Action: Count Complete
+	Elected:  Apple (2.333333333)
+	Elected:  Banana (2.166666666)
+	Defeated: Cherry, Date (0.000000000)
+	Quota: 1.666666666
+	Votes: 4.499999999
+	Residual: 0.500000001
+	Total: 5.000000000
+	Surplus: 0.166666665
 
 "
         );

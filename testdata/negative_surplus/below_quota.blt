@@ -1,0 +1,10 @@
+4 2
+[nick apple banana cherry date]
+3 apple=banana cherry 0
+2 apple=date banana 0
+0
+"Apple"
+"Banana"
+"Cherry"
+"Date"
+"Vegetable contest"

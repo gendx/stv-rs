@@ -1,0 +1,89 @@
+
+Election: Vegetable contest
+
+	Implementation: STV-rs (equalized counting)
+	Rule: Meek Parametric (omega = 1/10^6)
+	Arithmetic: fixed-point decimal arithmetic (9 places)
+	Seats: 2
+	Ballots: 5
+	Quota: 1.666666667
+	Omega: 0.000001000
+
+	Add eligible: Apple
+	Add eligible: Banana
+	Add eligible: Cherry
+	Add eligible: Date
+Action: Begin Count
+	Hopeful:  Apple (2.500000000)
+	Hopeful:  Banana (1.500000000)
+	Hopeful:  Cherry (0.000000000)
+	Hopeful:  Date (1.000000000)
+	Quota: 1.666666667
+	Votes: 5.000000000
+	Residual: 0.000000000
+	Total: 5.000000000
+	Surplus: 0.000000000
+Round 1:
+Action: Elect: Apple
+	Elected:  Apple (2.500000000)
+	Hopeful:  Banana (1.500000000)
+	Hopeful:  Cherry (0.000000000)
+	Hopeful:  Date (1.000000000)
+	Quota: 1.666666667
+	Votes: 5.000000000
+	Residual: 0.000000000
+	Total: 5.000000000
+	Surplus: 0.000000000
+Action: Iterate (elected)
+	Quota: 1.666666667
+	Votes: 5.000000000
+	Residual: 0.000000000
+	Total: 5.000000000
+	Surplus: 0.833333333
+Round 2:
+Action: Elect: Banana
+	Elected:  Apple (1.666666665)
+	Elected:  Banana (1.999999998)
+	Hopeful:  Cherry (0.000000000)
+	Hopeful:  Date (1.333333332)
+	Quota: 1.666666666
+	Votes: 4.999999995
+	Residual: 0.000000005
+	Total: 5.000000000
+	Surplus: 0.833333333
+Action: Iterate (elected)
+	Quota: 1.666666666
+	Votes: 4.999999995
+	Residual: 0.000000005
+	Total: 5.000000000
+	Surplus: 0.333333331
+Action: Defeat remaining: Cherry
+	Elected:  Apple (1.666666665)
+	Elected:  Banana (1.999999998)
+	Hopeful:  Date (1.333333332)
+	Defeated: Cherry (0.000000000)
+	Quota: 1.666666666
+	Votes: 4.999999995
+	Residual: 0.000000005
+	Total: 5.000000000
+	Surplus: 0.333333331
+Action: Defeat remaining: Date
+	Elected:  Apple (1.666666665)
+	Elected:  Banana (1.999999998)
+	Defeated: Date (1.333333332)
+	Defeated: Cherry (0.000000000)
+	Quota: 1.666666666
+	Votes: 4.999999995
+	Residual: 0.000000005
+	Total: 5.000000000
+	Surplus: 0.333333331
+Action: Count Complete
+	Elected:  Apple (2.333333333)
+	Elected:  Banana (2.666666664)
+	Defeated: Cherry, Date (0.000000000)
+	Quota: 1.666666666
+	Votes: 4.999999997
+	Residual: 0.000000003
+	Total: 5.000000000
+	Surplus: 0.333333331
+

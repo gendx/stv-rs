@@ -85,6 +85,19 @@ pub mod log_tester {
 
             assert_eq!(report, expected);
         }
+
+        #[track_caller]
+        pub fn check_logs_at_target_level(self, target: &str, level: Level, expected: &str) {
+            let mut report = String::new();
+            for record in self.into_iter() {
+                if record.level == level && record.target == target {
+                    report.push_str(&record.message);
+                    report.push('\n');
+                }
+            }
+
+            assert_eq!(report, expected);
+        }
     }
 
     impl Drop for ThreadLocalLogger {
