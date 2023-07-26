@@ -33,15 +33,21 @@ jobs:
             cargo-registry
 
       - name: Check Cargo version
-        run: cargo -V > cargo.version.txt
+        run: cargo -V | tee cargo.version.txt
+      - name: Check CPU flags
+        if: ${{ matrix.cpu == 'native' }}
+        run: cat /proc/cpuinfo | grep flags | tee cpuinfo.txt
+      - name: Write fake CPU flags file
+        if: ${{ matrix.cpu != 'native' }}
+        run: echo "Default CPU" > cpuinfo.txt
       - name: Cache Cargo target
         uses: actions/cache@v3
         with:
           path: target
-          key: cargo-target-bench-${{ matrix.cpu }}-${{ hashFiles('cargo.version.txt') }}-${{ hashFiles('Cargo.toml') }}-${{ hashFiles('Cargo.lock') }}
+          key: cargo-target-bench-${{ matrix.cpu }}-${{ hashFiles('cpuinfo.txt') }}-${{ hashFiles('cargo.version.txt') }}-${{ hashFiles('Cargo.toml') }}-${{ hashFiles('Cargo.lock') }}
           restore-keys: |
-            cargo-target-bench-${{ matrix.cpu }}-${{ hashFiles('cargo.version.txt') }}-${{ hashFiles('Cargo.toml') }}
-            cargo-target-bench-${{ matrix.cpu }}-${{ hashFiles('cargo.version.txt') }}
+            cargo-target-bench-${{ matrix.cpu }}-${{ hashFiles('cpuinfo.txt') }}-${{ hashFiles('cargo.version.txt') }}-${{ hashFiles('Cargo.toml') }}
+            cargo-target-bench-${{ matrix.cpu }}-${{ hashFiles('cpuinfo.txt') }}-${{ hashFiles('cargo.version.txt') }}
 
       - name: Run benchmarks
         run: cargo bench --verbose
