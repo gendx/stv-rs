@@ -18,6 +18,7 @@
 
 #![forbid(missing_docs, unsafe_code)]
 
+use num::{BigInt, BigRational, ToPrimitive, Zero};
 use std::io::{stdin, stdout, BufWriter, Write};
 use stv_rs::{
     parse::{parse_election, ParsingOptions},
@@ -40,16 +41,17 @@ fn write_histograms(
     mut output: impl Write,
     election: &Election,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let mut histograms = vec![vec![0.0; election.num_candidates]; election.num_candidates];
+    let mut histograms =
+        vec![vec![BigRational::zero(); election.num_candidates]; election.num_candidates];
 
     for ballot in &election.ballots {
         let mut index = 0;
         for ranking in &ballot.order {
             let ranking_len = ranking.len();
-            let weight = (ballot.count as f64) / (ranking_len as f64);
+            let weight = BigRational::new(BigInt::from(ballot.count), BigInt::from(ranking_len));
             for &candidate in ranking {
                 for i in 0..ranking_len {
-                    histograms[candidate][index + i] += weight;
+                    histograms[candidate][index + i] += &weight;
                 }
             }
             index += ranking_len;
@@ -65,7 +67,7 @@ fn write_histograms(
     for (i, hist) in histograms.iter().enumerate() {
         write!(output, "{}", election.candidates[i].name)?;
         for x in hist {
-            write!(output, ",{x}")?;
+            write!(output, ",{}", x.to_f64().unwrap_or(f64::NAN))?;
         }
         writeln!(output)?;
     }
