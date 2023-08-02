@@ -34,6 +34,8 @@ jobs:
 
       - name: Check Cargo version
         run: cargo -V | tee cargo.version.txt
+      - name: Check CPU info
+        run: cat /proc/cpuinfo
       - name: Check CPU flags
         if: ${{ matrix.cpu == 'native' }}
         run: cat /proc/cpuinfo | grep flags | tee cpuinfo.txt
