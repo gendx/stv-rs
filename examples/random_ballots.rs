@@ -175,7 +175,7 @@ fn generate_distributions<D: Distribution<u64>>(
         let mut order: BTreeMap<u64, Vec<usize>> = BTreeMap::new();
         for (i, d) in distributions.iter().enumerate() {
             let value = d.sample(rng);
-            order.entry(value).or_insert_with(Vec::new).push(i);
+            order.entry(value).or_default().push(i);
         }
 
         ballots.push(Ballot::new(count, order.into_values().collect::<Vec<_>>()));
