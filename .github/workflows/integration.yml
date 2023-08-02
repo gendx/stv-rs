@@ -133,6 +133,30 @@ jobs:
           python3 droop/Droop.py meek fixed precision=9 omega=6 defeat_batch=none testdata/${{ matrix.file }}.blt 2> droop.err | diff -s testdata/${{ matrix.file }}.fixed9.log -
           echo -n "" | diff -s - droop.err
 
+  plurality_tests:
+    needs: build
+    strategy:
+      matrix:
+        file:
+          - random/rand_2x10
+          - random/rand_5x4
+          - random/rand_hypergeometric
+          - vegetables
+      fail-fast: false
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+          path: target/release/
+      - name: Prepare STV-rs binary
+        run: chmod +x target/release/stv-rs
+
+      - name: Check STV-rs output
+        run: |
+          target/release/stv-rs --arithmetic fixed9 plurality < testdata/${{ matrix.file }}.blt | diff -s testdata/${{ matrix.file }}.pbv.fixed9.log -
+
   histogram_tests:
     needs: build
     strategy:

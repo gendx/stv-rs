@@ -1,0 +1,52 @@
+
+Election: Vegetable contest
+
+	Implementation: STV-rs
+	Rule: Simulated Plurality Block Voting
+	Arithmetic: fixed-point decimal arithmetic (9 places)
+	Seats: 10
+	Ballots: 51423
+	Votes per ballot: 10
+
+Action: Count Complete
+Action: Elect: Apple
+Action: Elect: Banana
+Action: Elect: Cherry
+Action: Elect: Date
+Action: Elect: Eggplant
+Action: Elect: Fig
+Action: Elect: Grape
+Action: Elect: Hazelnut
+Action: Elect: Jalapeno
+Action: Elect: Kiwi
+Action: Defeat: Vanilla
+Action: Defeat: Tomato
+Action: Defeat: Soy
+Action: Defeat: Radish
+Action: Defeat: Quinoa
+Action: Defeat: Pear
+Action: Defeat: Orange
+Action: Defeat: Nut
+Action: Defeat: Mushroom
+Action: Defeat: Litchi
+Action: Count Complete
+	Elected:  Apple (50855.833333228)
+	Elected:  Banana (49939.169047344)
+	Elected:  Cherry (49107.349999710)
+	Elected:  Date (47333.119047164)
+	Elected:  Eggplant (45068.266666112)
+	Elected:  Fig (41977.352379936)
+	Elected:  Grape (39706.552380117)
+	Elected:  Hazelnut (35096.819046589)
+	Elected:  Jalapeno (33103.933332305)
+	Elected:  Kiwi (27432.049998731)
+	Defeated: Litchi (23541.885713070)
+	Defeated: Mushroom (18290.549998851)
+	Defeated: Nut (15314.666665426)
+	Defeated: Orange (11612.085713594)
+	Defeated: Pear (8936.966665663)
+	Defeated: Quinoa (6471.133332767)
+	Defeated: Radish (4064.933332982)
+	Defeated: Soy (2422.499999643)
+	Defeated: Tomato (2141.116666340)
+	Defeated: Vanilla (1813.716666380)

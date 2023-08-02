@@ -1,0 +1,26 @@
+
+Election: Vegetable contest
+
+	Implementation: STV-rs
+	Rule: Simulated Plurality Block Voting
+	Arithmetic: fixed-point decimal arithmetic (9 places)
+	Seats: 4
+	Ballots: 45
+	Votes per ballot: 4
+
+Action: Count Complete
+Action: Elect: Jalapeno
+Action: Elect: Hazelnut
+Action: Elect: Grape
+Action: Elect: Apple
+Action: Defeat: Cherry
+Action: Defeat: Date
+Action: Defeat: Eggplant
+Action: Count Complete
+	Elected:  Jalapeno (17.000000000)
+	Elected:  Hazelnut (15.000000000)
+	Elected:  Grape (13.000000000)
+	Elected:  Apple (10.000000000)
+	Defeated: Eggplant (9.000000000)
+	Defeated: Date (7.000000000)
+	Defeated: Cherry (5.000000000)
