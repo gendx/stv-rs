@@ -3,7 +3,7 @@
 [![Crate](https://img.shields.io/crates/v/stv-rs.svg)](https://crates.io/crates/stv-rs)
 [![Documentation](https://docs.rs/stv-rs/badge.svg)](https://docs.rs/stv-rs)
 [![Safety Dance](https://img.shields.io/badge/unsafe-forbidden-success.svg)](https://github.com/rust-secure-code/safety-dance/)
-[![Minimum Rust 1.67](https://img.shields.io/badge/rust-1.67%2B-orange.svg)](https://github.com/rust-lang/rust/blob/master/RELEASES.md#version-1670-2023-01-26)
+[![Minimum Rust 1.67](https://img.shields.io/badge/rust-1.67%2B-orange.svg)](https://releases.rs/docs/1.67.0/)
 [![Codecov](https://codecov.io/gh/gendx/stv-rs/branch/main/graph/badge.svg?token=JB5S8MYBZ0)](https://codecov.io/gh/gendx/stv-rs)
 [![Lines of Code](https://tokei.rs/b1/github/gendx/stv-rs?category=code)](https://github.com/XAMPPRocky/tokei_rs)
 [![Build Status](https://github.com/gendx/stv-rs/workflows/Build/badge.svg)](https://github.com/gendx/stv-rs/actions/workflows/build.yml)
@@ -120,6 +120,20 @@ associative.
 Under the hood, the [`rayon` crate](https://crates.io/crates/rayon) is used to
 automatically schedule and spread the work across available CPU cores
 (map-reduce architecture).
+
+## Other STV implementations
+
+Here is a non-exhaustive list of STV implementations.
+
+-   Python:
+    -   [Droop.py](https://github.com/jklundell/droop).
+-   Rust:
+    -   [OpenTally](https://yingtongli.me/git/OpenTally)
+        ([website](https://yingtongli.me/opentally/)),
+    -   [wybr](https://gitlab.com/mbq/wybr)
+        ([crates.io](https://crates.io/crates/wybr)),
+    -   [tallystick](https://github.com/phayes/tallystick)
+        ([crates.io](https://crates.io/crates/tallystick)).
 
 ## Contributing
 
