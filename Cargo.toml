@@ -42,3 +42,4 @@ rustdoc-args = ["--document-private-items"]
 
 [profile.release]
 panic = "abort"
+lto = true
