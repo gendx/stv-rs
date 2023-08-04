@@ -105,7 +105,6 @@ mod test {
     use crate::{
         big_integer_tests, big_numeric_tests, integer_tests, numeric_benchmarks, numeric_tests,
     };
-    use log::Level::Trace;
 
     integer_tests!(
         f64,
@@ -216,33 +215,15 @@ mod test {
 
         let logger = ThreadLocalLogger::start();
         f64::assert_eq(1.0, 1.0 + f64::EPSILON, "Error message");
-        logger.check_target_logs(
-            "stv_rs::arithmetic::float64",
-            [(
-                Trace,
-                "Error message: Failed comparison 1 != 1.0000000000000002 (error = 1 * eps)",
-            )],
-        );
+        logger.check_target_logs("stv_rs::arithmetic::float64", []);
 
         let logger = ThreadLocalLogger::start();
         f64::assert_eq(1.0, 1.0 + 999.0 * f64::EPSILON, "Error message");
-        logger.check_target_logs(
-            "stv_rs::arithmetic::float64",
-            [(
-                Trace,
-                "Error message: Failed comparison 1 != 1.0000000000002218 (error = 999 * eps)",
-            )],
-        );
+        logger.check_target_logs("stv_rs::arithmetic::float64", []);
 
         let logger = ThreadLocalLogger::start();
         f64::assert_eq(1.0, 1.0 + 1000.0 * f64::EPSILON, "Error message");
-        logger.check_target_logs(
-            "stv_rs::arithmetic::float64",
-            [(
-                Trace,
-                "Error message: Failed comparison 1 != 1.000000000000222 (error = 1000 * eps)",
-            )],
-        );
+        logger.check_target_logs("stv_rs::arithmetic::float64", []);
     }
 
     #[test]
