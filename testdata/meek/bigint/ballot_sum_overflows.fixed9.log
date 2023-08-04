@@ -11,3 +11,43 @@ Election: Example election where a candidate's count overflows to 0
 
 	Add eligible: Apple
 	Add eligible: Banana
+Action: Begin Count
+	Hopeful:  Apple (0.000000000)
+	Hopeful:  Banana (1.000000000)
+	Quota: 0.500000001
+	Votes: 1.000000000
+	Residual: 0.000000000
+	Total: 1.000000000
+	Surplus: 0.000000000
+Round 1:
+Action: Elect: Banana
+	Elected:  Banana (1.000000000)
+	Hopeful:  Apple (0.000000000)
+	Quota: 0.500000001
+	Votes: 1.000000000
+	Residual: 0.000000000
+	Total: 1.000000000
+	Surplus: 0.000000000
+Action: Iterate (elected)
+	Quota: 0.500000001
+	Votes: 1.000000000
+	Residual: 0.000000000
+	Total: 1.000000000
+	Surplus: 0.499999999
+Action: Defeat remaining: Apple
+	Elected:  Banana (1.000000000)
+	Defeated: Apple (0.000000000)
+	Quota: 0.500000001
+	Votes: 1.000000000
+	Residual: 0.000000000
+	Total: 1.000000000
+	Surplus: 0.499999999
+Action: Count Complete
+	Elected:  Banana (1.000000000)
+	Defeated: Apple (0.000000000)
+	Quota: 0.500000001
+	Votes: 1.000000000
+	Residual: 0.000000000
+	Total: 1.000000000
+	Surplus: 0.499999999
+

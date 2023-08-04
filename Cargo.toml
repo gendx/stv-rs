@@ -33,7 +33,7 @@ rand_distr = "0.4"
 num-bigint = { git = "https://github.com/gendx/num-bigint.git", branch = "feature-small-uint" }
 
 [features]
-default = ["checked_i64"]
+default = []
 checked_i64 = []
 log_parallelism = []
 
