@@ -15,7 +15,7 @@ rust-version = "1.73.0"
 [dependencies]
 clap = { version = "=4.4", features = ["derive"] }
 env_logger = "0.10"
-log = "0.4"
+log = { version = "0.4", features = ["max_level_debug"] }
 num = "0.4"
 rayon = "1"
 regex = "1.10"
