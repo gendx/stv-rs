@@ -38,6 +38,8 @@ jobs:
         run: cargo build --release --example histogram
       - name: Build remove_nicknames
         run: cargo build --release --example remove_nicknames
+      - name: Build shuffle_ballots
+        run: cargo build --release --example shuffle_ballots
       - uses: actions/upload-artifact@v3
         with:
           name: build-artifacts
@@ -45,6 +47,7 @@ jobs:
             target/release/stv-rs
             target/release/examples/histogram
             target/release/examples/remove_nicknames
+            target/release/examples/shuffle_ballots
           if-no-files-found: error
 
   help_tests:
@@ -253,6 +256,39 @@ jobs:
           sed -i "s/Implementation: STV-rs/Droop package: droop v0.14/g" testdata/meek/${{ matrix.src }}.fixed9.log
           python3 droop/Droop.py meek fixed precision=9 omega=6 defeat_batch=none testdata/numeric/${{ matrix.file }}.blt 2> droop.err | diff -s testdata/meek/${{ matrix.src }}.fixed9.log -
           echo -n "" | diff -s - droop.err
+
+  shuffle_tests:
+    needs: build
+    strategy:
+      matrix:
+        file:
+          - rand_sorted_by_product
+          - rand_sorted_lexicographically
+          - rand_sorted_by_lexico_product
+        include:
+          - file: rand_sorted_by_product
+            src: random/rand_hypergeometric
+            strategy: "product"
+          - file: rand_sorted_lexicographically
+            src: random/rand_hypergeometric
+            strategy: "lexicographic"
+          - file: rand_sorted_by_lexico_product
+            src: random/rand_hypergeometric
+            strategy: "lexico-product"
+      fail-fast: false
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+          path: target/release/
+      - name: Prepare shuffle_ballots binary
+        run: chmod +x target/release/examples/shuffle_ballots
+
+      - name: Check shuffled ballot
+        run: |
+          target/release/examples/shuffle_ballots --strategy=${{ matrix.strategy }} < testdata/ballots/${{ matrix.src }}.blt | diff -s testdata/shuffle_ballots/${{ matrix.file }}.blt -
 
   crash_fixed9_tests:
     needs: build

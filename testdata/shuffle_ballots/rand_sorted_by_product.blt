@@ -1,0 +1,1024 @@
+20 10
+[nick apple banana cherry date eggplant fig grape hazelnut jalapeno kiwi litchi mushroom nut orange pear quinoa radish soy tomato vanilla]
+55 apple banana fig date eggplant cherry=grape=hazelnut=nut=pear jalapeno=litchi=orange kiwi mushroom quinoa radish tomato vanilla soy 0
+62 cherry banana date grape=hazelnut=radish apple fig eggplant=mushroom=nut=pear=quinoa=soy kiwi jalapeno litchi orange vanilla tomato 0
+55 apple=fig date cherry banana grape orange hazelnut=litchi=mushroom kiwi nut eggplant=jalapeno=quinoa radish vanilla soy pear tomato 0
+50 date cherry banana eggplant hazelnut=jalapeno=kiwi fig apple=grape litchi=mushroom nut soy tomato radish=vanilla pear orange quinoa 0
+29 date apple cherry eggplant banana grape=nut hazelnut=kiwi=litchi mushroom pear fig radish jalapeno=quinoa=soy=tomato vanilla orange 0
+5 apple grape cherry fig date=eggplant=hazelnut=nut banana=jalapeno mushroom litchi pear kiwi=radish=tomato orange vanilla soy quinoa 0
+45 fig cherry eggplant date=hazelnut apple banana grape kiwi=mushroom jalapeno=litchi=orange pear quinoa=tomato nut radish vanilla soy 0
+40 hazelnut cherry apple=banana=eggplant grape=kiwi jalapeno fig date litchi=mushroom pear orange quinoa nut tomato=vanilla radish soy 0
+76 banana apple cherry hazelnut grape fig=jalapeno kiwi=litchi=mushroom=pear=radish eggplant date=nut=quinoa orange soy tomato vanilla 0
+96 apple banana eggplant date hazelnut=kiwi=litchi fig pear cherry=grape=mushroom=nut=radish jalapeno=orange quinoa soy vanilla tomato 0
+44 banana apple cherry date fig eggplant=kiwi=pear=radish=soy hazelnut=litchi mushroom grape=nut=quinoa jalapeno orange vanilla tomato 0
+68 cherry grape hazelnut apple=fig banana=date=kiwi litchi orange eggplant=mushroom=nut=quinoa=soy jalapeno pear tomato vanilla radish 0
+83 apple eggplant date banana fig litchi kiwi cherry=grape=hazelnut=jalapeno=nut mushroom pear=soy quinoa=radish=vanilla tomato orange 0
+80 cherry banana fig apple eggplant date hazelnut jalapeno grape=kiwi=nut=orange=pear litchi=mushroom quinoa=soy=tomato radish vanilla 0
+38 banana grape eggplant apple fig cherry=hazelnut date kiwi jalapeno mushroom=pear=quinoa=soy nut=orange litchi radish=tomato vanilla 0
+53 banana apple cherry date litchi grape orange fig=kiwi=mushroom=nut eggplant=hazelnut soy vanilla jalapeno=tomato radish pear=quinoa 0
+1 cherry apple banana date=eggplant=grape=hazelnut fig=kiwi jalapeno=radish nut litchi orange quinoa mushroom soy pear=tomato vanilla 0
+38 apple banana cherry hazelnut date=eggplant=mushroom=radish jalapeno grape fig=orange=pear=quinoa soy nut=tomato kiwi litchi vanilla 0
+93 date jalapeno banana=fig cherry=kiwi grape apple hazelnut=mushroom eggplant=litchi=nut=radish soy quinoa pear vanilla tomato orange 0
+83 cherry date fig eggplant apple=banana grape=pear hazelnut=mushroom jalapeno quinoa soy kiwi litchi=nut=orange=radish vanilla tomato 0
+78 eggplant apple=cherry date hazelnut=jalapeno fig=mushroom litchi banana nut grape kiwi=pear orange soy quinoa radish=vanilla tomato 0
+5 apple fig grape cherry=eggplant=jalapeno=litchi date banana=hazelnut=kiwi orange mushroom nut=pear=vanilla quinoa soy radish tomato 0
+57 cherry grape apple=date banana kiwi eggplant=hazelnut=mushroom fig jalapeno=quinoa=tomato radish litchi=soy nut pear vanilla orange 0
+63 banana apple cherry eggplant=fig date hazelnut=jalapeno=kiwi grape mushroom=radish=soy tomato litchi=nut orange quinoa vanilla pear 0
+71 cherry date apple eggplant banana hazelnut=kiwi grape jalapeno=quinoa fig=litchi=radish pear mushroom=nut=orange vanilla soy tomato 0
+45 banana apple eggplant=grape fig=litchi cherry kiwi date=jalapeno radish hazelnut=orange=pear=quinoa=tomato nut mushroom soy vanilla 0
+22 banana hazelnut eggplant date apple=kiwi grape=litchi cherry=orange fig=jalapeno=mushroom=pear=quinoa vanilla nut soy tomato radish 0
+66 date banana mushroom eggplant jalapeno hazelnut=litchi cherry=fig=grape=nut apple=kiwi=orange=pear=quinoa tomato soy radish vanilla 0
+72 apple fig date cherry banana=eggplant=grape=litchi=mushroom jalapeno hazelnut=kiwi tomato vanilla orange=soy pear nut=quinoa radish 0
+62 cherry apple banana=fig eggplant=grape date=hazelnut=mushroom nut=pear jalapeno=kiwi radish litchi quinoa orange tomato vanilla soy 0
+51 cherry banana apple=eggplant date=grape=jalapeno kiwi nut orange fig=litchi=quinoa=radish hazelnut tomato mushroom pear=soy vanilla 0
+95 cherry banana date=kiwi apple fig=litchi eggplant=grape=hazelnut=nut=orange=pear mushroom jalapeno=radish soy quinoa vanilla tomato 0
+77 cherry apple fig hazelnut eggplant=kiwi=mushroom jalapeno banana=date=grape=radish litchi pear nut=orange tomato soy=vanilla quinoa 0
+58 date jalapeno fig apple banana=hazelnut=litchi kiwi=mushroom cherry=eggplant=grape=pear nut quinoa=soy radish orange tomato vanilla 0
+38 cherry grape eggplant apple=fig banana=date=hazelnut orange kiwi=vanilla jalapeno=pear=radish=tomato litchi mushroom nut quinoa soy 0
+24 apple=grape fig date banana cherry=eggplant=jalapeno=mushroom kiwi litchi hazelnut=quinoa=tomato pear nut=radish orange soy vanilla 0
+5 banana=hazelnut cherry jalapeno apple eggplant=fig=quinoa date kiwi nut=soy mushroom radish grape=litchi vanilla orange=tomato pear 0
+87 date fig=mushroom apple banana=cherry=eggplant=hazelnut jalapeno litchi grape=kiwi=nut orange pear=quinoa soy tomato vanilla radish 0
+38 apple banana=cherry eggplant date=hazelnut=nut grape litchi=pear quinoa fig=jalapeno=mushroom=orange kiwi radish tomato soy vanilla 0
+62 apple date banana=cherry eggplant=fig grape hazelnut=litchi=mushroom nut=quinoa jalapeno=pear vanilla orange kiwi soy radish tomato 0
+1 banana date=fig cherry=hazelnut=jalapeno apple=eggplant=mushroom=pear nut grape litchi=orange quinoa kiwi soy vanilla tomato radish 0
+86 apple cherry=date banana hazelnut fig grape=quinoa eggplant=kiwi=litchi pear jalapeno orange mushroom=nut radish soy=vanilla tomato 0
+71 banana apple=date eggplant fig jalapeno cherry=mushroom grape litchi=orange=tomato soy kiwi=pear=radish=vanilla nut hazelnut quinoa 0
+56 banana date fig eggplant jalapeno litchi apple=mushroom cherry=hazelnut=kiwi=vanilla nut grape=orange=pear radish quinoa=soy tomato 0
+78 apple banana=eggplant fig hazelnut kiwi grape=mushroom=nut cherry date=jalapeno quinoa litchi=orange=pear=soy tomato radish vanilla 0
+83 apple banana fig eggplant cherry grape=nut hazelnut=mushroom date jalapeno=pear=tomato kiwi=radish litchi vanilla orange=quinoa soy 0
+14 banana apple hazelnut cherry=eggplant=fig=grape=litchi=mushroom quinoa date jalapeno=soy radish=tomato kiwi=nut vanilla orange pear 0
+8 cherry apple=jalapeno date banana=fig=kiwi=nut eggplant radish grape=hazelnut=pear mushroom tomato litchi=quinoa soy orange vanilla 0
+51 grape apple=eggplant kiwi banana date=hazelnut=litchi cherry fig jalapeno=pear=radish=soy tomato nut=orange mushroom quinoa vanilla 0
+84 cherry date fig banana jalapeno=litchi=pear apple=eggplant=kiwi=mushroom hazelnut nut radish=tomato grape orange=soy vanilla quinoa 0
+69 apple eggplant cherry=hazelnut date pear banana=fig=orange jalapeno litchi=mushroom=nut=radish quinoa kiwi grape vanilla soy=tomato 0
+66 apple cherry banana date litchi=orange fig=jalapeno eggplant=mushroom=pear kiwi grape=hazelnut=quinoa=radish nut tomato soy vanilla 0
+61 banana cherry date eggplant apple=jalapeno hazelnut fig grape=kiwi=nut litchi=tomato mushroom=orange=pear=radish quinoa soy vanilla 0
+19 fig kiwi apple grape cherry banana=date hazelnut=litchi eggplant jalapeno=nut=vanilla orange=pear=radish=soy quinoa mushroom tomato 0
+59 apple cherry banana date pear eggplant=grape=kiwi fig=hazelnut=jalapeno=quinoa litchi=mushroom nut radish soy tomato orange=vanilla 0
+3 banana apple grape radish eggplant hazelnut=kiwi fig=nut cherry=date=soy pear jalapeno=mushroom=quinoa=tomato orange litchi vanilla 0
+43 apple mushroom cherry=date=eggplant=grape banana fig hazelnut=jalapeno=litchi kiwi=pear nut=quinoa tomato orange soy radish vanilla 0
+61 litchi apple=banana=cherry=date jalapeno eggplant fig=kiwi grape=hazelnut orange nut pear=quinoa=vanilla soy radish mushroom tomato 0
+29 apple=grape cherry date banana=hazelnut eggplant kiwi=litchi=orange jalapeno=pear fig mushroom quinoa soy radish=vanilla nut tomato 0
+23 banana apple litchi cherry=date=fig=hazelnut=jalapeno grape=mushroom=nut=orange=pear eggplant kiwi quinoa=radish vanilla soy tomato 0
+88 apple banana cherry date=grape=jalapeno eggplant fig litchi hazelnut=nut=pear kiwi mushroom=radish=vanilla soy tomato orange=quinoa 0
+17 date cherry=fig=tomato banana apple grape=kiwi=mushroom jalapeno hazelnut=orange eggplant=nut=soy litchi quinoa pear vanilla radish 0
+83 cherry=fig banana=date=grape apple eggplant=hazelnut=litchi jalapeno kiwi orange mushroom soy pear=quinoa=radish vanilla nut tomato 0
+12 eggplant banana apple=cherry=grape=hazelnut=litchi fig=jalapeno mushroom=pear=radish kiwi date nut orange quinoa=vanilla soy tomato 0
+73 banana eggplant apple=cherry=hazelnut fig grape date=jalapeno=kiwi=orange=tomato quinoa=radish pear nut litchi=soy mushroom vanilla 0
+88 banana=litchi apple cherry kiwi fig=grape=jalapeno=orange=quinoa date=eggplant=mushroom hazelnut nut vanilla pear=radish soy tomato 0
+52 banana fig apple=eggplant kiwi cherry=hazelnut=jalapeno=litchi=quinoa grape date=mushroom=nut orange=radish vanilla pear soy tomato 0
+28 cherry eggplant fig apple=banana=date=grape=orange hazelnut jalapeno=litchi pear kiwi=mushroom=soy quinoa=vanilla tomato nut radish 0
+56 apple=date banana cherry=eggplant hazelnut fig grape=nut=quinoa kiwi=litchi=mushroom=pear=soy tomato jalapeno radish vanilla orange 0
+6 apple kiwi=litchi=pear grape jalapeno banana date cherry=fig hazelnut=nut=quinoa=radish=vanilla eggplant=orange soy tomato mushroom 0
+19 cherry banana apple litchi date=eggplant=hazelnut=mushroom=nut grape kiwi=orange=quinoa jalapeno=tomato fig pear soy=vanilla radish 0
+54 apple banana fig=hazelnut=jalapeno eggplant cherry=date=grape=kiwi=litchi radish mushroom quinoa=soy nut orange=pear vanilla tomato 0
+57 banana=mushroom apple hazelnut cherry=date=eggplant=nut litchi pear fig=jalapeno kiwi=quinoa orange grape=tomato radish vanilla soy 0
+60 date banana apple=cherry jalapeno kiwi eggplant=nut grape litchi=soy hazelnut fig=quinoa mushroom=orange=tomato=vanilla radish pear 0
+36 apple date banana cherry=fig=grape=litchi eggplant hazelnut=mushroom kiwi nut orange=pear=quinoa=soy jalapeno=tomato vanilla radish 0
+72 litchi hazelnut kiwi apple=date banana=cherry=eggplant=pear grape=jalapeno mushroom=orange fig=nut tomato soy radish quinoa vanilla 0
+18 date apple litchi banana=eggplant cherry=grape kiwi hazelnut=mushroom=nut=orange fig=jalapeno=pear=quinoa radish vanilla tomato soy 0
+36 date apple=banana fig=grape vanilla cherry eggplant=kiwi=litchi=orange jalapeno pear hazelnut=mushroom nut quinoa=soy tomato radish 0
+40 eggplant banana=fig apple=cherry date grape=quinoa orange mushroom hazelnut litchi kiwi jalapeno=tomato pear=soy nut=radish vanilla 0
+80 cherry grape fig banana=eggplant apple date=hazelnut litchi=nut jalapeno kiwi=quinoa mushroom=tomato radish=soy orange pear vanilla 0
+67 apple=fig date=eggplant cherry banana=litchi hazelnut grape=radish orange jalapeno=kiwi=nut=tomato mushroom soy quinoa pear vanilla 0
+33 eggplant cherry date banana=grape apple=fig hazelnut=kiwi jalapeno=litchi=pear=soy quinoa nut mushroom orange=tomato vanilla radish 0
+59 fig eggplant apple=mushroom date=kiwi cherry=jalapeno=pear=quinoa banana=grape=hazelnut=litchi nut radish orange tomato vanilla soy 0
+57 apple banana fig date eggplant=hazelnut cherry=litchi nut=pear quinoa grape jalapeno=orange kiwi=mushroom=radish=soy tomato vanilla 0
+82 apple hazelnut cherry banana=date=grape=jalapeno eggplant fig litchi kiwi=nut orange=vanilla radish=tomato mushroom=soy pear quinoa 0
+52 apple kiwi banana pear cherry=date=jalapeno=nut fig=grape=litchi=mushroom eggplant=hazelnut orange quinoa=vanilla radish soy tomato 0
+86 apple banana=cherry eggplant date=kiwi nut fig=hazelnut=litchi=pear jalapeno=orange radish mushroom soy grape=vanilla tomato quinoa 0
+84 apple=banana date fig=hazelnut cherry=jalapeno eggplant grape kiwi=litchi=radish=vanilla pear orange nut mushroom=quinoa soy tomato 0
+65 apple=banana jalapeno litchi grape fig cherry=hazelnut=mushroom=orange date=eggplant nut kiwi=quinoa pear=tomato radish soy vanilla 0
+56 apple banana=kiwi hazelnut=litchi date eggplant=pear cherry=grape=jalapeno=orange fig soy quinoa mushroom=nut radish vanilla tomato 0
+71 jalapeno apple grape banana=cherry=eggplant=kiwi fig=nut date=mushroom hazelnut=pear=quinoa=radish litchi tomato soy orange vanilla 0
+96 banana date grape apple=cherry eggplant=hazelnut fig=litchi jalapeno=nut=quinoa=radish orange kiwi=soy pear mushroom vanilla tomato 0
+16 banana=hazelnut apple date=fig grape jalapeno cherry kiwi=orange=radish=vanilla eggplant=mushroom litchi nut=pear soy tomato quinoa 0
+32 fig date apple=cherry kiwi hazelnut=jalapeno=nut=radish banana eggplant grape=litchi=mushroom=quinoa tomato orange=vanilla pear soy 0
+42 apple banana=grape hazelnut eggplant cherry=date=jalapeno=orange fig=kiwi=litchi=nut mushroom pear=tomato quinoa soy radish vanilla 0
+8 banana nut apple=fig cherry grape=hazelnut kiwi eggplant=litchi jalapeno=mushroom date=quinoa orange pear soy radish=tomato vanilla 0
+56 date grape=jalapeno apple banana cherry=eggplant=fig=kiwi hazelnut=litchi orange mushroom nut=pear quinoa=soy radish vanilla tomato 0
+57 apple grape eggplant cherry=date=jalapeno=kiwi banana=litchi hazelnut fig mushroom=orange quinoa nut=soy radish pear tomato=vanilla 0
+25 fig cherry=date grape=kiwi banana apple=eggplant jalapeno hazelnut litchi=mushroom orange soy nut pear=quinoa=radish=tomato vanilla 0
+8 cherry apple=date=eggplant banana fig=jalapeno kiwi=litchi hazelnut grape=mushroom=radish nut quinoa soy orange=vanilla tomato pear 0
+87 apple banana cherry grape eggplant=fig=hazelnut date=jalapeno=mushroom kiwi=orange quinoa litchi=pear soy nut=vanilla tomato radish 0
+43 hazelnut date apple=cherry=eggplant=fig=nut=pear banana=jalapeno=quinoa kiwi grape=litchi mushroom orange vanilla soy=tomato radish 0
+15 cherry banana apple=eggplant date jalapeno grape kiwi=nut=radish hazelnut=mushroom fig=litchi=vanilla orange pear=quinoa tomato soy 0
+88 eggplant apple=cherry=jalapeno banana=fig grape date kiwi=litchi hazelnut=mushroom nut orange=quinoa=vanilla radish soy pear tomato 0
+4 apple=cherry=eggplant banana orange date fig=grape=jalapeno=kiwi=pear=soy hazelnut=litchi radish nut mushroom=vanilla tomato quinoa 0
+13 eggplant apple=fig banana=cherry=grape date jalapeno=quinoa pear hazelnut=mushroom=nut kiwi vanilla radish litchi=orange tomato soy 0
+73 banana apple=date=eggplant cherry=jalapeno grape=hazelnut=litchi kiwi nut=quinoa fig=pear mushroom vanilla soy radish orange tomato 0
+68 banana apple date eggplant=grape fig cherry=jalapeno=quinoa vanilla hazelnut=kiwi=orange soy radish=tomato litchi=mushroom pear nut 0
+61 cherry apple eggplant=jalapeno banana date=grape=hazelnut kiwi nut orange litchi=mushroom=soy fig=pear=quinoa=vanilla radish tomato 0
+16 apple fig kiwi cherry banana=jalapeno=radish eggplant=grape=litchi=pear mushroom date=hazelnut=nut orange=quinoa soy tomato vanilla 0
+77 apple banana=litchi grape fig cherry=date=kiwi eggplant radish hazelnut=jalapeno=orange mushroom nut=pear quinoa vanilla soy=tomato 0
+16 apple date cherry kiwi banana=eggplant=jalapeno=quinoa fig=grape=mushroom hazelnut=litchi=nut tomato orange radish=soy vanilla pear 0
+51 banana apple cherry date=kiwi eggplant jalapeno litchi=nut=radish fig=grape=hazelnut orange=pear=quinoa=vanilla soy mushroom tomato 0
+74 cherry grape apple=banana=hazelnut kiwi date=eggplant=fig litchi=quinoa jalapeno mushroom=soy orange=radish pear nut vanilla tomato 0
+99 date cherry fig apple=banana jalapeno eggplant=litchi=mushroom grape=kiwi quinoa nut pear=radish hazelnut=soy=vanilla orange tomato 0
+57 banana apple cherry fig grape=hazelnut=kiwi eggplant=nut date=jalapeno=mushroom litchi orange=pear radish vanilla quinoa=tomato soy 0
+14 banana apple date=eggplant=grape cherry=fig=jalapeno=nut litchi kiwi=orange hazelnut=mushroom=pear quinoa radish tomato soy vanilla 0
+67 cherry eggplant date=jalapeno=litchi banana=hazelnut mushroom apple=fig=quinoa nut=orange kiwi grape=pear radish vanilla soy tomato 0
+83 apple date=fig=orange cherry=eggplant=grape=jalapeno banana=hazelnut nut kiwi=litchi=soy radish pear quinoa tomato mushroom vanilla 0
+43 apple banana=cherry=eggplant kiwi litchi fig date=hazelnut=jalapeno=orange quinoa=soy grape radish mushroom=nut=pear vanilla tomato 0
+45 apple cherry date banana=hazelnut=jalapeno grape eggplant=fig=orange pear kiwi=vanilla litchi mushroom=nut soy radish quinoa=tomato 0
+75 apple cherry banana=eggplant=hazelnut kiwi date=fig=grape quinoa mushroom litchi=orange nut jalapeno=radish=tomato=vanilla pear soy 0
+53 apple=eggplant banana fig=jalapeno=kiwi grape=litchi=radish orange cherry hazelnut date=mushroom=nut=tomato vanilla quinoa soy pear 0
+35 apple jalapeno banana date cherry=hazelnut eggplant=fig=litchi mushroom orange grape=vanilla quinoa=soy kiwi=nut=pear radish tomato 0
+44 banana apple cherry=eggplant=grape date=orange fig=hazelnut=nut mushroom pear jalapeno kiwi quinoa=soy litchi=radish tomato vanilla 0
+5 eggplant cherry nut apple=fig banana=date=litchi grape hazelnut=jalapeno=mushroom=quinoa kiwi=pear=soy tomato orange radish vanilla 0
+71 banana apple cherry=eggplant grape date=fig=kiwi hazelnut mushroom jalapeno=litchi=orange nut=radish tomato quinoa pear=vanilla soy 0
+40 grape apple=cherry=hazelnut banana=eggplant date fig mushroom litchi kiwi orange=pear jalapeno=nut=soy vanilla radish quinoa=tomato 0
+58 banana cherry=jalapeno apple=eggplant fig litchi grape=kiwi date=mushroom=pear quinoa hazelnut nut=orange=radish tomato vanilla soy 0
+46 date banana kiwi apple=pear eggplant=fig=mushroom litchi orange cherry=radish hazelnut=jalapeno=soy grape quinoa nut tomato=vanilla 0
+38 cherry apple=hazelnut banana=date=grape eggplant=litchi orange radish jalapeno=kiwi=nut fig=vanilla soy mushroom pear quinoa tomato 0
+1 grape apple cherry=eggplant=mushroom banana date=litchi fig=jalapeno hazelnut nut pear kiwi=quinoa=soy orange=radish vanilla tomato 0
+60 apple cherry=hazelnut=jalapeno banana date eggplant=grape=litchi pear kiwi fig=quinoa=radish=tomato soy nut=orange mushroom vanilla 0
+26 apple eggplant=fig banana=cherry hazelnut jalapeno date kiwi=pear grape=litchi=nut tomato vanilla mushroom orange=quinoa=radish soy 0
+97 eggplant banana apple=date hazelnut cherry=fig grape=litchi jalapeno=nut=orange kiwi=pear=vanilla mushroom quinoa radish soy tomato 0
+1 apple banana cherry=mushroom fig=litchi hazelnut grape date=kiwi=orange eggplant nut=quinoa=soy radish pear=vanilla jalapeno tomato 0
+60 cherry=eggplant banana apple kiwi grape=hazelnut=litchi date jalapeno=mushroom pear=quinoa fig=nut=soy orange vanilla tomato radish 0
+65 banana apple=cherry=eggplant mushroom hazelnut=nut kiwi grape date=jalapeno=orange fig=litchi=pear=soy tomato vanilla quinoa radish 0
+53 banana apple cherry date=fig=kiwi jalapeno eggplant=grape hazelnut=nut litchi orange=pear=tomato quinoa=soy mushroom vanilla radish 0
+69 banana date eggplant apple=cherry=grape mushroom fig=jalapeno litchi hazelnut=orange=tomato kiwi nut pear quinoa=vanilla radish=soy 0
+80 cherry apple date=jalapeno=kiwi eggplant banana grape fig=pear hazelnut=litchi=vanilla mushroom quinoa orange nut=radish soy=tomato 0
+82 apple banana date hazelnut=mushroom cherry=eggplant=radish grape fig=litchi=orange jalapeno kiwi=pear quinoa nut soy=vanilla tomato 0
+24 fig apple banana kiwi date=grape=litchi=soy cherry=eggplant=jalapeno nut=quinoa hazelnut=orange=radish pear mushroom tomato vanilla 0
+45 date fig jalapeno banana=cherry=grape kiwi apple=eggplant=hazelnut mushroom nut=pear radish orange=soy litchi=quinoa tomato vanilla 0
+49 grape cherry hazelnut=jalapeno apple=date eggplant kiwi banana=litchi=pear fig=orange=radish quinoa tomato mushroom=nut soy vanilla 0
+8 apple banana cherry fig=hazelnut=quinoa eggplant=grape kiwi date=orange=pear jalapeno=tomato litchi=soy radish mushroom nut vanilla 0
+52 cherry banana fig apple grape jalapeno date=hazelnut=litchi=mushroom eggplant=radish kiwi=nut=soy orange=pear=quinoa vanilla tomato 0
+31 apple banana cherry fig=litchi date eggplant=grape=mushroom soy orange=pear=quinoa kiwi nut hazelnut=jalapeno=radish=vanilla tomato 0
+59 apple date banana eggplant=grape cherry fig jalapeno=kiwi=mushroom hazelnut=quinoa nut orange=pear radish=soy=tomato litchi vanilla 0
+67 apple=banana grape cherry=fig=litchi pear eggplant=jalapeno=orange kiwi=nut tomato vanilla mushroom=soy date hazelnut quinoa radish 0
+50 banana apple=kiwi eggplant cherry fig hazelnut date=nut=pear mushroom=radish grape jalapeno litchi=soy=tomato orange quinoa=vanilla 0
+91 eggplant apple cherry=date banana grape hazelnut=kiwi=litchi jalapeno=pear fig orange=vanilla nut mushroom=quinoa=radish soy tomato 0
+73 apple date banana=cherry=grape eggplant=fig=litchi hazelnut=jalapeno=kiwi=nut mushroom pear soy orange radish=vanilla quinoa tomato 0
+19 cherry banana apple=date=fig hazelnut mushroom eggplant=pear radish grape=litchi=nut jalapeno=kiwi=tomato=vanilla orange soy quinoa 0
+55 cherry banana=date apple litchi eggplant=grape=kiwi jalapeno=pear mushroom=orange fig hazelnut=nut=soy vanilla radish tomato quinoa 0
+49 cherry banana=eggplant=grape fig date=mushroom apple quinoa radish hazelnut=litchi=orange jalapeno=nut pear=tomato kiwi vanilla soy 0
+26 date apple=cherry hazelnut=jalapeno banana grape eggplant fig=orange nut kiwi=litchi=mushroom=radish=soy quinoa pear=tomato vanilla 0
+88 date apple=banana cherry=eggplant jalapeno=pear fig=grape=hazelnut=mushroom=soy kiwi=radish quinoa nut litchi tomato vanilla orange 0
+85 apple banana eggplant date=grape litchi=nut cherry=hazelnut=kiwi=mushroom=pear fig=quinoa jalapeno orange=soy tomato vanilla radish 0
+80 apple cherry eggplant=fig date=grape litchi banana=jalapeno=mushroom=nut radish hazelnut=kiwi=pear=quinoa=vanilla orange soy tomato 0
+1 banana apple=eggplant cherry hazelnut date fig=grape=jalapeno=kiwi=litchi nut mushroom=radish quinoa orange=pear=soy=tomato vanilla 0
+9 apple fig banana=cherry=date=eggplant=litchi jalapeno=kiwi grape=hazelnut=radish=soy mushroom orange nut=quinoa tomato vanilla pear 0
+3 hazelnut apple=fig quinoa grape banana eggplant cherry=date=kiwi=litchi=mushroom jalapeno=orange soy nut=vanilla radish=tomato pear 0
+80 apple=cherry banana litchi date=eggplant grape kiwi nut fig=hazelnut=orange=quinoa=soy jalapeno=radish mushroom=tomato pear vanilla 0
+42 fig banana cherry apple=date=grape=jalapeno litchi eggplant=nut=orange=pear=quinoa hazelnut kiwi=soy mushroom=tomato radish vanilla 0
+78 hazelnut apple=fig banana=cherry=eggplant=kiwi=nut mushroom=orange date=pear jalapeno=quinoa grape tomato litchi radish soy vanilla 0
+92 apple=banana cherry=eggplant fig grape jalapeno hazelnut=mushroom date=kiwi=litchi=orange=radish nut pear=quinoa soy tomato vanilla 0
+66 banana date eggplant=jalapeno apple=mushroom cherry=grape=hazelnut=orange=soy quinoa fig=litchi nut=pear tomato kiwi radish vanilla 0
+24 banana apple fig date=eggplant cherry grape=hazelnut=jalapeno=nut=radish pear=quinoa orange kiwi=litchi tomato mushroom=soy vanilla 0
+77 fig date=grape cherry apple=kiwi banana litchi eggplant=pear jalapeno=mushroom=nut=radish=soy hazelnut vanilla tomato orange=quinoa 0
+23 date banana eggplant apple=cherry=fig jalapeno hazelnut=kiwi=quinoa grape=litchi=pear soy tomato nut=orange=vanilla mushroom radish 0
+70 cherry hazelnut grape apple=date=eggplant=fig=kiwi=litchi=orange banana jalapeno=nut pear mushroom=quinoa=soy radish tomato=vanilla 0
+79 date banana apple eggplant=fig=grape=kiwi=quinoa pear hazelnut=mushroom=radish jalapeno=orange=tomato cherry=litchi soy nut vanilla 0
+31 apple banana date cherry grape=kiwi=mushroom eggplant=hazelnut=jalapeno=litchi=soy fig=nut=radish orange=pear quinoa tomato vanilla 0
+48 apple grape banana cherry=fig=hazelnut date=eggplant=jalapeno=litchi=quinoa mushroom=soy=tomato kiwi orange nut pear radish=vanilla 0
+32 apple date eggplant banana=cherry=grape fig=kiwi=litchi=nut=quinoa jalapeno hazelnut=mushroom soy orange radish=tomato=vanilla pear 0
+6 apple banana date=fig cherry jalapeno=nut eggplant litchi mushroom=vanilla grape=radish hazelnut=kiwi=orange quinoa pear=tomato soy 0
+30 cherry fig date=eggplant apple=banana=grape hazelnut jalapeno=litchi kiwi=orange radish mushroom nut quinoa pear=tomato soy=vanilla 0
+84 cherry date=kiwi apple hazelnut=litchi banana=eggplant grape=pear fig=jalapeno=quinoa nut=orange tomato mushroom radish vanilla soy 0
+27 cherry banana eggplant kiwi=nut fig=grape apple=date litchi hazelnut=mushroom=vanilla orange=tomato pear jalapeno quinoa radish=soy 0
+23 cherry apple=mushroom banana=date=hazelnut=jalapeno eggplant=litchi fig=grape=kiwi pear orange vanilla nut tomato radish=soy quinoa 0
+26 banana=eggplant cherry=grape date apple=jalapeno hazelnut fig nut mushroom=quinoa=radish kiwi=orange litchi=soy pear tomato vanilla 0
+77 banana date=fig cherry apple eggplant=grape=hazelnut=quinoa kiwi litchi jalapeno=nut mushroom=vanilla orange=radish=tomato pear soy 0
+28 cherry banana hazelnut jalapeno apple=eggplant date=grape=litchi fig=kiwi mushroom=nut=orange=pear=quinoa=radish=soy=tomato vanilla 0
+20 cherry banana=date eggplant=mushroom hazelnut apple=grape fig=radish jalapeno=litchi=tomato nut orange=quinoa kiwi pear vanilla soy 0
+36 banana=cherry eggplant date=nut fig=litchi apple jalapeno hazelnut=tomato grape=mushroom=orange kiwi=pear quinoa soy radish vanilla 0
+8 apple banana=cherry=date=jalapeno fig hazelnut=pear eggplant=grape=kiwi litchi=nut mushroom orange soy tomato quinoa=vanilla radish 0
+97 banana=hazelnut apple date eggplant=fig cherry=grape=kiwi jalapeno mushroom=pear=quinoa=vanilla nut=orange radish tomato soy litchi 0
+40 date apple cherry=fig=kiwi eggplant=hazelnut banana=grape nut=vanilla jalapeno litchi quinoa mushroom=radish orange soy pear=tomato 0
+19 eggplant grape banana date=fig apple kiwi=litchi=mushroom=nut cherry=hazelnut=jalapeno pear=soy orange=tomato quinoa vanilla radish 0
+17 grape date apple litchi cherry=kiwi banana=nut fig=hazelnut=pear=radish mushroom=orange=quinoa eggplant=jalapeno vanilla soy tomato 0
+15 apple banana cherry=fig grape eggplant=kiwi litchi date=hazelnut=radish orange=soy jalapeno=mushroom=pear=quinoa tomato nut vanilla 0
+76 apple=cherry banana date=grape fig eggplant=jalapeno=mushroom orange litchi hazelnut=kiwi pear nut=quinoa=radish=tomato vanilla soy 0
+76 banana apple grape orange kiwi cherry=eggplant=litchi=mushroom fig=tomato date=jalapeno=nut=soy hazelnut=radish=vanilla pear quinoa 0
+86 banana cherry=hazelnut apple grape=soy eggplant=litchi=quinoa=tomato date radish jalapeno fig=kiwi=vanilla mushroom=orange nut pear 0
+79 apple banana=cherry eggplant=fig=kiwi date=grape hazelnut=jalapeno=litchi=mushroom pear=quinoa radish nut soy tomato vanilla orange 0
+98 apple banana=kiwi cherry fig=grape eggplant date=hazelnut=jalapeno=litchi vanilla pear mushroom=quinoa nut=orange=soy radish tomato 0
+96 hazelnut apple banana=cherry date eggplant=fig=radish grape=jalapeno=kiwi=litchi mushroom pear=tomato soy vanilla nut=quinoa orange 0
+57 eggplant banana=cherry=date grape=nut fig=hazelnut jalapeno apple=mushroom litchi pear vanilla quinoa kiwi=orange radish=soy tomato 0
+32 apple cherry=fig eggplant banana date=kiwi=litchi=orange mushroom grape hazelnut=jalapeno=nut quinoa=tomato pear=radish soy vanilla 0
+99 banana date=grape apple=cherry eggplant=litchi=nut quinoa fig=hazelnut=jalapeno=kiwi radish tomato=vanilla pear mushroom orange soy 0
+46 banana apple nut cherry=fig=hazelnut=mushroom grape=kiwi=litchi=quinoa date eggplant=jalapeno=tomato pear=vanilla orange radish soy 0
+83 fig apple=banana cherry=date=eggplant=grape=jalapeno=mushroom litchi hazelnut=radish soy kiwi=nut=orange=pear quinoa tomato vanilla 0
+81 date jalapeno apple banana=fig eggplant=nut hazelnut=kiwi=orange=quinoa cherry=grape=radish pear tomato=vanilla litchi mushroom soy 0
+95 banana apple fig cherry eggplant litchi=nut=pear kiwi=mushroom date=jalapeno grape=radish hazelnut=quinoa orange vanilla soy=tomato 0
+38 banana=cherry apple date grape hazelnut jalapeno fig=kiwi=nut eggplant=mushroom litchi=pear orange=vanilla quinoa soy=tomato radish 0
+59 apple=banana fig=kiwi cherry date=eggplant=hazelnut grape=orange litchi jalapeno=mushroom nut tomato=vanilla pear soy quinoa radish 0
+53 apple cherry date hazelnut=litchi eggplant=fig=kiwi=nut banana=grape jalapeno=mushroom orange=quinoa=vanilla radish tomato soy pear 0
+94 cherry date apple banana grape=litchi eggplant=fig jalapeno=kiwi hazelnut=mushroom=quinoa pear orange=radish nut=tomato vanilla soy 0
+2 apple fig banana=eggplant litchi=nut cherry date hazelnut=pear grape=jalapeno mushroom orange=quinoa=radish soy vanilla kiwi=tomato 0
+18 cherry eggplant apple=banana fig=hazelnut date jalapeno kiwi=litchi soy grape orange=pear=quinoa mushroom=nut tomato radish=vanilla 0
+30 apple cherry date=kiwi fig eggplant grape=orange banana=nut=pear jalapeno=litchi quinoa hazelnut=mushroom soy=tomato radish vanilla 0
+58 banana apple fig cherry=hazelnut=jalapeno date=eggplant kiwi=litchi=quinoa=tomato grape mushroom=nut=orange=radish vanilla soy pear 0
+80 apple eggplant mushroom cherry=date banana=fig grape=quinoa=radish kiwi hazelnut=litchi=nut=orange pear soy jalapeno tomato=vanilla 0
+49 apple date=kiwi banana=hazelnut=jalapeno=mushroom cherry fig eggplant=nut=orange litchi tomato=vanilla radish pear grape quinoa=soy 0
+71 cherry date=eggplant apple=grape=hazelnut=jalapeno kiwi banana=mushroom fig litchi=orange=soy pear nut=vanilla tomato radish quinoa 0
+95 banana date apple cherry=nut fig=grape=hazelnut=mushroom eggplant=kiwi jalapeno=litchi orange=quinoa=soy pear vanilla radish tomato 0
+37 apple=date banana eggplant=grape fig=pear cherry hazelnut=litchi=soy jalapeno nut kiwi=mushroom=tomato=vanilla orange quinoa radish 0
+50 date banana fig=pear apple=cherry grape=jalapeno hazelnut litchi=orange=quinoa eggplant mushroom=nut tomato kiwi=soy radish vanilla 0
+34 date grape apple banana=jalapeno cherry fig=kiwi=litchi eggplant hazelnut=nut orange=pear quinoa=radish=tomato=vanilla soy mushroom 0
+37 banana apple=eggplant hazelnut fig=nut grape cherry=jalapeno=litchi date=kiwi=mushroom=soy quinoa vanilla orange=pear radish tomato 0
+67 cherry mushroom apple banana=fig jalapeno eggplant date=hazelnut=nut kiwi=orange grape=pear quinoa=soy tomato litchi=vanilla radish 0
+17 apple date eggplant hazelnut cherry banana=grape kiwi fig=mushroom=nut=radish pear jalapeno=litchi=quinoa tomato=vanilla orange=soy 0
+61 apple banana eggplant=fig grape hazelnut=jalapeno litchi=mushroom cherry date=kiwi nut=tomato orange quinoa=radish=vanilla soy pear 0
+71 apple=banana=cherry eggplant date jalapeno fig=hazelnut=orange=radish grape kiwi=litchi mushroom=nut pear=vanilla quinoa tomato soy 0
+42 date apple eggplant banana=grape hazelnut=jalapeno=kiwi=mushroom fig=nut cherry=orange litchi=quinoa=tomato radish pear soy vanilla 0
+49 eggplant apple=cherry=hazelnut banana=date=fig=grape jalapeno orange kiwi=litchi mushroom nut=soy radish tomato pear=quinoa vanilla 0
+31 kiwi apple=date hazelnut banana=fig=grape cherry=eggplant jalapeno litchi=nut mushroom=soy quinoa=vanilla orange pear tomato radish 0
+51 banana=date apple grape kiwi=nut cherry fig=hazelnut=litchi=mushroom=orange=quinoa pear eggplant jalapeno radish=vanilla soy=tomato 0
+33 eggplant cherry apple grape date=fig=hazelnut=radish banana=kiwi=mushroom=orange pear jalapeno=nut=vanilla litchi quinoa soy=tomato 0
+77 banana=cherry apple=kiwi fig date=grape hazelnut jalapeno=litchi eggplant mushroom=quinoa nut=orange=pear vanilla soy tomato radish 0
+83 apple cherry=date=eggplant=kiwi banana=hazelnut=mushroom jalapeno quinoa nut=pear fig=grape radish orange=soy litchi vanilla tomato 0
+8 apple cherry=date hazelnut banana=eggplant=fig=grape jalapeno=mushroom nut=orange=pear kiwi litchi radish=tomato soy vanilla quinoa 0
+99 apple banana=jalapeno eggplant cherry fig=grape=hazelnut date=mushroom kiwi=nut litchi=orange pear=soy quinoa tomato radish vanilla 0
+18 banana apple cherry=fig=kiwi date=grape eggplant=hazelnut orange=quinoa jalapeno litchi=nut pear=radish mushroom tomato vanilla soy 0
+23 banana date eggplant=nut cherry apple=fig=grape kiwi=radish mushroom hazelnut jalapeno=soy litchi=quinoa tomato=vanilla pear orange 0
+26 banana cherry eggplant=fig=kiwi=mushroom apple date=jalapeno=quinoa=soy hazelnut=litchi=nut grape tomato=vanilla pear orange radish 0
+96 banana hazelnut apple cherry=date=fig eggplant=grape jalapeno=nut litchi kiwi=radish pear=quinoa mushroom soy orange=vanilla tomato 0
+78 apple=date cherry banana=eggplant hazelnut jalapeno fig=litchi kiwi=soy mushroom grape=radish nut tomato orange=pear=quinoa vanilla 0
+59 banana eggplant apple=cherry date fig=litchi hazelnut=mushroom=quinoa=soy orange kiwi=tomato grape=jalapeno=pear nut radish vanilla 0
+26 banana apple=fig grape cherry=date eggplant=jalapeno mushroom=orange=pear hazelnut litchi=nut=radish=soy kiwi vanilla quinoa tomato 0
+90 date cherry=fig banana apple=grape=jalapeno=nut eggplant=kiwi=pear radish hazelnut=litchi=mushroom=orange quinoa soy tomato vanilla 0
+2 apple cherry fig hazelnut=jalapeno=kiwi date=eggplant=grape=litchi banana nut=orange tomato mushroom=pear=quinoa=soy vanilla radish 0
+16 cherry apple date fig banana=grape=kiwi hazelnut=litchi eggplant=jalapeno mushroom orange=pear quinoa=radish tomato=vanilla soy nut 0
+83 apple jalapeno banana hazelnut date=eggplant=fig=litchi cherry kiwi=pear grape=orange quinoa=soy mushroom=nut=radish tomato vanilla 0
+52 cherry banana fig=grape apple eggplant hazelnut=kiwi=pear=radish date=jalapeno=nut orange=soy mushroom litchi quinoa=vanilla tomato 0
+21 eggplant apple cherry=date mushroom banana=grape=litchi hazelnut orange fig=kiwi pear=tomato nut quinoa jalapeno=radish soy=vanilla 0
+72 mushroom banana=eggplant apple=cherry=fig=jalapeno grape=kiwi=litchi soy nut date=hazelnut orange pear tomato quinoa=radish vanilla 0
+90 cherry banana=eggplant=hazelnut apple fig date=kiwi grape=litchi=tomato=vanilla soy nut jalapeno orange=pear quinoa mushroom=radish 0
+55 date kiwi=nut apple=fig mushroom jalapeno cherry=eggplant=quinoa litchi banana=hazelnut=pear=tomato orange=vanilla grape soy radish 0
+78 apple banana cherry=date=kiwi=tomato eggplant=grape=hazelnut orange quinoa fig=pear jalapeno=litchi=mushroom=nut radish vanilla soy 0
+55 cherry apple litchi banana=grape=orange=pear kiwi eggplant=fig=hazelnut=nut date jalapeno=vanilla mushroom=quinoa=soy radish tomato 0
+56 banana apple date cherry=fig=grape=quinoa litchi jalapeno=mushroom kiwi=nut=pear eggplant=tomato hazelnut=vanilla orange radish soy 0
+60 banana=eggplant apple date=fig cherry hazelnut jalapeno litchi=orange=quinoa grape=nut soy mushroom pear=tomato kiwi=radish vanilla 0
+47 apple cherry=date=eggplant fig=grape=kiwi=litchi banana orange hazelnut=jalapeno=mushroom=nut pear soy radish=tomato quinoa vanilla 0
+23 hazelnut date apple=banana jalapeno eggplant cherry=fig=kiwi=litchi nut grape=quinoa orange=pear=soy vanilla mushroom=tomato radish 0
+28 banana eggplant apple cherry=fig date=grape litchi=nut jalapeno=mushroom hazelnut=kiwi orange=pear=quinoa radish vanilla tomato soy 0
+79 eggplant cherry banana apple=grape=jalapeno nut hazelnut date=fig tomato kiwi=mushroom=pear=soy litchi quinoa=radish orange=vanilla 0
+18 apple hazelnut grape banana=eggplant=fig cherry litchi=radish date=kiwi mushroom=pear jalapeno=nut soy=vanilla orange quinoa tomato 0
+80 apple banana=litchi cherry eggplant date=grape=hazelnut nut fig=mushroom kiwi pear=quinoa orange=soy jalapeno=radish vanilla tomato 0
+2 cherry banana=jalapeno=mushroom apple=date fig eggplant=litchi grape=hazelnut=pear=quinoa nut vanilla radish orange kiwi=soy tomato 0
+89 date cherry apple=banana=grape hazelnut eggplant=fig=kiwi=pear jalapeno=mushroom=orange=radish nut=tomato litchi quinoa vanilla soy 0
+88 apple banana=eggplant mushroom hazelnut cherry=grape date fig=litchi jalapeno=kiwi=nut vanilla pear=quinoa tomato radish=soy orange 0
+3 litchi date=fig=kiwi cherry apple=banana hazelnut=jalapeno eggplant=orange grape=tomato pear mushroom=vanilla nut radish quinoa soy 0
+59 fig apple hazelnut cherry=date=eggplant=grape=mushroom banana pear=vanilla jalapeno=kiwi=litchi=nut=orange quinoa=radish tomato soy 0
+51 cherry apple eggplant banana date=jalapeno=kiwi nut=orange grape=hazelnut=soy litchi fig quinoa=tomato pear mushroom=radish=vanilla 0
+99 hazelnut cherry=date nut banana=eggplant=fig apple=mushroom=radish grape=kiwi=litchi jalapeno soy pear=quinoa orange vanilla tomato 0
+57 hazelnut apple cherry eggplant date=jalapeno banana=fig=nut grape=orange=radish kiwi=quinoa mushroom soy=tomato=vanilla litchi pear 0
+6 fig apple=cherry=hazelnut jalapeno banana=kiwi=orange grape eggplant date nut=soy mushroom=vanilla litchi=pear=quinoa tomato radish 0
+37 apple date banana=cherry=grape pear eggplant=hazelnut=litchi jalapeno fig=kiwi soy mushroom=nut quinoa=radish=vanilla orange tomato 0
+12 grape apple date banana=cherry=fig litchi hazelnut=orange eggplant=quinoa=soy jalapeno=pear kiwi mushroom radish nut=tomato=vanilla 0
+61 apple cherry=date=nut pear banana=fig=soy eggplant=jalapeno grape hazelnut=kiwi=litchi mushroom radish=tomato orange vanilla quinoa 0
+18 date apple=banana=mushroom cherry fig=hazelnut eggplant=jalapeno=kiwi grape nut=quinoa tomato litchi pear orange=radish=vanilla soy 0
+51 apple date eggplant=fig=grape cherry jalapeno=kiwi=mushroom banana=litchi hazelnut=soy pear orange vanilla nut quinoa=radish=tomato 0
+97 jalapeno apple=grape cherry=date=fig hazelnut banana=litchi kiwi=nut=orange mushroom eggplant pear quinoa=soy=tomato radish vanilla 0
+41 apple eggplant cherry date=fig kiwi banana=hazelnut=mushroom litchi grape jalapeno=radish=soy orange=vanilla quinoa nut=pear=tomato 0
+72 date=eggplant cherry apple=kiwi=quinoa grape banana hazelnut=jalapeno=nut orange=soy fig=radish=tomato litchi pear mushroom vanilla 0
+37 banana date apple cherry grape=kiwi eggplant=jalapeno=litchi hazelnut mushroom=quinoa nut=orange=soy fig pear=tomato=vanilla radish 0
+61 cherry apple eggplant banana=date=hazelnut fig=grape kiwi jalapeno=litchi=quinoa nut=orange mushroom=radish=tomato soy vanilla pear 0
+22 banana=eggplant apple=cherry=date fig hazelnut jalapeno=kiwi=radish grape=litchi=nut=pear=quinoa=soy mushroom vanilla orange tomato 0
+12 apple=banana cherry=date eggplant grape fig=hazelnut=jalapeno quinoa litchi=nut=orange pear mushroom=soy=vanilla radish kiwi tomato 0
+52 banana apple eggplant cherry=date=hazelnut=jalapeno orange fig=grape=litchi mushroom=nut=quinoa kiwi=radish=vanilla tomato pear soy 0
+71 banana=date fig apple=jalapeno mushroom nut cherry=eggplant=hazelnut grape=litchi=orange kiwi=pear=quinoa radish soy tomato vanilla 0
+4 apple banana=eggplant cherry=fig grape date=hazelnut=soy quinoa litchi=pear=radish jalapeno kiwi=mushroom=nut orange tomato vanilla 0
+19 banana apple=grape eggplant cherry=jalapeno=kiwi fig date orange=radish=vanilla hazelnut=litchi=pear nut=soy mushroom quinoa tomato 0
+15 cherry grape apple eggplant=hazelnut=mushroom banana fig=kiwi=nut date=jalapeno=pear orange litchi=radish vanilla soy=tomato quinoa 0
+68 banana=cherry date apple fig hazelnut=litchi=mushroom eggplant=jalapeno=pear grape=nut=quinoa vanilla kiwi orange radish soy=tomato 0
+47 banana apple date jalapeno eggplant=fig=hazelnut mushroom cherry=grape=pear quinoa kiwi=nut=orange litchi=vanilla radish=soy tomato 0
+84 banana grape apple=date=mushroom fig eggplant=nut orange cherry=kiwi quinoa=radish=tomato hazelnut jalapeno=pear=soy litchi vanilla 0
+49 apple eggplant cherry=fig=hazelnut date banana grape jalapeno orange kiwi=litchi=pear=quinoa nut=soy=tomato mushroom=radish=vanilla 0
+50 date banana=cherry=fig eggplant=grape=quinoa apple=mushroom=orange hazelnut jalapeno=kiwi litchi nut=pear radish soy tomato vanilla 0
+94 apple date cherry eggplant banana=fig=grape=jalapeno=kiwi=mushroom hazelnut=nut pear=quinoa=tomato litchi=orange=vanilla soy radish 0
+77 eggplant=fig apple date banana=jalapeno=kiwi cherry nut hazelnut grape=radish mushroom=orange=soy litchi=quinoa=vanilla pear tomato 0
+48 date banana apple=grape=hazelnut cherry=kiwi=nut fig jalapeno=mushroom eggplant=litchi=pear orange radish quinoa=tomato soy vanilla 0
+44 eggplant fig apple=cherry banana=grape hazelnut date=litchi=vanilla jalapeno=nut=soy mushroom kiwi=pear=quinoa orange tomato radish 0
+65 apple date fig banana eggplant=grape=orange cherry=hazelnut=jalapeno kiwi=nut mushroom pear soy=vanilla litchi=quinoa=radish tomato 0
+90 banana kiwi hazelnut apple=cherry=fig date grape=jalapeno=nut quinoa eggplant litchi=radish=soy=vanilla mushroom=orange=tomato pear 0
+54 banana fig apple=cherry=eggplant grape jalapeno=nut=soy date=hazelnut=kiwi=mushroom quinoa litchi=orange=pear radish tomato vanilla 0
+52 banana apple fig=grape=hazelnut date=eggplant=jalapeno kiwi=mushroom=pear=vanilla cherry=nut=tomato litchi orange radish quinoa soy 0
+54 date apple=eggplant=nut grape fig=kiwi cherry=jalapeno=litchi banana hazelnut=mushroom pear orange quinoa=radish=soy tomato vanilla 0
+44 banana apple=jalapeno=litchi cherry=fig eggplant grape quinoa=tomato date=mushroom=nut hazelnut kiwi=radish=vanilla pear orange soy 0
+58 apple cherry date=eggplant=fig pear=vanilla banana=jalapeno=nut grape=kiwi hazelnut=soy=tomato mushroom orange litchi quinoa radish 0
+10 apple banana=eggplant=fig grape date=hazelnut=pear cherry=litchi jalapeno=kiwi=mushroom soy radish nut orange vanilla quinoa=tomato 0
+65 banana=cherry=grape eggplant=fig date=nut kiwi apple=hazelnut=orange jalapeno soy pear litchi=mushroom=radish quinoa vanilla tomato 0
+5 apple jalapeno cherry=eggplant banana=date=fig=grape=hazelnut=litchi=orange radish kiwi=nut mushroom pear=quinoa soy=vanilla tomato 0
+83 date banana=cherry apple=jalapeno eggplant=grape=hazelnut=pear fig radish litchi kiwi=mushroom=nut=orange=quinoa=soy=tomato vanilla 0
+64 date apple=banana=cherry kiwi=litchi grape=jalapeno hazelnut fig vanilla eggplant=mushroom=nut=orange=tomato radish pear=quinoa soy 0
+45 fig banana apple=cherry=eggplant=grape=hazelnut date kiwi=litchi=vanilla jalapeno=mushroom nut=pear orange radish quinoa=tomato soy 0
+43 apple cherry date=fig=pear banana=grape=hazelnut=litchi=mushroom quinoa eggplant=kiwi=nut=tomato jalapeno orange radish=soy vanilla 0
+31 mushroom apple=date=eggplant=fig=litchi cherry banana=hazelnut=kiwi=orange grape=jalapeno quinoa pear=radish=tomato nut soy vanilla 0
+12 apple date banana=cherry=hazelnut=kiwi=litchi eggplant=fig grape jalapeno mushroom=tomato nut=pear=vanilla orange=soy quinoa radish 0
+86 apple banana jalapeno date=hazelnut eggplant=fig=kiwi cherry=grape litchi=mushroom=orange=pear=radish nut soy=vanilla quinoa tomato 0
+80 fig cherry apple=date=eggplant litchi grape banana=hazelnut jalapeno=kiwi=orange=radish=soy mushroom=pear nut=tomato vanilla quinoa 0
+22 cherry banana date apple=jalapeno eggplant fig=hazelnut=kiwi mushroom pear=vanilla grape=litchi=nut=quinoa=radish soy orange=tomato 0
+1 date apple=fig banana eggplant=hazelnut grape jalapeno=mushroom cherry=nut=vanilla soy kiwi=litchi=orange=pear=radish tomato quinoa 0
+29 eggplant fig nut banana=date=grape=hazelnut=tomato apple=cherry kiwi litchi=mushroom=soy jalapeno=radish orange=pear quinoa vanilla 0
+56 apple=cherry banana date=eggplant kiwi fig jalapeno=orange=soy grape=mushroom=nut=quinoa=radish hazelnut=litchi pear tomato vanilla 0
+77 cherry apple=eggplant date fig=grape banana=hazelnut=jalapeno kiwi=litchi=nut=pear=quinoa radish mushroom tomato=vanilla orange soy 0
+41 apple banana=mushroom cherry=eggplant=fig litchi date=jalapeno grape hazelnut kiwi=nut=quinoa=radish=tomato orange soy pear=vanilla 0
+15 kiwi apple=eggplant banana=date=litchi grape cherry=fig=hazelnut=pear jalapeno=mushroom=nut=orange=quinoa radish tomato vanilla soy 0
+55 fig date banana=eggplant=jalapeno apple hazelnut cherry=grape=kiwi=mushroom=pear litchi orange=quinoa soy=vanilla nut=tomato radish 0
+94 cherry=eggplant banana apple date grape=quinoa hazelnut=litchi=orange kiwi fig=jalapeno=nut=radish=soy pear mushroom=tomato vanilla 0
+57 apple cherry date=eggplant banana=fig=jalapeno=litchi=orange hazelnut=kiwi=vanilla grape nut pear=tomato quinoa soy mushroom=radish 0
+64 eggplant date=grape fig cherry=litchi banana=hazelnut=quinoa apple kiwi nut=pear jalapeno=mushroom=orange=soy=tomato radish vanilla 0
+20 eggplant=hazelnut=jalapeno apple=cherry litchi kiwi banana=grape date=fig=mushroom=pear=quinoa orange soy nut=vanilla radish tomato 0
+77 eggplant apple=date banana=fig=grape=litchi=nut cherry pear hazelnut=orange=tomato jalapeno=quinoa mushroom kiwi=soy radish vanilla 0
+84 banana apple date=eggplant=fig cherry grape mushroom jalapeno=litchi hazelnut=pear kiwi=quinoa=radish=tomato=vanilla orange nut=soy 0
+71 banana apple grape cherry=date=fig litchi kiwi=pear quinoa eggplant=hazelnut=jalapeno=mushroom=nut soy=tomato orange=radish vanilla 0
+89 apple orange cherry=date=eggplant=fig=grape banana hazelnut=jalapeno=litchi quinoa kiwi=pear=soy=tomato mushroom nut radish=vanilla 0
+71 banana apple cherry=date=eggplant=grape hazelnut jalapeno=mushroom=pear litchi=orange fig=kiwi=nut=quinoa=radish soy vanilla tomato 0
+95 fig apple=banana=cherry=grape date eggplant=hazelnut=jalapeno=kiwi=litchi mushroom=nut orange quinoa=radish=tomato pear vanilla soy 0
+97 apple orange banana eggplant=jalapeno cherry date=grape=mushroom fig=hazelnut=kiwi=nut=pear litchi=radish tomato quinoa=vanilla soy 0
+61 apple=date banana=litchi fig=jalapeno kiwi cherry=grape=hazelnut=mushroom=orange eggplant nut=soy=tomato vanilla pear radish quinoa 0
+2 apple eggplant banana cherry=fig kiwi=litchi date=grape=hazelnut=mushroom=orange nut=radish jalapeno=pear=quinoa soy tomato vanilla 0
+88 cherry apple=banana jalapeno date=eggplant=grape=hazelnut=litchi fig=mushroom=nut radish kiwi soy pear orange=quinoa tomato=vanilla 0
+88 apple=jalapeno eggplant cherry=grape fig=hazelnut banana=date=litchi=mushroom kiwi=pear=quinoa=radish orange nut tomato vanilla soy 0
+58 kiwi date jalapeno apple=cherry banana=hazelnut=litchi=nut fig grape eggplant=mushroom=orange=quinoa pear=soy tomato=vanilla radish 0
+89 banana cherry apple grape fig=mushroom date=eggplant=hazelnut=nut jalapeno=kiwi litchi=pear=radish=soy tomato=vanilla orange quinoa 0
+93 date banana apple=eggplant=grape=kiwi cherry hazelnut=nut litchi=quinoa fig=jalapeno=mushroom=orange vanilla tomato pear radish=soy 0
+49 cherry apple=banana eggplant=hazelnut date=litchi fig=jalapeno kiwi=mushroom nut grape=quinoa soy radish orange tomato pear=vanilla 0
+43 apple cherry grape=kiwi banana=eggplant date=fig=hazelnut=orange radish litchi=mushroom jalapeno=nut soy pear tomato=vanilla quinoa 0
+20 banana apple=date cherry quinoa eggplant=kiwi grape=hazelnut=jalapeno=litchi mushroom=orange fig nut=pear radish tomato=vanilla soy 0
+8 banana=date eggplant cherry apple nut fig=quinoa grape=kiwi=litchi=orange hazelnut=mushroom jalapeno pear=vanilla radish soy=tomato 0
+42 cherry apple=fig banana=jalapeno date eggplant=grape hazelnut=kiwi mushroom litchi=radish orange pear=quinoa nut=vanilla soy tomato 0
+23 apple=cherry grape date fig kiwi=mushroom jalapeno=litchi banana=eggplant=pear=quinoa orange hazelnut=nut radish=vanilla tomato soy 0
+77 apple=eggplant date grape banana=hazelnut cherry jalapeno kiwi=orange fig=litchi=pear=radish quinoa=soy nut mushroom tomato=vanilla 0
+78 grape apple cherry=eggplant banana date=fig=jalapeno=pear hazelnut=kiwi mushroom=nut=quinoa=radish litchi vanilla orange=soy tomato 0
+88 banana apple date=eggplant=fig=grape cherry=nut kiwi=mushroom hazelnut=litchi quinoa=vanilla jalapeno pear soy tomato orange=radish 0
+78 apple=cherry kiwi grape banana=date=eggplant=hazelnut fig jalapeno mushroom=pear orange nut=radish quinoa=soy litchi=tomato vanilla 0
+35 apple kiwi cherry=date nut=orange banana=grape fig eggplant=quinoa hazelnut=jalapeno=litchi=mushroom radish pear=soy tomato vanilla 0
+7 grape cherry=fig date kiwi apple=banana litchi eggplant=mushroom jalapeno=pear nut=radish hazelnut=orange=quinoa=vanilla tomato soy 0
+65 apple banana date hazelnut=jalapeno eggplant=fig mushroom cherry=quinoa grape kiwi=vanilla nut=orange=pear=radish litchi=soy tomato 0
+71 eggplant banana apple=cherry hazelnut quinoa jalapeno=litchi=mushroom=vanilla grape=tomato date=fig=pear=soy orange kiwi=radish nut 0
+78 apple cherry fig banana=litchi date=hazelnut eggplant nut=orange radish jalapeno=mushroom grape=soy kiwi=pear=quinoa=vanilla tomato 0
+82 apple grape hazelnut=jalapeno banana=kiwi cherry=eggplant date=fig litchi=mushroom=quinoa=soy orange=radish nut pear tomato vanilla 0
+52 grape=mushroom banana=eggplant=fig=jalapeno apple=cherry=date=pear kiwi radish hazelnut=litchi=quinoa=soy orange nut vanilla tomato 0
+61 date apple=cherry banana=grape eggplant fig=litchi hazelnut jalapeno kiwi=mushroom=orange=vanilla pear=quinoa tomato nut=radish soy 0
+13 eggplant apple date=grape hazelnut banana=jalapeno=litchi=soy cherry=fig orange mushroom=pear kiwi=nut=radish=tomato quinoa vanilla 0
+57 cherry date apple=banana fig eggplant=jalapeno grape=litchi=mushroom=tomato kiwi=nut quinoa=radish hazelnut=vanilla pear soy orange 0
+71 apple date banana=fig cherry=hazelnut eggplant=grape=jalapeno=kiwi nut litchi pear mushroom=tomato orange=soy radish quinoa=vanilla 0
+47 date cherry=eggplant banana=grape apple fig=jalapeno=kiwi=mushroom hazelnut nut litchi=pear=quinoa=soy radish orange=vanilla tomato 0
+11 cherry date=eggplant apple=fig=hazelnut=litchi jalapeno orange banana=kiwi=mushroom=pear vanilla grape=quinoa radish=soy nut tomato 0
+23 apple=grape cherry=date=fig=mushroom jalapeno banana kiwi eggplant=tomato nut pear=radish hazelnut=soy orange litchi quinoa=vanilla 0
+8 banana cherry apple=date grape=litchi eggplant=kiwi fig=hazelnut=jalapeno=nut quinoa=soy pear mushroom=radish vanilla orange tomato 0
+90 apple=fig banana date cherry eggplant=hazelnut=jalapeno=kiwi mushroom pear=tomato grape=litchi=nut=orange quinoa=radish soy vanilla 0
+35 kiwi banana cherry=hazelnut apple=eggplant fig date orange grape=litchi=mushroom=quinoa jalapeno=nut pear=soy tomato radish=vanilla 0
+44 apple=grape eggplant fig=hazelnut banana=pear cherry=date=jalapeno=orange mushroom litchi quinoa radish kiwi=soy nut=vanilla tomato 0
+58 cherry date kiwi banana=orange apple=grape jalapeno=litchi hazelnut=pear eggplant=nut radish fig=soy quinoa=vanilla mushroom tomato 0
+36 date apple cherry=grape fig=hazelnut banana=jalapeno mushroom litchi eggplant=nut orange=vanilla kiwi radish=tomato pear=quinoa soy 0
+48 grape apple=banana=cherry=eggplant date=kiwi fig litchi=mushroom hazelnut=jalapeno orange=vanilla soy quinoa nut=radish pear tomato 0
+85 cherry banana=date litchi=nut fig apple=hazelnut grape=orange eggplant=jalapeno=mushroom=quinoa pear tomato kiwi=vanilla radish soy 0
+18 banana apple cherry=date=fig=grape litchi eggplant=kiwi jalapeno orange=soy nut=quinoa hazelnut=mushroom=pear=radish vanilla tomato 0
+60 cherry apple date=grape banana fig eggplant kiwi=nut hazelnut=jalapeno pear=quinoa litchi=soy mushroom=radish orange=vanilla tomato 0
+89 fig date apple=nut banana=eggplant grape=hazelnut kiwi=soy cherry=jalapeno litchi pear=quinoa mushroom orange radish=vanilla tomato 0
+4 banana apple cherry=hazelnut date=fig grape jalapeno=pear eggplant=kiwi mushroom nut=orange=soy=vanilla quinoa=radish litchi tomato 0
+15 date apple=banana=fig=jalapeno eggplant=mushroom cherry=kiwi grape=litchi hazelnut=radish orange pear soy nut=vanilla quinoa tomato 0
+66 cherry=date apple=fig kiwi banana=litchi eggplant=mushroom orange jalapeno pear hazelnut=radish nut=vanilla tomato grape=quinoa soy 0
+42 banana=cherry=date=fig apple eggplant=kiwi grape=mushroom pear hazelnut=jalapeno=litchi=soy tomato orange nut quinoa radish=vanilla 0
+55 date=jalapeno apple=banana=cherry=grape fig=mushroom nut eggplant hazelnut litchi orange=quinoa=tomato=vanilla kiwi pear=radish soy 0
+20 grape banana apple=date cherry=kiwi fig eggplant=litchi=radish=tomato hazelnut=jalapeno=nut=orange pear mushroom=quinoa soy vanilla 0
+80 banana fig apple=date eggplant cherry=grape hazelnut=litchi nut=quinoa kiwi=orange jalapeno=pear mushroom radish=tomato soy vanilla 0
+93 banana=date apple cherry=hazelnut grape eggplant=fig=jalapeno=litchi kiwi=mushroom=nut=tomato radish pear=quinoa orange vanilla soy 0
+15 banana jalapeno date apple=cherry grape=orange hazelnut fig=pear eggplant kiwi=radish litchi=mushroom nut=soy quinoa=vanilla tomato 0
+56 date cherry apple=fig banana=kiwi eggplant=grape=hazelnut=mushroom litchi=radish jalapeno=nut orange=soy pear quinoa tomato vanilla 0
+93 apple banana fig=grape=mushroom hazelnut=jalapeno=litchi cherry=eggplant=kiwi=nut=quinoa date radish tomato orange=soy=vanilla pear 0
+1 apple banana date=eggplant=grape=kiwi=litchi cherry=fig=soy jalapeno quinoa hazelnut=mushroom=radish nut=orange=tomato pear vanilla 0
+3 cherry hazelnut banana=fig=jalapeno apple=eggplant=orange grape=litchi=mushroom=nut=soy date=radish=tomato kiwi pear vanilla quinoa 0
+97 banana cherry=date=grape=jalapeno apple=fig eggplant mushroom kiwi=nut=pear hazelnut quinoa litchi=orange=vanilla radish=soy tomato 0
+21 apple=date cherry=eggplant grape=hazelnut banana jalapeno kiwi=orange fig=litchi=pear mushroom soy nut=quinoa=radish vanilla tomato 0
+21 grape date apple=banana=cherry=eggplant jalapeno hazelnut=kiwi=litchi=pear fig=mushroom=orange quinoa=soy=tomato radish nut vanilla 0
+81 date apple cherry=kiwi fig=hazelnut eggplant=grape=mushroom nut banana=jalapeno=soy pear orange=quinoa litchi=radish vanilla tomato 0
+85 apple date=jalapeno banana=fig grape litchi cherry=eggplant=hazelnut pear=quinoa nut=orange=soy kiwi=vanilla mushroom radish tomato 0
+73 banana=eggplant apple=jalapeno date cherry=mushroom=nut fig=grape kiwi=litchi=radish hazelnut quinoa orange=soy pear tomato vanilla 0
+77 apple grape banana=cherry=eggplant date=soy nut hazelnut=jalapeno fig=quinoa orange=radish pear kiwi=mushroom=vanilla litchi tomato 0
+76 date banana=jalapeno apple=eggplant=grape fig cherry litchi=nut hazelnut kiwi=pear=quinoa=soy mushroom=orange=vanilla tomato radish 0
+2 banana=eggplant fig=kiwi apple=cherry hazelnut=litchi date pear orange grape soy jalapeno=radish=vanilla mushroom=nut=tomato quinoa 0
+26 apple=cherry fig banana eggplant=grape=jalapeno date=mushroom=pear hazelnut=soy kiwi=radish litchi orange nut quinoa tomato=vanilla 0
+20 banana date apple cherry grape=hazelnut litchi eggplant=nut fig=jalapeno=radish pear kiwi=orange=tomato=vanilla mushroom=quinoa=soy 0
+2 banana apple date=grape=litchi eggplant=fig cherry=hazelnut=jalapeno kiwi nut=orange mushroom=pear=quinoa=soy tomato radish vanilla 0
+79 banana apple=fig date cherry=kiwi eggplant=hazelnut=litchi quinoa jalapeno=soy=tomato grape=nut=pear=radish orange mushroom vanilla 0
+72 cherry apple fig date=grape eggplant=hazelnut=kiwi nut=orange banana=jalapeno=mushroom soy tomato litchi quinoa=vanilla pear=radish 0
+69 banana apple cherry date=grape=soy jalapeno=mushroom eggplant=fig=litchi=nut kiwi pear=quinoa hazelnut=radish=tomato orange vanilla 0
+94 apple cherry hazelnut=jalapeno banana=date=eggplant kiwi=litchi grape=orange=radish mushroom=pear fig=nut soy vanilla tomato quinoa 0
+32 apple banana=fig cherry jalapeno=kiwi=mushroom date=eggplant=grape=nut=radish=vanilla pear=quinoa hazelnut=litchi orange soy tomato 0
+67 apple banana=date cherry=jalapeno fig grape eggplant=litchi=nut=radish kiwi mushroom=pear=tomato hazelnut=orange=quinoa soy vanilla 0
+88 banana cherry jalapeno date=kiwi=mushroom apple=grape hazelnut eggplant fig=litchi=radish orange=quinoa=tomato=vanilla nut=pear soy 0
+63 apple eggplant=fig=kiwi=litchi date=jalapeno=mushroom banana grape=pear orange cherry=hazelnut=tomato nut=radish soy quinoa vanilla 0
+86 date banana cherry=jalapeno apple=eggplant=fig=grape hazelnut=kiwi radish litchi=nut=orange pear=quinoa=vanilla mushroom tomato soy 0
+66 banana=cherry=date=pear apple eggplant=kiwi grape=hazelnut=jalapeno mushroom nut=quinoa orange radish litchi=soy=tomato fig vanilla 0
+88 apple cherry banana=date=jalapeno hazelnut eggplant grape=litchi mushroom=orange fig=nut kiwi=soy pear radish=tomato=vanilla quinoa 0
+94 fig apple=hazelnut banana=cherry=grape=nut eggplant date litchi=mushroom=pear jalapeno orange kiwi=radish quinoa=soy=vanilla tomato 0
+78 banana=litchi cherry date fig=jalapeno=kiwi apple eggplant=hazelnut=orange=pear grape mushroom=tomato nut quinoa=radish=soy vanilla 0
+9 apple=cherry date=litchi banana=eggplant mushroom grape hazelnut fig=jalapeno=kiwi nut pear=tomato orange=quinoa=radish vanilla soy 0
+2 cherry apple=eggplant banana=date fig=mushroom grape=kiwi=soy jalapeno hazelnut=nut=radish pear litchi orange=quinoa vanilla tomato 0
+69 banana apple=date eggplant cherry=fig=hazelnut=litchi jalapeno quinoa grape kiwi=mushroom=radish soy=tomato nut=orange=pear vanilla 0
+16 fig cherry eggplant apple=banana=jalapeno kiwi=orange date=grape=hazelnut=litchi mushroom pear=quinoa nut vanilla radish=soy=tomato 0
+26 apple cherry=eggplant=grape date litchi banana=fig quinoa kiwi=nut=orange pear=radish hazelnut=jalapeno=soy=vanilla mushroom tomato 0
+23 date cherry banana=eggplant apple fig=jalapeno hazelnut=mushroom grape=litchi=nut kiwi=quinoa=radish pear tomato orange=soy vanilla 0
+52 banana apple date=pear cherry=hazelnut grape eggplant=fig=jalapeno mushroom=orange=tomato kiwi=litchi radish nut quinoa soy=vanilla 0
+88 apple=cherry eggplant banana=grape=litchi date nut=orange fig hazelnut jalapeno=kiwi tomato mushroom=soy=vanilla radish pear=quinoa 0
+51 date cherry apple=eggplant banana=fig=grape jalapeno=kiwi=quinoa litchi=nut hazelnut pear=radish mushroom soy=tomato orange vanilla 0
+16 banana cherry=date=hazelnut apple=eggplant litchi fig=jalapeno=orange=quinoa grape=kiwi=tomato soy mushroom=radish pear nut vanilla 0
+23 apple fig banana=cherry eggplant=hazelnut=jalapeno date=grape kiwi mushroom nut=orange litchi=quinoa=radish pear=tomato vanilla soy 0
+93 date cherry=eggplant apple=hazelnut banana=kiwi fig=grape=nut jalapeno quinoa orange mushroom=soy=vanilla litchi=radish pear tomato 0
+5 banana cherry apple=grape date=fig hazelnut eggplant=litchi=nut jalapeno pear=quinoa=radish mushroom=orange=soy=vanilla tomato kiwi 0
+81 apple banana=eggplant=fig=jalapeno cherry=date=litchi grape=nut hazelnut kiwi=orange=tomato mushroom vanilla quinoa pear=radish soy 0
+74 cherry banana=grape=jalapeno eggplant fig=pear apple=date=mushroom=quinoa kiwi hazelnut nut=orange=tomato litchi=soy vanilla radish 0
+65 apple=cherry date banana=eggplant=litchi quinoa fig=hazelnut=jalapeno=kiwi grape=radish mushroom=nut=pear orange tomato soy vanilla 0
+17 hazelnut apple=banana date=litchi cherry eggplant=kiwi=mushroom fig grape=orange=vanilla jalapeno=pear soy nut quinoa=radish tomato 0
+62 banana apple fig jalapeno cherry=eggplant grape=orange date=hazelnut=kiwi=litchi=nut=vanilla mushroom=soy radish pear=quinoa=tomato 0
+55 banana apple=grape date cherry=eggplant=hazelnut=orange fig litchi=mushroom jalapeno=kiwi=pear soy nut=quinoa=radish vanilla tomato 0
+70 banana cherry=date fig apple grape=orange=quinoa eggplant=kiwi=nut=soy hazelnut mushroom litchi=pear=vanilla jalapeno radish=tomato 0
+98 apple banana=cherry date fig=hazelnut eggplant=kiwi=orange grape=jalapeno=nut litchi=pear mushroom soy radish=vanilla tomato quinoa 0
+14 apple cherry=fig=hazelnut banana=date=eggplant=jalapeno grape mushroom orange nut=radish=tomato pear=quinoa kiwi litchi=soy vanilla 0
+89 fig cherry apple=banana=date eggplant=hazelnut kiwi litchi grape=mushroom jalapeno=orange quinoa pear=tomato nut radish=soy=vanilla 0
+35 banana apple cherry fig=grape=hazelnut date=jalapeno eggplant=kiwi=litchi=mushroom pear nut=soy=vanilla orange quinoa=radish tomato 0
+37 cherry apple date=eggplant=hazelnut=litchi banana=grape=jalapeno pear=radish fig=orange=tomato mushroom kiwi=quinoa nut vanilla soy 0
+91 apple banana=fig date=eggplant jalapeno cherry kiwi=mushroom nut grape=orange=radish hazelnut=pear=quinoa soy=tomato litchi vanilla 0
+88 banana=cherry apple hazelnut date=kiwi eggplant mushroom fig=litchi=soy jalapeno=orange grape=nut pear=radish=vanilla quinoa tomato 0
+78 banana apple=cherry date=grape=kiwi eggplant=hazelnut=jalapeno pear fig mushroom=orange litchi=nut=soy=tomato radish quinoa vanilla 0
+10 banana cherry apple=eggplant=fig date=grape=jalapeno kiwi=orange hazelnut mushroom=quinoa nut=tomato litchi=vanilla radish pear soy 0
+2 date=eggplant apple cherry banana=hazelnut litchi grape=nut fig=jalapeno=mushroom quinoa=soy=tomato kiwi pear radish orange=vanilla 0
+49 apple date fig banana=eggplant hazelnut=litchi grape=jalapeno=radish cherry=kiwi=soy mushroom orange quinoa=vanilla nut pear=tomato 0
+69 banana apple hazelnut=litchi eggplant cherry=grape date=jalapeno=kiwi fig=radish mushroom=nut=pear soy orange=quinoa vanilla tomato 0
+74 cherry eggplant apple=banana grape=hazelnut date=fig=kiwi litchi=vanilla nut=orange=pear tomato mushroom jalapeno=soy radish quinoa 0
+78 apple fig banana=date cherry=grape=jalapeno eggplant=kiwi soy nut hazelnut=litchi mushroom=pear=tomato orange=quinoa radish vanilla 0
+23 apple eggplant date=hazelnut nut banana=cherry=jalapeno=kiwi fig=grape=pear litchi=orange mushroom=soy=vanilla radish quinoa tomato 0
+48 banana apple=date=eggplant grape cherry=hazelnut fig=kiwi=nut=pear jalapeno litchi=orange mushroom=radish=soy tomato quinoa vanilla 0
+81 date eggplant apple=banana=cherry=fig hazelnut tomato grape=litchi=quinoa jalapeno=mushroom=orange nut=pear kiwi radish=vanilla soy 0
+74 banana=date apple=fig=jalapeno grape kiwi=pear cherry=litchi=orange eggplant=hazelnut mushroom quinoa=soy nut vanilla radish tomato 0
+87 apple grape cherry=date=litchi banana=kiwi fig=hazelnut=jalapeno mushroom eggplant nut=quinoa pear=radish orange=tomato vanilla soy 0
+92 banana cherry apple date=eggplant grape=litchi fig=nut jalapeno hazelnut=kiwi=radish tomato=vanilla mushroom orange=pear=quinoa soy 0
+59 apple cherry=eggplant banana=date=jalapeno fig=grape=litchi kiwi=mushroom=nut=radish hazelnut=orange soy pear tomato quinoa vanilla 0
+59 grape eggplant=jalapeno apple=date=fig=kiwi banana orange litchi cherry=quinoa=radish hazelnut=mushroom=pear tomato nut=soy vanilla 0
+23 apple date cherry=fig=orange banana=kiwi grape=hazelnut=jalapeno=mushroom=nut=pear eggplant=soy quinoa=radish litchi tomato vanilla 0
+97 apple banana=hazelnut orange cherry=fig=jalapeno date mushroom eggplant=grape=litchi=radish kiwi=pear=quinoa nut vanilla soy=tomato 0
+35 banana apple=cherry eggplant=fig date grape hazelnut kiwi mushroom=nut=vanilla jalapeno=orange=pear litchi=quinoa soy=tomato radish 0
+63 apple banana=date=litchi cherry=fig=nut jalapeno=kiwi eggplant=mushroom grape=pear hazelnut quinoa soy tomato radish orange=vanilla 0
+99 cherry apple=banana=grape=hazelnut eggplant=jalapeno date=fig=litchi kiwi=orange=radish nut mushroom=pear quinoa tomato soy vanilla 0
+70 apple=date banana grape=hazelnut=litchi fig=orange=pear eggplant=jalapeno=kiwi=quinoa cherry=vanilla mushroom nut soy radish tomato 0
+96 cherry banana=fig=mushroom eggplant date=hazelnut apple=grape=litchi nut vanilla kiwi=orange jalapeno tomato quinoa=soy pear=radish 0
+12 hazelnut apple cherry eggplant banana=grape date=fig jalapeno=litchi=radish kiwi=orange=tomato mushroom nut=pear=soy=vanilla quinoa 0
+31 cherry apple banana litchi=orange eggplant=grape date mushroom=radish=tomato fig=hazelnut=jalapeno=kiwi nut=pear=quinoa soy vanilla 0
+79 apple=date banana hazelnut cherry=eggplant=fig=orange jalapeno=litchi=pear grape=mushroom=tomato quinoa kiwi soy nut=vanilla radish 0
+99 date apple=banana hazelnut=radish fig=kiwi=pear cherry=eggplant=litchi=tomato grape mushroom=nut=orange jalapeno quinoa soy vanilla 0
+46 date apple=hazelnut cherry eggplant=fig=nut banana=grape orange kiwi=litchi=mushroom=pear quinoa jalapeno radish soy=tomato=vanilla 0
+94 cherry=date=fig banana=hazelnut apple=grape jalapeno eggplant=mushroom kiwi=radish=soy litchi quinoa nut orange=pear vanilla tomato 0
+99 apple=banana grape date=eggplant nut hazelnut cherry=jalapeno fig=kiwi=mushroom vanilla litchi=orange=tomato radish quinoa=soy pear 0
+90 banana apple=hazelnut eggplant=kiwi cherry fig=jalapeno=litchi grape=mushroom=quinoa date=orange radish=soy vanilla pear tomato nut 0
+18 banana cherry=eggplant=fig apple grape=nut date=jalapeno hazelnut=kiwi=orange pear=tomato litchi mushroom=radish quinoa soy vanilla 0
+18 banana=date=eggplant cherry=grape apple jalapeno=litchi=nut kiwi hazelnut fig=mushroom orange radish=tomato pear quinoa=soy vanilla 0
+79 date cherry=eggplant=kiwi pear banana apple=fig=litchi jalapeno=quinoa orange grape=nut hazelnut mushroom=radish soy=tomato vanilla 0
+44 banana apple=eggplant fig cherry=date=grape=pear mushroom hazelnut=jalapeno kiwi=litchi=quinoa nut=orange=radish vanilla tomato soy 0
+54 banana apple cherry=hazelnut date=grape=litchi jalapeno=mushroom=soy eggplant fig=orange kiwi nut=radish pear=quinoa vanilla tomato 0
+32 apple banana cherry date=grape eggplant=fig=hazelnut=mushroom=pear=soy jalapeno=kiwi=nut=tomato litchi=orange=radish quinoa vanilla 0
+4 apple=cherry hazelnut banana=eggplant=mushroom date=fig litchi grape=jalapeno=pear kiwi nut=orange quinoa=radish vanilla tomato soy 0
+35 date cherry grape=hazelnut=kiwi eggplant=fig apple=banana=litchi nut mushroom=pear vanilla jalapeno=orange radish quinoa=tomato soy 0
+47 banana date=eggplant apple cherry=hazelnut=mushroom fig=nut jalapeno kiwi=soy=tomato grape=quinoa orange=radish vanilla pear litchi 0
+59 apple cherry date banana=hazelnut grape=kiwi=nut jalapeno=mushroom eggplant=fig=litchi orange quinoa=radish tomato pear=soy vanilla 0
+60 date apple cherry=jalapeno banana=eggplant=grape litchi fig=kiwi=nut hazelnut=tomato orange pear=vanilla mushroom=soy quinoa radish 0
+46 eggplant banana cherry=grape fig=kiwi=litchi apple=pear=radish date=jalapeno quinoa hazelnut=nut=orange=tomato mushroom vanilla soy 0
+3 cherry=jalapeno banana=eggplant date=fig apple grape=kiwi orange hazelnut=nut=soy tomato vanilla mushroom=pear=radish litchi quinoa 0
+81 apple=banana date grape=hazelnut=pear cherry=litchi fig=kiwi=nut jalapeno eggplant mushroom=orange=quinoa=tomato vanilla soy radish 0
+44 apple cherry eggplant banana=kiwi fig date=hazelnut=jalapeno=orange grape=mushroom pear litchi=soy=vanilla nut=quinoa=radish tomato 0
+3 eggplant banana cherry=pear apple=jalapeno=kiwi=mushroom fig=orange=quinoa date=hazelnut=litchi nut grape radish=tomato soy vanilla 0
+6 banana=date apple nut eggplant grape=jalapeno=litchi cherry=hazelnut=mushroom fig=kiwi=orange=tomato pear soy quinoa=radish vanilla 0
+44 banana apple=cherry=jalapeno date tomato fig=grape=hazelnut=nut litchi eggplant=kiwi=quinoa mushroom vanilla pear=radish orange=soy 0
+54 grape banana=fig=hazelnut=pear apple date=eggplant=jalapeno mushroom cherry kiwi=litchi=nut=radish vanilla soy orange=quinoa=tomato 0
+66 apple=date cherry=jalapeno=kiwi eggplant=nut hazelnut banana quinoa fig=grape=orange litchi mushroom radish=vanilla soy=tomato pear 0
+34 date cherry=grape banana eggplant apple=hazelnut pear kiwi fig=mushroom=quinoa jalapeno=litchi=soy nut=orange=radish=vanilla tomato 0
+49 banana eggplant apple cherry=kiwi fig date=litchi grape=hazelnut=mushroom vanilla pear jalapeno=quinoa nut=radish=tomato orange=soy 0
+26 banana=cherry apple fig date grape=jalapeno=tomato eggplant=hazelnut kiwi=litchi=pear=quinoa mushroom=nut=vanilla soy radish orange 0
+14 apple banana=cherry date fig=grape jalapeno eggplant=hazelnut kiwi=orange=pear nut litchi=radish mushroom=soy=vanilla tomato quinoa 0
+43 banana date=fig apple jalapeno cherry grape=hazelnut=nut eggplant=litchi pear=quinoa=soy kiwi=orange mushroom=radish vanilla tomato 0
+11 cherry banana grape=hazelnut apple=eggplant date=jalapeno fig=litchi kiwi=mushroom=nut orange=pear=quinoa soy radish vanilla tomato 0
+54 banana grape cherry apple=date=jalapeno eggplant=fig litchi quinoa=radish hazelnut kiwi=vanilla mushroom=nut orange=pear=tomato soy 0
+82 banana apple date cherry=grape eggplant=fig hazelnut jalapeno=litchi=mushroom pear=quinoa kiwi=radish nut=orange=vanilla soy tomato 0
+27 cherry apple=banana eggplant=jalapeno=nut litchi grape date=orange=radish fig=mushroom hazelnut=kiwi=pear=quinoa vanilla soy tomato 0
+14 date banana apple=jalapeno fig cherry=eggplant=quinoa grape=hazelnut kiwi=mushroom litchi orange nut radish=soy=tomato pear=vanilla 0
+83 apple=banana=date cherry eggplant mushroom jalapeno=kiwi fig=grape=nut hazelnut=pear orange tomato litchi=radish soy quinoa=vanilla 0
+77 banana date apple=fig=hazelnut=nut kiwi cherry=eggplant=jalapeno mushroom=quinoa litchi=pear=tomato vanilla grape=orange radish soy 0
+66 apple=hazelnut fig banana=cherry date=radish=soy grape eggplant jalapeno=pear orange kiwi=mushroom=quinoa litchi nut=tomato vanilla 0
+73 apple=date fig grape banana=cherry=jalapeno orange eggplant=hazelnut mushroom kiwi=radish=tomato litchi nut=vanilla pear quinoa=soy 0
+59 apple grape banana date=eggplant=tomato cherry fig=litchi hazelnut=kiwi mushroom=orange=pear jalapeno=soy nut=vanilla radish quinoa 0
+57 cherry=date=litchi grape=kiwi apple=eggplant hazelnut=jalapeno=nut fig=orange pear banana=mushroom quinoa soy vanilla tomato radish 0
+58 date=eggplant banana apple jalapeno hazelnut=litchi nut=quinoa cherry=kiwi=vanilla fig=mushroom=pear grape=soy tomato radish orange 0
+14 apple cherry eggplant banana=hazelnut=mushroom date=fig grape kiwi=litchi jalapeno=soy nut=quinoa=vanilla tomato orange=pear radish 0
+18 banana=date fig=mushroom=quinoa eggplant=grape=hazelnut=nut apple cherry=orange=pear kiwi=litchi radish jalapeno vanilla soy tomato 0
+24 hazelnut apple=banana=cherry=jalapeno date=fig grape=mushroom litchi nut=orange=quinoa=radish=soy kiwi eggplant=vanilla pear tomato 0
+45 banana cherry=fig apple=date=grape=hazelnut=radish kiwi eggplant=jalapeno quinoa soy nut=pear orange litchi=mushroom=tomato=vanilla 0
+51 apple date eggplant=fig banana=cherry=jalapeno=kiwi=nut litchi quinoa grape=vanilla hazelnut=mushroom orange=pear tomato radish=soy 0
+27 banana apple date hazelnut cherry=eggplant=kiwi=mushroom grape orange=pear=radish=soy=tomato fig=litchi jalapeno=nut quinoa=vanilla 0
+15 cherry apple=date=eggplant=grape banana fig=orange jalapeno kiwi=tomato mushroom=soy hazelnut=litchi=pear=quinoa=radish nut vanilla 0
+32 apple jalapeno banana=date=eggplant=hazelnut=kiwi cherry=orange grape=nut=quinoa=radish fig litchi=mushroom tomato pear=soy vanilla 0
+45 apple cherry=eggplant hazelnut date=fig jalapeno banana=grape=litchi=mushroom=pear nut kiwi=radish=soy=tomato orange=vanilla quinoa 0
+17 apple=cherry banana fig=grape date=jalapeno eggplant=hazelnut=litchi=mushroom=soy pear nut=quinoa radish kiwi=orange tomato vanilla 0
+94 hazelnut apple cherry=eggplant banana=date=jalapeno=litchi=pear grape fig=kiwi soy mushroom=nut=orange=radish tomato=vanilla quinoa 0
+69 apple banana=date quinoa cherry=fig=grape=jalapeno=radish eggplant=mushroom kiwi litchi=vanilla pear=tomato orange hazelnut=nut soy 0
+44 date cherry apple=fig banana=mushroom hazelnut=pear grape=quinoa eggplant=radish jalapeno=kiwi=litchi=nut=orange soy tomato vanilla 0
+24 banana cherry=eggplant=jalapeno=mushroom=nut apple=date=fig=orange grape=litchi pear hazelnut=quinoa kiwi tomato=vanilla soy radish 0
+29 banana date=eggplant apple=quinoa jalapeno grape cherry=hazelnut=kiwi=litchi=orange nut fig=pear mushroom=radish soy=tomato vanilla 0
+3 date apple banana=fig cherry=mushroom litchi=orange eggplant=grape=jalapeno=kiwi=quinoa pear hazelnut=nut tomato soy=vanilla radish 0
+4 banana=date cherry=eggplant apple grape=kiwi=litchi=mushroom=nut fig=hazelnut jalapeno radish quinoa=soy orange pear=vanilla tomato 0
+61 cherry hazelnut date=fig=grape apple=eggplant=kiwi banana=jalapeno=mushroom nut quinoa orange=vanilla litchi pear=radish=tomato soy 0
+55 apple cherry=fig banana=date=grape jalapeno=kiwi=orange hazelnut pear eggplant=litchi=vanilla mushroom=nut=tomato soy radish quinoa 0
+81 banana date apple=eggplant=fig cherry jalapeno=mushroom=orange hazelnut grape=nut=pear quinoa=tomato kiwi=soy=vanilla litchi radish 0
+89 banana jalapeno cherry=hazelnut=nut apple=date=fig grape pear eggplant=kiwi=orange litchi=mushroom=soy tomato radish quinoa=vanilla 0
+9 banana=eggplant=fig cherry date=grape apple=hazelnut=mushroom jalapeno kiwi litchi=pear=vanilla radish nut=orange=quinoa tomato soy 0
+9 eggplant fig cherry=date apple=banana=grape jalapeno hazelnut=kiwi=mushroom pear quinoa=soy=tomato litchi=nut=vanilla orange radish 0
+97 apple=banana=cherry fig date=hazelnut eggplant litchi grape=kiwi=pear mushroom=orange=tomato jalapeno nut=quinoa=soy vanilla radish 0
+45 banana apple date=mushroom cherry=eggplant=grape kiwi fig tomato jalapeno=litchi=vanilla hazelnut=orange=pear nut=quinoa=soy radish 0
+48 apple banana date=fig=hazelnut eggplant=kiwi jalapeno cherry=grape=mushroom=orange litchi=nut=pear=quinoa=radish=soy=tomato vanilla 0
+90 date grape banana=fig=pear apple=eggplant=hazelnut=jalapeno=kiwi litchi cherry=nut=radish mushroom=soy orange=tomato quinoa vanilla 0
+1 date apple grape banana=fig=kiwi cherry=eggplant=hazelnut=jalapeno=orange nut radish litchi=mushroom=quinoa pear=tomato soy=vanilla 0
+13 apple banana=fig cherry=eggplant=hazelnut jalapeno grape date=radish litchi kiwi=mushroom=nut=soy=vanilla orange pear=quinoa=tomato 0
+55 apple=grape fig banana date cherry eggplant=hazelnut=mushroom=nut=soy jalapeno=litchi=pear kiwi=orange quinoa radish=tomato=vanilla 0
+69 apple grape eggplant=kiwi=litchi banana=cherry=hazelnut=orange=radish date=jalapeno fig=mushroom=nut pear quinoa soy=vanilla tomato 0
+39 banana=date apple cherry nut fig=hazelnut=jalapeno=kiwi=litchi eggplant=grape radish mushroom=orange=vanilla pear=quinoa=soy tomato 0
+89 apple=cherry=date eggplant kiwi hazelnut banana=jalapeno=mushroom=orange=tomato litchi fig=grape nut=quinoa=radish pear=vanilla soy 0
+37 date=eggplant=grape apple jalapeno=litchi banana hazelnut cherry fig=pear kiwi=quinoa=radish mushroom=nut=orange=soy=tomato vanilla 0
+73 apple date banana cherry=kiwi eggplant=nut=orange fig=grape=hazelnut=mushroom=quinoa jalapeno=vanilla litchi=radish=tomato soy pear 0
+3 cherry apple grape jalapeno kiwi=litchi banana=fig=mushroom eggplant=nut date=orange=pear=radish=soy hazelnut=quinoa=vanilla tomato 0
+89 jalapeno fig apple=banana=hazelnut cherry=eggplant=grape=orange=radish date=litchi=mushroom kiwi=quinoa pear soy=tomato nut vanilla 0
+89 eggplant banana=date apple=hazelnut=nut cherry grape=kiwi=litchi=mushroom=pear fig=orange=quinoa jalapeno vanilla radish=soy tomato 0
+38 eggplant apple=banana=hazelnut grape kiwi date=nut cherry=jalapeno=orange=soy=tomato fig=litchi=mushroom pear=radish quinoa vanilla 0
+85 banana apple=cherry date=grape=quinoa eggplant fig=litchi=mushroom jalapeno=kiwi=nut=orange=soy hazelnut=radish tomato pear vanilla 0
+70 apple=cherry=hazelnut grape banana=eggplant=jalapeno=kiwi=litchi date mushroom nut=orange=tomato pear=quinoa soy fig radish=vanilla 0
+79 banana apple=eggplant=fig date cherry jalapeno litchi=nut=orange pear=radish grape=hazelnut=kiwi=mushroom=quinoa soy=vanilla tomato 0
+65 banana cherry date=eggplant=hazelnut=litchi grape apple fig=nut=soy jalapeno=mushroom=vanilla kiwi=orange=pear=radish=tomato quinoa 0
+84 banana=jalapeno apple kiwi grape=hazelnut date=eggplant=fig cherry=orange mushroom=vanilla radish nut=pear litchi=tomato quinoa soy 0
+54 apple cherry eggplant banana=kiwi fig=jalapeno=litchi=orange grape=hazelnut=pear nut=tomato date=quinoa mushroom=radish vanilla soy 0
+83 date apple=banana=eggplant cherry=grape kiwi=nut fig=hazelnut=jalapeno=litchi pear orange=soy quinoa mushroom radish tomato=vanilla 0
+61 date banana=fig apple eggplant=grape=jalapeno=kiwi cherry=hazelnut=vanilla nut=quinoa litchi=mushroom=soy=tomato radish orange pear 0
+76 banana grape cherry=fig apple=date eggplant kiwi jalapeno=mushroom litchi=nut=radish hazelnut=quinoa=tomato=vanilla orange=pear soy 0
+25 banana apple=cherry kiwi fig date=eggplant=grape=litchi hazelnut=jalapeno=mushroom nut orange=tomato pear=soy quinoa radish=vanilla 0
+48 date=jalapeno apple cherry=eggplant=fig banana grape=hazelnut kiwi=nut litchi=mushroom=pear=quinoa soy orange radish=tomato vanilla 0
+45 banana=date=eggplant cherry grape=jalapeno apple=litchi hazelnut kiwi=nut fig mushroom=radish=soy=vanilla tomato pear=quinoa orange 0
+92 grape jalapeno eggplant=fig apple=banana=date=kiwi pear=soy cherry=hazelnut=litchi mushroom vanilla orange=quinoa=radish=tomato nut 0
+43 apple=date cherry=eggplant=kiwi banana fig=jalapeno grape mushroom=quinoa hazelnut litchi=vanilla nut=radish pear orange=soy tomato 0
+75 hazelnut banana=fig apple cherry=grape jalapeno date=nut radish litchi=vanilla eggplant=mushroom=pear=soy orange kiwi=quinoa=tomato 0
+8 date=mushroom banana=grape apple=cherry=eggplant=fig litchi hazelnut jalapeno pear=tomato kiwi nut=quinoa=soy orange radish=vanilla 0
+70 apple cherry banana=hazelnut date=eggplant=grape fig=jalapeno kiwi pear=soy litchi mushroom=quinoa=radish=tomato nut orange=vanilla 0
+99 apple banana=fig grape cherry eggplant=kiwi=litchi date=hazelnut jalapeno=orange pear=quinoa mushroom=tomato nut=soy vanilla radish 0
+39 cherry banana=eggplant apple=date=fig=kiwi grape hazelnut jalapeno nut=pear=soy vanilla litchi=radish mushroom=orange quinoa=tomato 0
+93 apple fig=kiwi banana=cherry=date=grape hazelnut=nut litchi pear eggplant=mushroom orange=soy quinoa jalapeno=radish=vanilla tomato 0
+9 cherry apple=banana date hazelnut=kiwi fig litchi=mushroom eggplant=jalapeno=soy pear grape=radish nut=tomato orange=quinoa vanilla 0
+30 banana apple=cherry fig=grape eggplant date=pear=radish hazelnut=kiwi=mushroom=quinoa litchi=nut jalapeno=orange soy tomato vanilla 0
+87 eggplant hazelnut banana=date fig=kiwi cherry=jalapeno apple pear grape=litchi=radish mushroom=orange=soy=tomato nut=quinoa vanilla 0
+63 apple=banana date=kiwi cherry eggplant grape fig=jalapeno tomato hazelnut=litchi=radish=soy mushroom=orange=pear quinoa nut=vanilla 0
+60 apple=fig banana mushroom cherry=jalapeno grape=litchi date=hazelnut=pear=soy eggplant=kiwi=quinoa nut tomato orange radish=vanilla 0
+31 cherry=eggplant apple=banana hazelnut fig=mushroom date=nut=pear jalapeno=orange grape kiwi=soy vanilla quinoa=radish litchi tomato 0
+78 fig apple banana=eggplant date cherry=jalapeno=nut=orange kiwi=litchi=quinoa grape=soy hazelnut=pear mushroom=radish vanilla tomato 0
+27 apple cherry=date banana kiwi fig eggplant=mushroom grape=hazelnut litchi=pear orange=radish=soy jalapeno=nut vanilla quinoa=tomato 0
+79 banana=date=eggplant=pear apple=cherry jalapeno grape=kiwi fig=mushroom=nut hazelnut orange quinoa=tomato litchi soy=vanilla radish 0
+21 cherry apple=hazelnut banana=eggplant=grape kiwi=mushroom jalapeno=litchi date=fig nut radish=soy orange=pear quinoa tomato vanilla 0
+89 fig date banana=jalapeno apple=eggplant hazelnut cherry=orange grape=soy kiwi=litchi=quinoa nut=vanilla mushroom=radish pear tomato 0
+79 apple hazelnut banana=cherry eggplant=fig jalapeno litchi=mushroom date=grape soy kiwi=radish pear=quinoa=vanilla tomato nut=orange 0
+51 cherry date banana apple=eggplant=grape=mushroom kiwi=litchi hazelnut=pear fig jalapeno=orange=tomato quinoa=soy nut=vanilla radish 0
+83 date apple=eggplant banana=cherry grape jalapeno hazelnut=nut fig litchi=mushroom kiwi=orange=pear vanilla radish=soy quinoa=tomato 0
+95 apple fig banana=cherry eggplant date=hazelnut=mushroom=quinoa jalapeno=nut kiwi=pear=radish=tomato grape=litchi=orange soy vanilla 0
+31 banana apple=cherry date=eggplant grape jalapeno=nut fig=hazelnut=mushroom=soy kiwi=litchi=orange vanilla pear=radish tomato quinoa 0
+37 banana date apple=cherry grape=mushroom fig=nut jalapeno hazelnut=litchi eggplant=pear=tomato orange=vanilla kiwi=radish soy quinoa 0
+94 date banana=cherry apple hazelnut=quinoa eggplant=grape=jalapeno=pear litchi fig=kiwi=nut tomato radish=soy orange=vanilla mushroom 0
+52 jalapeno banana date=eggplant cherry=pear apple=grape=hazelnut=litchi fig=quinoa kiwi=nut=orange soy mushroom vanilla radish=tomato 0
+8 banana cherry apple=hazelnut date=grape fig eggplant=litchi mushroom kiwi=soy jalapeno=orange=radish quinoa=vanilla pear=tomato nut 0
+62 apple jalapeno date eggplant=mushroom banana=grape kiwi fig=hazelnut=tomato cherry=vanilla litchi=orange pear=quinoa nut=soy radish 0
+40 cherry apple banana=eggplant=grape=hazelnut fig=litchi jalapeno=kiwi date mushroom=nut=quinoa radish pear=soy=tomato=vanilla orange 0
+92 banana=date grape cherry=fig apple=eggplant=mushroom=nut jalapeno=litchi=soy pear=quinoa hazelnut=orange kiwi radish tomato vanilla 0
+93 apple fig banana grape kiwi cherry=mushroom hazelnut=radish eggplant=jalapeno date=litchi pear=vanilla orange=quinoa nut=soy=tomato 0
+43 date apple banana cherry=fig hazelnut=mushroom grape=jalapeno=litchi=soy eggplant=nut=orange kiwi=quinoa pear radish=vanilla tomato 0
+72 apple=litchi banana=eggplant date=hazelnut fig cherry=grape=kiwi jalapeno mushroom=pear=radish=tomato orange=quinoa soy nut vanilla 0
+59 apple grape cherry=fig=hazelnut banana=eggplant date=litchi mushroom=orange jalapeno=kiwi=nut=quinoa radish soy tomato=vanilla pear 0
+37 banana date=grape eggplant apple=cherry fig=hazelnut=pear kiwi=litchi jalapeno mushroom=tomato nut=orange radish=soy quinoa vanilla 0
+74 date banana eggplant=fig apple=cherry=jalapeno kiwi=mushroom hazelnut grape=litchi=orange=vanilla nut=radish quinoa=soy pear tomato 0
+57 apple=cherry banana fig eggplant=grape=kiwi=tomato jalapeno=mushroom date=hazelnut litchi vanilla nut=quinoa orange=pear=soy radish 0
+1 date banana=fig hazelnut eggplant=jalapeno cherry=mushroom=nut apple=grape=orange=radish kiwi=soy pear quinoa=tomato litchi vanilla 0
+34 fig cherry=date apple=eggplant banana=litchi hazelnut=tomato kiwi mushroom=quinoa grape jalapeno=radish nut=orange=pear vanilla soy 0
+6 banana eggplant apple cherry date=fig grape=kiwi=soy quinoa=vanilla hazelnut=jalapeno mushroom=pear nut=radish litchi orange=tomato 0
+75 apple=date=fig banana=cherry mushroom jalapeno=nut eggplant=grape hazelnut=kiwi=litchi=radish pear soy=tomato quinoa vanilla orange 0
+87 apple cherry=eggplant date=grape banana=fig=hazelnut=litchi mushroom jalapeno pear=soy=tomato vanilla nut=quinoa orange=radish kiwi 0
+5 banana=litchi cherry apple=grape=kiwi date=hazelnut fig eggplant pear mushroom jalapeno=orange=soy=tomato nut=quinoa radish=vanilla 0
+25 apple date jalapeno=litchi cherry=hazelnut banana=eggplant grape=nut=pear fig=mushroom kiwi orange=quinoa soy=vanilla radish tomato 0
+35 banana eggplant apple=date=fig=hazelnut jalapeno cherry=nut kiwi=litchi mushroom=orange=pear grape=vanilla soy quinoa radish=tomato 0
+12 apple=cherry=eggplant=fig date=orange banana=grape=litchi mushroom=nut hazelnut jalapeno=kiwi radish quinoa soy=tomato vanilla pear 0
+62 apple cherry=eggplant banana=litchi date jalapeno fig=grape=hazelnut nut=quinoa=radish=vanilla mushroom=pear kiwi soy=tomato orange 0
+51 apple banana fig=hazelnut cherry=nut date=eggplant=grape=jalapeno orange kiwi=mushroom=quinoa vanilla litchi=pear=soy=tomato radish 0
+3 date cherry apple=hazelnut banana=mushroom=nut eggplant=fig grape=litchi jalapeno=kiwi=orange=pear quinoa soy=tomato vanilla radish 0
+19 banana=fig=grape=kiwi cherry apple=date=jalapeno=nut hazelnut=mushroom litchi eggplant soy orange=radish pear=quinoa=tomato vanilla 0
+56 apple=eggplant=fig=grape hazelnut cherry banana=date mushroom=nut jalapeno litchi=tomato kiwi=radish pear soy orange=quinoa=vanilla 0
+43 banana=cherry grape apple=date=fig=jalapeno eggplant litchi mushroom=nut=orange hazelnut=quinoa kiwi=pear=radish=vanilla soy tomato 0
+47 cherry banana hazelnut apple=fig date=eggplant=grape=radish mushroom=nut litchi orange=quinoa jalapeno=pear kiwi=tomato=vanilla soy 0
+44 fig apple banana cherry=date=eggplant=hazelnut=jalapeno=kiwi grape=pear litchi=nut mushroom=quinoa orange=tomato radish=vanilla soy 0
+98 apple date=grape eggplant fig cherry=mushroom banana=jalapeno=kiwi pear litchi=nut=orange=tomato hazelnut=vanilla quinoa=radish soy 0
+78 banana=cherry apple eggplant hazelnut fig=grape date jalapeno=soy kiwi=quinoa=radish litchi=mushroom=nut=tomato orange pear=vanilla 0
+76 apple=fig banana eggplant date=kiwi jalapeno=nut cherry=grape=hazelnut=litchi mushroom vanilla pear=soy=tomato orange=radish quinoa 0
+24 apple eggplant grape jalapeno=mushroom fig banana=cherry=litchi date=orange hazelnut=soy nut=tomato kiwi=pear radish=vanilla quinoa 0
+77 banana cherry=hazelnut apple date=eggplant grape=kiwi=nut litchi=mushroom fig=jalapeno orange pear quinoa=soy radish tomato=vanilla 0
+8 date=litchi banana fig grape=orange apple=cherry=eggplant quinoa=vanilla jalapeno=nut=pear=radish kiwi=mushroom soy hazelnut tomato 0
+99 banana apple eggplant=fig=grape cherry=hazelnut nut orange date=jalapeno kiwi=pear=radish=tomato litchi=quinoa mushroom=soy vanilla 0
+60 banana eggplant apple cherry=grape hazelnut=jalapeno date=fig=kiwi mushroom orange=pear=quinoa=radish litchi=nut=soy=tomato vanilla 0
+10 cherry date=eggplant fig apple=hazelnut=litchi banana=grape kiwi orange jalapeno=nut pear=quinoa=soy=vanilla tomato mushroom=radish 0
+98 apple banana cherry date=grape eggplant=fig hazelnut=mushroom jalapeno=pear kiwi=nut=orange=radish litchi=quinoa=tomato soy vanilla 0
+75 cherry=grape date apple banana=hazelnut fig=mushroom=vanilla quinoa kiwi=pear eggplant=jalapeno=orange=radish litchi=nut soy tomato 0
+8 apple date banana=fig cherry eggplant=grape=hazelnut=radish jalapeno=mushroom=tomato pear=quinoa kiwi=orange nut litchi soy=vanilla 0
+10 apple=banana cherry=date litchi fig=mushroom eggplant=grape=hazelnut=nut jalapeno kiwi pear=soy quinoa=radish=tomato orange vanilla 0
+51 banana apple=date grape eggplant cherry hazelnut=jalapeno=vanilla kiwi=litchi fig=nut=quinoa=soy orange=pear mushroom=tomato radish 0
+90 banana apple=cherry=grape date=hazelnut litchi fig=nut kiwi=radish eggplant jalapeno=pear=tomato=vanilla mushroom=quinoa orange soy 0
+69 date apple=cherry=grape=hazelnut=jalapeno=quinoa banana=eggplant fig orange=pear litchi=mushroom=nut=vanilla kiwi soy=tomato radish 0
+63 eggplant banana apple=grape cherry=jalapeno date=fig=hazelnut=kiwi quinoa=radish litchi=mushroom=pear orange nut=vanilla tomato soy 0
+66 cherry banana apple=eggplant date=kiwi=orange fig grape=jalapeno=litchi=pear hazelnut=mushroom=nut=quinoa vanilla soy radish=tomato 0
+15 banana=cherry=jalapeno eggplant date=grape apple=fig=hazelnut=mushroom kiwi=soy litchi=nut tomato quinoa pear orange radish=vanilla 0
+16 date apple=banana=fig=jalapeno cherry grape=hazelnut mushroom=quinoa eggplant=kiwi=litchi=nut soy radish orange=pear=tomato vanilla 0
+31 date fig apple=eggplant=grape=orange jalapeno banana=kiwi=quinoa cherry=hazelnut=pear=soy litchi=vanilla mushroom=nut tomato radish 0
+66 grape apple eggplant=fig=jalapeno=kiwi orange cherry=pear banana date=litchi hazelnut=mushroom=radish nut=quinoa soy=vanilla tomato 0
+56 apple=fig banana=eggplant jalapeno hazelnut=litchi date=orange cherry=kiwi grape=mushroom=vanilla nut=pear quinoa tomato soy radish 0
+26 hazelnut cherry=fig apple=date=grape=nut banana=kiwi eggplant=jalapeno=litchi mushroom=quinoa orange radish pear=vanilla soy tomato 0
+37 banana=grape eggplant litchi apple=date=fig=hazelnut jalapeno=mushroom radish cherry orange=tomato kiwi=pear=soy nut quinoa=vanilla 0
+13 banana apple=hazelnut cherry date jalapeno=litchi pear grape=kiwi fig=quinoa orange=soy eggplant=mushroom=radish nut=vanilla tomato 0
+36 cherry apple banana=eggplant date hazelnut=jalapeno=kiwi=pear fig=orange grape=quinoa litchi=radish=soy nut mushroom=vanilla tomato 0
+41 banana=date=fig=hazelnut apple=grape=jalapeno eggplant cherry mushroom=orange=pear=quinoa nut=vanilla litchi=soy kiwi tomato radish 0
+82 cherry banana apple=fig grape=hazelnut jalapeno=tomato eggplant date kiwi=orange litchi=nut mushroom=pear=radish quinoa=soy vanilla 0
+62 eggplant apple jalapeno cherry=hazelnut date=fig=kiwi=orange banana=litchi=pear grape=nut mushroom=quinoa vanilla radish soy=tomato 0
+67 apple=banana cherry=eggplant=fig grape date=hazelnut=nut=pear litchi=mushroom jalapeno tomato kiwi quinoa orange=radish=soy=vanilla 0
+47 cherry hazelnut apple=banana=date=grape=mushroom eggplant=fig=jalapeno=kiwi=orange litchi=pear=radish=tomato nut=quinoa soy vanilla 0
+70 date banana=orange apple=cherry=eggplant fig=grape=hazelnut kiwi litchi=radish quinoa jalapeno=nut pear mushroom=soy=tomato vanilla 0
+47 apple kiwi date banana=fig=jalapeno cherry=eggplant litchi=nut=orange grape=hazelnut=pear radish=soy=tomato=vanilla quinoa mushroom 0
+19 date=eggplant banana=litchi apple=fig=grape cherry=hazelnut=nut orange mushroom=pear=quinoa kiwi jalapeno=vanilla soy tomato radish 0
+11 apple banana=fig eggplant=mushroom date=grape=kiwi jalapeno cherry=litchi=quinoa=radish=tomato=vanilla hazelnut=orange=soy nut pear 0
+80 fig banana=eggplant apple=date=jalapeno cherry=pear grape litchi=mushroom=quinoa hazelnut nut=radish kiwi=soy=tomato orange vanilla 0
+10 banana date cherry=fig apple=hazelnut=jalapeno litchi grape=kiwi mushroom=nut=soy eggplant=orange=tomato quinoa=radish pear vanilla 0
+27 banana cherry=fig apple=eggplant=grape=mushroom jalapeno date=kiwi=soy radish hazelnut=litchi=quinoa orange pear nut=tomato=vanilla 0
+35 banana apple=fig cherry=date=eggplant jalapeno=quinoa mushroom=soy litchi grape=kiwi=orange hazelnut=nut=radish pear vanilla tomato 0
+91 banana=eggplant date=fig=grape apple=quinoa cherry=hazelnut=jalapeno mushroom=nut=orange soy kiwi=litchi pear radish tomato vanilla 0
+99 banana=eggplant cherry=date=grape apple fig=litchi=mushroom=nut hazelnut jalapeno=kiwi=orange soy quinoa pear=radish=tomato vanilla 0
+10 banana apple=date grape cherry=hazelnut kiwi=pear=tomato eggplant=mushroom=quinoa jalapeno litchi=orange=radish nut fig=vanilla soy 0
+15 banana date apple=eggplant=jalapeno fig=grape=hazelnut cherry=kiwi=quinoa litchi=orange nut mushroom=vanilla pear=soy radish tomato 0
+71 banana apple date=kiwi cherry eggplant=fig=grape mushroom jalapeno=litchi=soy hazelnut=quinoa nut=radish orange=tomato=vanilla pear 0
+6 apple banana=fig date=litchi cherry=grape jalapeno=kiwi=pear hazelnut=quinoa=soy eggplant=mushroom=orange radish nut tomato vanilla 0
+75 cherry banana grape apple=date=eggplant hazelnut=nut=vanilla fig=litchi=mushroom pear=soy jalapeno=kiwi quinoa orange=radish tomato 0
+61 cherry apple fig=nut=orange date banana=hazelnut eggplant=grape=kiwi pear=soy litchi=radish jalapeno=mushroom=quinoa vanilla tomato 0
+48 cherry apple=banana=date fig=grape=hazelnut eggplant litchi=pear soy jalapeno=orange=quinoa kiwi=radish nut=tomato vanilla mushroom 0
+30 cherry apple fig=grape=jalapeno banana date=eggplant=mushroom=nut hazelnut=kiwi=radish litchi=pear orange=quinoa=tomato soy vanilla 0
+73 apple=banana cherry date=eggplant=fig jalapeno kiwi litchi=soy hazelnut=orange=quinoa grape pear=tomato mushroom=nut=radish vanilla 0
+39 grape banana=cherry=eggplant apple date jalapeno=litchi fig=nut=radish quinoa=vanilla hazelnut mushroom=orange=pear kiwi=soy tomato 0
+35 apple cherry banana=date=grape orange fig=mushroom eggplant=nut=pear hazelnut=kiwi jalapeno vanilla quinoa=radish litchi=soy=tomato 0
+64 cherry apple=banana=fig hazelnut date grape=jalapeno=kiwi litchi=mushroom eggplant=orange=quinoa soy nut=pear=tomato=vanilla radish 0
+28 apple nut date=eggplant=fig jalapeno=litchi=orange banana=cherry grape=hazelnut=kiwi pear=quinoa mushroom=radish soy vanilla tomato 0
+98 apple banana cherry=hazelnut=radish date=eggplant=grape fig=kiwi mushroom nut=quinoa=soy jalapeno=litchi orange=pear tomato vanilla 0
+68 banana apple eggplant=grape date cherry=hazelnut=pear jalapeno=vanilla fig=litchi=mushroom tomato kiwi=nut=soy quinoa orange=radish 0
+82 eggplant apple date=fig=jalapeno banana=cherry=mushroom=nut hazelnut=orange grape=pear=quinoa kiwi litchi soy=tomato=vanilla radish 0
+70 banana cherry=date=hazelnut apple eggplant=grape fig=jalapeno=kiwi pear litchi=nut mushroom=soy=tomato orange=quinoa radish vanilla 0
+39 date=grape apple cherry eggplant=kiwi banana fig=jalapeno=pear hazelnut=orange=soy litchi=tomato nut=quinoa=radish mushroom vanilla 0
+32 banana cherry apple=date grape eggplant=fig=hazelnut nut=tomato jalapeno=litchi=mushroom=orange=pear=soy kiwi=quinoa=vanilla radish 0
+61 banana apple jalapeno date=eggplant=mushroom fig=pear cherry grape=orange kiwi=litchi=nut hazelnut=radish soy=tomato=vanilla quinoa 0
+40 cherry apple banana=fig grape orange kiwi=nut hazelnut=jalapeno=litchi eggplant=mushroom=quinoa date=pear=radish soy tomato=vanilla 0
+83 cherry apple banana=grape=jalapeno fig eggplant=mushroom date=nut=radish kiwi=litchi hazelnut=pear=vanilla orange soy quinoa=tomato 0
+58 cherry apple banana=fig=hazelnut jalapeno=litchi grape date=nut eggplant=mushroom orange=radish=tomato kiwi=quinoa=soy vanilla pear 0
+58 cherry=grape banana=fig=kiwi date apple=eggplant=nut orange hazelnut=jalapeno mushroom=soy=tomato pear=radish quinoa litchi vanilla 0
+93 apple=cherry eggplant=grape=kiwi jalapeno date=fig=hazelnut banana pear orange litchi=mushroom=quinoa tomato=vanilla nut=radish soy 0
+35 cherry date apple=banana=litchi hazelnut=quinoa grape=jalapeno=mushroom eggplant=fig=radish pear kiwi=nut tomato orange=soy vanilla 0
+79 cherry=grape apple=banana=fig eggplant=pear date jalapeno hazelnut=kiwi=quinoa litchi=radish=soy mushroom orange nut tomato=vanilla 0
+8 apple cherry banana=jalapeno fig=grape=hazelnut eggplant=quinoa date=nut=orange litchi=mushroom soy=tomato=vanilla radish kiwi pear 0
+53 banana apple cherry=date=kiwi eggplant jalapeno orange fig=hazelnut=nut litchi=pear=radish=vanilla grape=mushroom=quinoa soy=tomato 0
+91 banana=eggplant cherry=fig=grape date apple jalapeno hazelnut kiwi=nut=orange vanilla litchi=pear=quinoa=soy mushroom=radish=tomato 0
+58 apple=eggplant=grape banana=cherry=fig kiwi nut orange date litchi=tomato hazelnut=jalapeno=soy quinoa=vanilla mushroom pear=radish 0
+78 apple cherry=eggplant date=kiwi=nut banana=jalapeno=mushroom grape fig pear hazelnut=litchi=quinoa=soy radish orange=tomato=vanilla 0
+30 eggplant cherry apple=banana=fig date=pear kiwi=nut grape=hazelnut=jalapeno mushroom orange=quinoa litchi=radish=soy tomato vanilla 0
+7 apple=banana=fig date=hazelnut=jalapeno grape cherry kiwi=pear eggplant litchi=nut mushroom=quinoa=radish vanilla soy=tomato orange 0
+37 banana fig=hazelnut apple=cherry date eggplant=kiwi=pear grape=jalapeno=quinoa orange mushroom litchi=nut=vanilla radish=soy tomato 0
+60 date apple banana=eggplant=fig litchi cherry grape=jalapeno nut=pear=tomato kiwi=radish hazelnut=mushroom=orange soy quinoa=vanilla 0
+22 apple banana=cherry eggplant jalapeno=litchi date fig=hazelnut kiwi=mushroom=quinoa grape=pear=radish tomato nut=orange=soy vanilla 0
+39 eggplant=fig cherry=hazelnut=jalapeno kiwi apple=banana date=grape=orange nut=quinoa mushroom tomato litchi=pear=radish soy vanilla 0
+83 banana apple cherry=date=fig eggplant hazelnut grape=jalapeno=kiwi mushroom nut=pear=quinoa litchi=radish=soy=tomato orange=vanilla 0
+68 banana=hazelnut date apple=cherry=eggplant grape=litchi fig=pear=quinoa mushroom=orange jalapeno=kiwi=tomato nut soy radish vanilla 0
+67 banana apple cherry=date fig=grape jalapeno eggplant=hazelnut kiwi litchi=orange=soy pear=quinoa=tomato mushroom=nut=radish vanilla 0
+69 banana cherry grape=jalapeno=litchi date=eggplant=fig nut apple=hazelnut tomato kiwi=pear mushroom=radish=soy quinoa=vanilla orange 0
+40 banana eggplant=fig kiwi date=mushroom cherry apple=grape=jalapeno pear litchi=radish hazelnut=orange=quinoa nut=tomato=vanilla soy 0
+52 fig cherry=date=grape=jalapeno=litchi=nut banana=eggplant apple=hazelnut=radish kiwi=soy=vanilla pear orange mushroom quinoa=tomato 0
+23 cherry=eggplant=hazelnut nut banana=fig=grape date=jalapeno apple=mushroom orange kiwi=radish pear litchi=quinoa=tomato soy vanilla 0
+30 jalapeno date=fig grape eggplant=quinoa=tomato apple banana=cherry=kiwi radish hazelnut=nut litchi=mushroom orange=pear=soy vanilla 0
+96 apple eggplant=grape banana=cherry=date hazelnut fig=jalapeno kiwi=nut radish orange=pear=vanilla quinoa=soy=tomato litchi mushroom 0
+62 apple=cherry banana=date=kiwi hazelnut=litchi eggplant=fig=grape mushroom tomato jalapeno=pear=vanilla radish nut=quinoa orange soy 0
+63 apple=banana=fig cherry=eggplant=hazelnut kiwi date=nut jalapeno=litchi pear=tomato grape=mushroom=quinoa soy radish orange vanilla 0
+52 cherry apple=banana=fig date=eggplant=jalapeno kiwi litchi=orange grape=mushroom nut=pear quinoa tomato hazelnut=radish=soy vanilla 0
+96 jalapeno apple date=grape eggplant=hazelnut banana=litchi cherry=fig=tomato kiwi=nut=soy pear mushroom=quinoa=radish orange vanilla 0
+8 fig=hazelnut banana apple=mushroom cherry=date=kiwi eggplant=grape=litchi nut radish jalapeno=pear=vanilla tomato orange quinoa=soy 0
+70 apple=banana fig date=kiwi jalapeno cherry=hazelnut=mushroom eggplant=grape=quinoa soy nut=orange litchi=pear=radish vanilla tomato 0
+56 date banana=fig apple=eggplant=jalapeno cherry hazelnut=kiwi=nut litchi=quinoa grape=orange=radish mushroom vanilla pear=soy tomato 0
+86 date apple banana=cherry=grape kiwi=litchi=orange hazelnut=mushroom eggplant=jalapeno nut=pear fig=quinoa=radish tomato vanilla soy 0
+28 banana=cherry=kiwi nut eggplant jalapeno=mushroom date=fig=grape apple=litchi=pear hazelnut=orange radish quinoa=tomato vanilla soy 0
+63 cherry kiwi apple date=fig=grape banana=eggplant=hazelnut jalapeno litchi=pear nut=orange=quinoa mushroom=vanilla soy=tomato radish 0
+1 apple eggplant banana=fig=litchi date cherry=kiwi=mushroom hazelnut grape=jalapeno=orange nut=pear quinoa=vanilla soy radish=tomato 0
+73 apple=banana=jalapeno cherry date=hazelnut=litchi fig=nut eggplant=kiwi=mushroom quinoa grape=orange radish pear=soy vanilla tomato 0
+43 fig hazelnut apple cherry=date=jalapeno=nut eggplant=orange banana=grape=pear=radish=tomato kiwi=quinoa litchi=mushroom=vanilla soy 0
+63 eggplant cherry banana=date=fig=jalapeno kiwi apple=hazelnut litchi=nut=orange=pear=soy grape=mushroom quinoa=tomato=vanilla radish 0
+67 grape apple=banana=eggplant=jalapeno=kiwi date cherry=fig=mushroom=nut hazelnut=litchi=pear radish quinoa=tomato orange soy=vanilla 0
+11 banana apple hazelnut cherry=date=grape eggplant=fig=jalapeno=pear=soy kiwi=litchi orange=tomato mushroom=nut=quinoa=radish vanilla 0
+81 eggplant=hazelnut=kiwi apple=banana=cherry=date=grape nut jalapeno=soy fig=litchi pear=radish orange mushroom=quinoa tomato vanilla 0
+6 apple=eggplant banana=cherry date=litchi=mushroom hazelnut grape=jalapeno=kiwi=orange=radish fig=nut soy pear quinoa=tomato vanilla 0
+25 eggplant apple=cherry=date=fig=hazelnut banana jalapeno=mushroom orange grape=litchi=pear kiwi=nut radish quinoa=vanilla soy=tomato 0
+72 apple=date banana hazelnut=litchi eggplant fig=radish cherry=grape=jalapeno=orange=vanilla quinoa=tomato mushroom kiwi=nut=pear soy 0
+88 banana=orange date apple=cherry=eggplant=jalapeno fig=tomato grape=hazelnut=kiwi=mushroom=nut litchi pear=radish=soy quinoa vanilla 0
+51 apple fig date banana=cherry=eggplant=jalapeno=orange grape=hazelnut=mushroom=nut kiwi litchi=quinoa=tomato pear=vanilla radish=soy 0
+79 banana apple=cherry date=eggplant fig jalapeno grape=litchi=nut pear=radish hazelnut=quinoa mushroom kiwi=orange=soy=tomato=vanilla 0
+86 banana cherry=date=litchi grape apple=eggplant=hazelnut=jalapeno=vanilla fig=orange=pear=quinoa kiwi=radish soy mushroom nut=tomato 0
+2 banana cherry apple=date=litchi grape=quinoa eggplant=hazelnut=mushroom=nut kiwi=tomato jalapeno=orange=pear=soy=vanilla fig radish 0
+79 banana cherry fig apple=grape eggplant=mushroom date=hazelnut=orange jalapeno=litchi=pear=radish=tomato kiwi=vanilla nut=soy quinoa 0
+83 apple cherry=grape banana eggplant=fig=jalapeno=litchi=radish date=hazelnut=kiwi nut orange=pear quinoa=soy mushroom=vanilla tomato 0
+12 apple cherry banana=hazelnut eggplant=grape=nut date=litchi fig=jalapeno kiwi=mushroom=orange=quinoa=soy pear=tomato radish vanilla 0
+30 apple banana eggplant=grape=litchi cherry=date=fig=kiwi=orange mushroom=pear jalapeno radish=tomato nut=quinoa hazelnut soy=vanilla 0
+49 apple date=fig cherry banana=grape eggplant=hazelnut=mushroom kiwi=pear orange=quinoa=radish=soy=vanilla jalapeno=tomato litchi nut 0
+23 date apple=cherry=eggplant grape banana=fig=hazelnut=litchi=orange jalapeno=kiwi=nut=pear mushroom=vanilla tomato quinoa=radish soy 0
+35 banana=date fig kiwi apple=cherry eggplant hazelnut=jalapeno=vanilla nut=pear grape=litchi=mushroom=quinoa=soy radish orange=tomato 0
+20 apple=banana=eggplant fig=nut cherry=date hazelnut=jalapeno=orange=pear grape=quinoa=radish=soy=tomato kiwi litchi mushroom vanilla 0
+6 eggplant banana=date apple cherry=grape hazelnut kiwi fig=mushroom soy=vanilla jalapeno=litchi=tomato nut=orange=pear=quinoa=radish 0
+93 apple=cherry banana=date eggplant=orange jalapeno grape=hazelnut fig=kiwi=radish litchi=mushroom=nut=pear=quinoa soy vanilla tomato 0
+64 date apple banana=cherry=eggplant=fig=hazelnut grape=nut kiwi=tomato jalapeno=mushroom=radish litchi=quinoa pear orange=soy vanilla 0
+46 date banana=cherry grape apple=fig=hazelnut=kiwi=litchi eggplant=jalapeno=vanilla orange mushroom=soy pear=quinoa nut=radish tomato 0
+48 date fig grape=jalapeno=kiwi=quinoa banana=cherry=eggplant=mushroom apple=litchi orange hazelnut=pear=radish=soy nut=tomato vanilla 0
+90 apple=banana date cherry=hazelnut litchi grape eggplant=jalapeno=kiwi=radish orange mushroom=nut fig=quinoa pear=soy tomato=vanilla 0
+18 apple banana eggplant=grape date hazelnut=jalapeno cherry=fig orange=vanilla kiwi=mushroom=nut=radish pear quinoa=soy litchi=tomato 0
+17 date banana fig apple=eggplant jalapeno=litchi cherry=hazelnut grape=mushroom=pear=quinoa kiwi=radish soy nut=orange tomato=vanilla 0
+21 apple cherry=jalapeno date=hazelnut eggplant fig grape banana=mushroom litchi=nut kiwi=soy pear=tomato orange=quinoa radish=vanilla 0
+28 date banana=jalapeno apple fig=hazelnut cherry=kiwi=litchi=orange grape=nut eggplant=tomato mushroom=radish quinoa=vanilla soy pear 0
+24 apple=banana eggplant date=mushroom cherry=hazelnut fig=orange litchi=tomato jalapeno=kiwi grape nut=radish soy pear=vanilla quinoa 0
+83 apple banana jalapeno=tomato fig=grape cherry=mushroom date=kiwi eggplant=orange nut=pear litchi=quinoa hazelnut radish=vanilla soy 0
+48 fig cherry date apple=banana=grape=mushroom kiwi=nut orange=pear eggplant=hazelnut soy jalapeno=litchi=tomato=vanilla quinoa=radish 0
+53 apple date=eggplant banana=jalapeno hazelnut grape cherry=fig litchi=mushroom=orange=radish kiwi=pear quinoa=tomato nut soy=vanilla 0
+35 banana=cherry apple=eggplant date=hazelnut orange fig=litchi jalapeno=mushroom grape=pear kiwi=nut=radish=vanilla quinoa soy tomato 0
+66 apple=cherry fig=grape date banana=kiwi=litchi=orange eggplant jalapeno=mushroom radish=vanilla nut=pear quinoa hazelnut soy=tomato 0
+87 apple=banana grape cherry=kiwi date eggplant=hazelnut fig=jalapeno=soy=tomato mushroom orange=vanilla litchi=nut=quinoa=radish pear 0
+79 cherry=hazelnut apple=date eggplant=pear fig banana grape=litchi=mushroom=radish jalapeno orange=vanilla kiwi nut=soy quinoa=tomato 0
+17 date=fig=grape=kiwi apple banana hazelnut=jalapeno=litchi=nut eggplant=pear cherry=orange mushroom quinoa=tomato soy radish=vanilla 0
+70 date apple=fig eggplant banana=hazelnut grape=kiwi cherry=jalapeno litchi pear mushroom=quinoa=radish=soy orange=tomato nut=vanilla 0
+16 apple=cherry banana=grape date fig=jalapeno pear eggplant=litchi kiwi=mushroom=orange=tomato hazelnut quinoa=vanilla nut=soy radish 0
+81 banana date apple=cherry=fig=grape eggplant=hazelnut=jalapeno=orange kiwi=litchi=mushroom=tomato nut pear=quinoa soy radish=vanilla 0
+79 apple fig date=litchi grape=jalapeno banana=cherry=kiwi=radish eggplant=hazelnut mushroom pear=quinoa=tomato=vanilla nut=orange soy 0
+3 cherry=eggplant apple=date banana=fig jalapeno grape=hazelnut=kiwi=litchi orange=pear quinoa mushroom=radish soy tomato=vanilla nut 0
+70 banana=cherry apple=hazelnut date=jalapeno eggplant=soy litchi fig=grape=mushroom=vanilla quinoa=radish kiwi=nut orange pear tomato 0
+32 apple=banana cherry=date hazelnut litchi=nut fig=jalapeno=pear=quinoa grape=kiwi eggplant=orange=radish=vanilla soy mushroom tomato 0
+27 hazelnut date=orange apple=fig cherry banana=eggplant=grape=jalapeno kiwi=nut tomato mushroom=quinoa litchi=radish vanilla pear=soy 0
+67 cherry apple banana=grape date=fig=jalapeno=orange radish eggplant=kiwi=mushroom=nut hazelnut=litchi=pear=soy tomato=vanilla quinoa 0
+44 cherry apple=banana eggplant=fig=hazelnut=jalapeno date grape=nut litchi=pear=quinoa=soy kiwi=radish mushroom=orange tomato vanilla 0
+77 apple=banana cherry=grape eggplant=jalapeno fig=nut=quinoa=tomato date=litchi kiwi hazelnut=vanilla orange=pear mushroom soy radish 0
+69 apple=banana date cherry=grape quinoa eggplant=jalapeno fig=hazelnut=kiwi=litchi nut=orange=soy=vanilla mushroom=pear radish tomato 0
+26 hazelnut banana date apple=eggplant=fig=grape cherry=jalapeno litchi kiwi=mushroom=quinoa=vanilla nut=orange=pear=soy radish=tomato 0
+73 fig apple=banana cherry=grape=kiwi=pear date=eggplant nut=vanilla hazelnut=litchi jalapeno=mushroom orange=soy quinoa radish tomato 0
+52 cherry apple=fig=grape banana eggplant date=hazelnut=jalapeno litchi=pear kiwi=mushroom=orange nut=quinoa=radish=soy=tomato vanilla 0
+54 apple=cherry=eggplant=kiwi=mushroom banana=fig=jalapeno hazelnut date grape=radish quinoa litchi=nut=soy vanilla orange=pear=tomato 0
+98 cherry=fig date=hazelnut=mushroom eggplant quinoa apple=banana grape=nut=orange pear jalapeno=radish kiwi=litchi soy=vanilla tomato 0
+12 apple banana=jalapeno grape=hazelnut=kiwi date eggplant=fig=orange mushroom cherry=pear nut=vanilla litchi=quinoa=soy=tomato radish 0
+86 eggplant cherry=date=litchi apple=fig jalapeno banana=grape=kiwi mushroom=nut hazelnut=orange quinoa=tomato radish pear soy=vanilla 0
+75 cherry=date banana apple=eggplant grape=jalapeno kiwi litchi=nut=radish fig=mushroom=pear hazelnut=orange tomato vanilla quinoa=soy 0
+58 banana=cherry date=grape=hazelnut apple=fig=quinoa eggplant jalapeno=kiwi litchi mushroom=orange nut=pear=tomato=vanilla soy radish 0
+54 apple cherry eggplant date=fig grape=kiwi=orange banana=radish mushroom=pear=quinoa hazelnut=jalapeno=litchi=soy nut=vanilla tomato 0
+48 apple banana=date=fig cherry=eggplant jalapeno mushroom=radish grape=litchi kiwi=soy hazelnut quinoa nut=orange=pear tomato=vanilla 0
+91 cherry apple=banana fig=hazelnut date=eggplant=grape=kiwi jalapeno nut=radish=tomato litchi=vanilla mushroom=orange=pear quinoa soy 0
+55 eggplant apple cherry=date banana grape=hazelnut=radish fig=jalapeno=pear litchi=soy kiwi=mushroom=nut=tomato quinoa orange=vanilla 0
+76 apple cherry=hazelnut date eggplant=grape=mushroom litchi=quinoa banana=jalapeno fig=kiwi=vanilla orange nut pear=soy radish=tomato 0
+7 banana=eggplant=fig apple cherry=grape kiwi hazelnut=litchi jalapeno=nut date=soy mushroom orange=radish pear=quinoa=tomato vanilla 0
+54 banana apple eggplant=fig jalapeno cherry=nut hazelnut=mushroom grape=pear date=kiwi=tomato litchi=radish=soy orange=quinoa vanilla 0
+85 apple cherry=eggplant date=grape banana=hazelnut=litchi mushroom=nut kiwi jalapeno=orange fig pear=quinoa=soy tomato=vanilla radish 0
+77 banana=cherry=eggplant fig jalapeno apple=date hazelnut=mushroom=quinoa grape litchi=radish=tomato=vanilla kiwi=nut orange=soy pear 0
+30 eggplant apple=banana=grape cherry jalapeno=pear=quinoa date=fig kiwi=litchi=nut=radish mushroom=soy hazelnut orange=vanilla tomato 0
+94 date=fig apple banana eggplant=grape=litchi mushroom cherry=hazelnut jalapeno=nut kiwi=quinoa radish orange=pear=soy tomato=vanilla 0
+40 cherry=eggplant apple fig=grape date=kiwi banana hazelnut=nut jalapeno=pear=quinoa orange=radish=soy litchi=tomato mushroom vanilla 0
+68 banana apple=date=grape cherry=kiwi eggplant=fig=orange hazelnut=jalapeno=litchi=mushroom nut soy=tomato quinoa pear=radish vanilla 0
+25 apple eggplant banana cherry=fig=mushroom grape=hazelnut date=nut jalapeno=litchi orange=pear=radish=soy kiwi=quinoa=vanilla tomato 0
+88 eggplant apple banana=hazelnut cherry=grape date=mushroom=nut jalapeno=orange fig=litchi=radish kiwi=soy tomato pear quinoa=vanilla 0
+9 cherry apple=banana date=jalapeno eggplant=fig=grape hazelnut=nut litchi=quinoa kiwi=radish mushroom=soy=tomato vanilla orange pear 0
+44 apple=eggplant cherry=date banana=hazelnut=mushroom litchi grape=nut=soy kiwi=orange=pear=tomato fig jalapeno=vanilla radish quinoa 0
+14 apple cherry banana=grape=hazelnut=nut kiwi=litchi eggplant=fig date=jalapeno orange quinoa=soy=tomato mushroom=pear=vanilla radish 0
+25 banana=cherry date=eggplant=orange apple=kiwi jalapeno=litchi hazelnut fig=mushroom=quinoa grape nut=vanilla radish soy=tomato pear 0
+30 hazelnut banana=fig=grape=litchi eggplant cherry=date jalapeno=mushroom=pear apple=nut=radish kiwi=soy orange quinoa=tomato vanilla 0
+33 date cherry=eggplant=fig banana apple grape=pear hazelnut=kiwi=vanilla jalapeno=litchi=quinoa=radish mushroom=nut orange soy=tomato 0
+74 banana apple eggplant=litchi cherry=jalapeno fig=hazelnut=orange=vanilla date=grape=nut kiwi=mushroom=pear tomato quinoa=soy radish 0
+89 banana apple=eggplant cherry=litchi date=fig nut=vanilla orange jalapeno=kiwi hazelnut=quinoa=soy grape=mushroom=tomato pear radish 0
+1 apple=banana=cherry grape date=eggplant=fig=jalapeno litchi hazelnut=radish kiwi=pear mushroom quinoa=soy=tomato nut orange=vanilla 0
+64 banana apple=cherry hazelnut fig date=eggplant=jalapeno mushroom kiwi=radish grape=nut litchi=tomato=vanilla orange=pear=quinoa=soy 0
+96 apple banana fig cherry=date=nut grape=tomato eggplant=orange jalapeno hazelnut=litchi=radish mushroom=pear kiwi=vanilla quinoa=soy 0
+43 cherry apple=banana eggplant=jalapeno fig=hazelnut grape=mushroom date=kiwi=litchi pear=quinoa orange tomato nut=radish=vanilla soy 0
+18 banana apple cherry=date=eggplant fig=hazelnut grape jalapeno=tomato litchi=soy kiwi=mushroom=quinoa orange=vanilla nut=pear radish 0
+42 cherry=eggplant banana apple=jalapeno date=fig hazelnut=litchi=mushroom kiwi grape=orange=quinoa nut soy pear=vanilla radish=tomato 0
+84 apple=date fig banana=cherry eggplant=grape=nut hazelnut=litchi orange jalapeno=mushroom quinoa=radish=vanilla kiwi soy pear=tomato 0
+41 apple banana date=jalapeno=mushroom cherry=eggplant=kiwi fig=pear grape=hazelnut=nut=radish litchi orange=vanilla quinoa soy=tomato 0
+56 apple=banana fig cherry=hazelnut eggplant=radish quinoa jalapeno=kiwi=nut date=grape mushroom=orange=vanilla pear=soy tomato litchi 0
+44 apple=cherry=eggplant banana=litchi date=fig=hazelnut kiwi jalapeno=quinoa=soy=tomato nut grape=mushroom radish pear=vanilla orange 0
+45 apple cherry=jalapeno eggplant=kiwi date=fig=grape mushroom banana litchi=orange hazelnut=radish quinoa=tomato=vanilla pear nut=soy 0
+67 apple cherry=date banana=litchi grape=hazelnut eggplant=kiwi=mushroom jalapeno=nut fig=orange pear=quinoa=radish vanilla soy tomato 0
+99 apple banana=eggplant=hazelnut cherry=date fig=jalapeno litchi kiwi=orange nut=quinoa=soy mushroom=vanilla pear=tomato grape radish 0
+39 apple banana=cherry=eggplant=grape litchi date=hazelnut jalapeno=kiwi=mushroom fig=pear=radish nut=orange quinoa=tomato vanilla soy 0
+13 grape apple=banana kiwi cherry=date=tomato litchi=mushroom eggplant=fig=hazelnut=jalapeno=nut=quinoa pear orange=radish soy=vanilla 0
+74 banana apple=cherry=jalapeno eggplant date=grape=nut=orange fig=kiwi hazelnut=litchi=radish vanilla mushroom=tomato pear=soy quinoa 0
+51 apple kiwi banana date=hazelnut cherry=fig grape=jalapeno=mushroom eggplant=litchi nut radish=tomato pear=soy orange=quinoa=vanilla 0
+67 apple=fig date banana=cherry=kiwi litchi=orange hazelnut=jalapeno=mushroom eggplant=nut grape=radish=soy=vanilla tomato pear quinoa 0
+65 cherry=date=mushroom apple=fig jalapeno=kiwi banana=grape vanilla hazelnut orange=pear=radish=soy eggplant litchi=nut=quinoa tomato 0
+36 apple cherry banana=jalapeno=orange soy date=eggplant grape=hazelnut fig=litchi=nut=quinoa kiwi=pear=radish mushroom tomato=vanilla 0
+74 banana apple cherry date=fig grape=litchi eggplant hazelnut=jalapeno=tomato nut=orange=vanilla kiwi=mushroom=pear=radish quinoa=soy 0
+23 date apple banana=grape eggplant=fig=vanilla cherry=jalapeno=litchi=quinoa kiwi=orange=pear radish=soy hazelnut=nut tomato mushroom 0
+44 banana=cherry=date apple=eggplant=hazelnut kiwi fig=jalapeno pear grape litchi=nut mushroom=radish=tomato=vanilla quinoa orange=soy 0
+77 cherry fig=hazelnut date apple=eggplant=nut grape=mushroom kiwi=orange=pear=quinoa vanilla jalapeno=litchi banana=radish=tomato soy 0
+69 apple banana=date=fig cherry=grape=kiwi litchi=mushroom eggplant=jalapeno hazelnut=nut=soy=tomato pear radish orange=vanilla quinoa 0
+76 apple mushroom banana=cherry=grape=hazelnut date fig=jalapeno=pear eggplant=kiwi=litchi=nut quinoa=tomato orange=radish=soy vanilla 0
+19 apple=date banana litchi cherry=pear eggplant=grape kiwi=mushroom fig=hazelnut=jalapeno nut=orange=radish quinoa soy=vanilla tomato 0
+3 banana=eggplant apple cherry=fig=grape jalapeno date=kiwi=pear=vanilla hazelnut litchi=radish mushroom=nut orange quinoa=soy=tomato 0
+26 banana eggplant=jalapeno=nut cherry=hazelnut date=litchi=quinoa fig=radish grape=kiwi apple=mushroom tomato vanilla orange=pear soy 0
+70 banana apple eggplant=fig hazelnut cherry=jalapeno=litchi date=orange kiwi=mushroom=nut grape=radish soy=vanilla pear=quinoa tomato 0
+36 eggplant=kiwi cherry banana=fig=grape date apple hazelnut=litchi mushroom=tomato jalapeno pear=quinoa=soy=vanilla nut=orange=radish 0
+28 date apple banana=jalapeno=litchi cherry=eggplant=kiwi=mushroom=nut=soy hazelnut fig=radish grape=quinoa=tomato=vanilla orange=pear 0
+12 apple=cherry date banana=eggplant jalapeno grape=kiwi fig=hazelnut=mushroom litchi=pear=quinoa nut=orange radish soy=tomato vanilla 0
+21 eggplant=kiwi apple cherry=date banana=jalapeno litchi fig=grape=radish hazelnut=mushroom nut orange=pear=vanilla quinoa soy=tomato 0
+62 banana apple=cherry=date=grape eggplant=fig=mushroom=nut hazelnut=jalapeno=kiwi quinoa=soy=vanilla litchi=pear orange tomato radish 0
+59 banana apple=cherry date=eggplant=fig grape pear hazelnut=jalapeno kiwi=litchi=quinoa mushroom=nut=orange=tomato vanilla radish=soy 0
+35 apple cherry=eggplant=grape banana date=nut kiwi=orange fig=hazelnut=jalapeno litchi mushroom=soy quinoa=radish pear=vanilla tomato 0
+80 apple fig cherry=eggplant=litchi banana=grape jalapeno=orange date=hazelnut=mushroom kiwi=pear nut=quinoa=radish=vanilla tomato soy 0
+51 cherry date eggplant apple=mushroom fig=kiwi banana=quinoa pear=soy=tomato grape=orange=vanilla hazelnut jalapeno=litchi nut=radish 0
+91 banana apple=litchi fig=grape=kiwi=mushroom cherry jalapeno date=eggplant=hazelnut nut=pear=radish=vanilla soy orange=quinoa=tomato 0
+79 apple date=eggplant=fig banana=cherry=kiwi litchi=mushroom=nut=radish hazelnut=jalapeno grape tomato orange=pear=soy=vanilla quinoa 0
+5 cherry eggplant=hazelnut banana=date apple=fig=grape mushroom=orange jalapeno=nut kiwi litchi=pear=quinoa tomato soy=vanilla radish 0
+73 grape eggplant=hazelnut apple=banana cherry=date=kiwi fig=jalapeno=quinoa=soy mushroom=nut=pear litchi orange=radish tomato vanilla 0
+46 banana=kiwi apple=cherry=fig=jalapeno date eggplant=grape=nut hazelnut=quinoa soy mushroom=radish orange=pear=tomato litchi vanilla 0
+21 cherry=eggplant kiwi banana=date=hazelnut apple=fig=jalapeno grape=mushroom=nut=vanilla litchi orange=pear radish quinoa=soy tomato 0
+65 cherry apple=banana=fig eggplant date=hazelnut jalapeno mushroom=quinoa=soy grape=kiwi=litchi=pear nut=orange=radish=vanilla tomato 0
+3 cherry apple banana=date=eggplant=hazelnut fig=jalapeno=litchi grape=kiwi=orange nut=pear=quinoa=tomato radish soy mushroom=vanilla 0
+65 cherry apple=date=grape banana kiwi=orange jalapeno eggplant=hazelnut=litchi=mushroom fig=pear soy quinoa=radish=tomato nut=vanilla 0
+87 banana=grape cherry apple=date=fig=mushroom jalapeno hazelnut=nut=pear litchi=radish eggplant=kiwi=quinoa soy=tomato orange vanilla 0
+5 apple=cherry banana=date=kiwi grape fig=jalapeno=nut=quinoa eggplant=hazelnut litchi=soy pear radish=tomato=vanilla mushroom orange 0
+13 apple=banana=eggplant cherry=hazelnut date=fig=mushroom kiwi=litchi grape=jalapeno nut=pear=radish=soy orange quinoa tomato vanilla 0
+38 date eggplant=hazelnut apple=fig cherry kiwi=mushroom grape=nut banana=jalapeno=litchi pear orange=radish=vanilla quinoa=tomato soy 0
+59 apple=jalapeno cherry=date banana=grape fig=kiwi=quinoa eggplant=hazelnut=mushroom litchi=nut=pear=radish soy orange tomato vanilla 0
+37 banana=fig apple=jalapeno cherry=date=hazelnut eggplant=kiwi grape orange litchi=pear radish mushroom=quinoa=tomato soy nut=vanilla 0
+15 apple=eggplant grape banana=nut date=kiwi=orange fig=jalapeno=pear cherry=mushroom hazelnut radish quinoa=soy litchi=tomato vanilla 0
+33 date apple=banana cherry=eggplant=fig jalapeno grape=hazelnut litchi=pear kiwi=mushroom=radish nut=orange soy quinoa=vanilla tomato 0
+43 apple=banana=date eggplant cherry=grape=litchi fig nut jalapeno=kiwi mushroom hazelnut=pear=radish=vanilla orange=quinoa soy=tomato 0
+85 fig date apple=grape banana cherry=jalapeno=kiwi eggplant=litchi hazelnut=mushroom=orange=vanilla pear=quinoa nut radish=soy=tomato 0
+49 apple=banana cherry=grape date=fig hazelnut jalapeno=kiwi mushroom radish litchi=nut=orange eggplant=pear=tomato quinoa=vanilla soy 0
+64 apple cherry=fig litchi banana=kiwi=nut eggplant=jalapeno=quinoa grape date=hazelnut=pear=radish soy=vanilla mushroom=tomato orange 0
+59 date=eggplant=grape apple=jalapeno banana=mushroom cherry=fig=orange hazelnut=kiwi litchi=nut vanilla quinoa=tomato radish pear soy 0
+69 apple=cherry date=grape litchi=nut=orange fig banana=eggplant=hazelnut=kiwi mushroom jalapeno=tomato pear=quinoa=soy vanilla radish 0
+3 apple=eggplant banana fig date=grape=litchi cherry=hazelnut=pear jalapeno=kiwi=mushroom=nut quinoa orange=tomato radish soy=vanilla 0
+92 kiwi cherry banana=fig=jalapeno=orange apple=eggplant hazelnut=nut grape date=litchi=radish mushroom=pear=quinoa soy tomato=vanilla 0
+20 apple banana=cherry grape=jalapeno date eggplant=kiwi=nut litchi hazelnut=soy fig=mushroom=pear orange=radish quinoa=tomato vanilla 0
+31 banana fig=orange apple=cherry=eggplant=grape nut=tomato date=hazelnut=jalapeno=kiwi=vanilla soy litchi=mushroom=quinoa=radish pear 0
+19 apple cherry=eggplant date=fig banana=grape hazelnut=jalapeno kiwi litchi=mushroom=nut=orange=radish soy=tomato vanilla pear=quinoa 0
+50 eggplant=fig apple=banana=cherry=date=hazelnut mushroom grape=jalapeno=kiwi=orange litchi=quinoa nut=radish pear=tomato soy vanilla 0
+57 date=grape cherry=eggplant mushroom=pear apple=banana hazelnut=jalapeno fig kiwi=nut=orange=radish=soy quinoa=tomato litchi vanilla 0
+24 grape date=mushroom apple=banana=eggplant=litchi=orange hazelnut=kiwi cherry=quinoa pear nut fig=radish jalapeno=soy tomato=vanilla 0
+46 apple banana=hazelnut cherry=date=eggplant=fig grape=nut jalapeno litchi=mushroom kiwi=orange=pear=quinoa=soy radish=tomato vanilla 0
+12 apple grape=hazelnut banana=eggplant cherry=orange date=kiwi jalapeno=vanilla pear litchi=mushroom=nut=quinoa=soy fig=radish tomato 0
+75 cherry=fig litchi apple eggplant=jalapeno banana=date kiwi=orange hazelnut=mushroom nut=soy grape=pear=quinoa=radish=tomato vanilla 0
+51 eggplant apple=banana=grape cherry jalapeno date=hazelnut=kiwi fig=litchi=vanilla mushroom=soy pear=quinoa=radish orange=tomato nut 0
+48 banana=cherry=date apple=kiwi eggplant=fig hazelnut grape nut=orange=pear quinoa=soy=tomato jalapeno=mushroom=vanilla litchi radish 0
+39 banana apple=fig=jalapeno cherry=grape date=eggplant=pear kiwi=nut=orange litchi=mushroom=radish tomato hazelnut=quinoa vanilla soy 0
+28 apple banana=date cherry eggplant fig=grape=litchi kiwi=mushroom=orange nut=pear hazelnut=jalapeno=vanilla quinoa=soy=tomato radish 0
+2 apple=banana=fig hazelnut grape eggplant=litchi kiwi jalapeno=nut cherry=mushroom=radish date=pear=soy orange=quinoa=tomato vanilla 0
+66 cherry apple=banana mushroom=nut jalapeno=kiwi=litchi date=fig=grape eggplant=hazelnut=tomato soy orange=pear=vanilla radish quinoa 0
+41 banana=date apple=cherry=fig eggplant=grape=orange mushroom kiwi=litchi vanilla hazelnut=nut=pear jalapeno quinoa=radish=soy tomato 0
+78 apple banana cherry=jalapeno=kiwi date=eggplant grape=hazelnut=litchi mushroom fig=nut=pear soy radish=tomato orange=quinoa=vanilla 0
+84 banana fig=litchi apple=eggplant=grape cherry=hazelnut date=mushroom=vanilla kiwi=nut=pear orange=quinoa=soy radish jalapeno tomato 0
+88 apple cherry eggplant hazelnut=jalapeno date=grape=kiwi banana=fig mushroom=orange=quinoa pear=radish=tomato litchi=nut=soy vanilla 0
+93 apple=date=grape cherry=eggplant=hazelnut fig=jalapeno banana=kiwi=pear mushroom=orange radish vanilla litchi=nut=quinoa soy tomato 0
+3 cherry=date=litchi apple banana=grape eggplant=fig hazelnut=kiwi=mushroom quinoa nut=pear=vanilla jalapeno=orange=tomato radish soy 0
+78 apple date=eggplant banana=cherry=quinoa fig=grape=hazelnut=litchi=nut kiwi=soy jalapeno=mushroom=radish tomato pear=vanilla orange 0
+92 apple date cherry=eggplant banana=hazelnut=nut fig=grape=jalapeno=kiwi=litchi orange=soy pear=quinoa mushroom=radish=vanilla tomato 0
+45 apple=banana cherry grape=jalapeno=pear date=eggplant=mushroom hazelnut=orange fig=kiwi=litchi=nut=tomato quinoa radish=soy vanilla 0
+29 date=eggplant apple=cherry=pear banana=grape=jalapeno=mushroom=nut vanilla fig=radish kiwi hazelnut=litchi=orange soy quinoa=tomato 0
+5 apple=eggplant date=fig=hazelnut=jalapeno=kiwi banana=litchi=orange cherry=grape vanilla nut=pear=soy mushroom tomato quinoa=radish 0
+27 date cherry=fig=hazelnut apple=banana grape=jalapeno=nut eggplant=litchi=mushroom=orange=soy kiwi=quinoa pear radish=tomato vanilla 0
+5 apple=cherry eggplant banana=hazelnut date=mushroom fig=kiwi=litchi orange grape jalapeno=nut pear=tomato quinoa=radish=soy=vanilla 0
+51 grape hazelnut apple=date banana=eggplant=fig=jalapeno cherry mushroom=nut=orange kiwi=litchi=quinoa=vanilla pear=tomato radish=soy 0
+23 cherry=eggplant apple=fig=hazelnut=jalapeno date=grape banana=litchi=orange=pear kiwi=mushroom=quinoa radish nut soy tomato=vanilla 0
+5 banana=mushroom=nut=radish cherry=date=eggplant=kiwi apple=fig quinoa grape=hazelnut=litchi pear=soy jalapeno orange tomato=vanilla 0
+48 cherry banana=hazelnut jalapeno eggplant apple=fig=kiwi=mushroom date=orange grape=nut litchi=quinoa=soy radish=vanilla pear=tomato 0
+95 banana=date=eggplant=mushroom grape apple=cherry=jalapeno nut hazelnut=kiwi pear=quinoa fig=radish litchi=orange vanilla soy=tomato 0
+2 apple banana date=grape cherry=jalapeno eggplant=kiwi hazelnut=litchi mushroom=quinoa nut=radish fig=orange=soy tomato=vanilla pear 0
+5 apple date=eggplant banana=jalapeno=mushroom=nut hazelnut=kiwi cherry=grape fig=orange litchi=quinoa pear vanilla radish=soy=tomato 0
+74 apple cherry=kiwi banana=quinoa date=eggplant=grape hazelnut=litchi mushroom=nut fig=orange pear=radish jalapeno tomato=vanilla soy 0
+15 cherry apple=fig date banana=eggplant grape=kiwi jalapeno=mushroom=orange=soy hazelnut=radish litchi=nut pear=quinoa=vanilla tomato 0
+79 banana=jalapeno cherry=kiwi apple=hazelnut date=eggplant=mushroom grape quinoa=radish litchi=orange fig=pear nut=soy vanilla tomato 0
+26 cherry banana=jalapeno apple=fig eggplant=kiwi date=litchi grape=hazelnut=mushroom nut=pear quinoa=radish orange tomato soy=vanilla 0
+78 apple banana=cherry fig=orange=radish grape=jalapeno=nut=vanilla date=hazelnut kiwi eggplant=tomato mushroom=pear litchi=soy quinoa 0
+47 date cherry=jalapeno=mushroom=orange banana=fig kiwi apple=eggplant=quinoa=soy grape=hazelnut=litchi pear nut=radish tomato=vanilla 0
+26 apple=fig banana=grape eggplant=hazelnut kiwi=orange cherry=date=quinoa pear litchi=vanilla jalapeno=soy nut=radish mushroom tomato 0
+38 apple cherry=date eggplant=fig grape=hazelnut=jalapeno=kiwi=litchi=orange banana=pear mushroom=quinoa nut=soy tomato=vanilla radish 0
+75 cherry date apple=fig banana=grape hazelnut=quinoa kiwi=litchi=mushroom jalapeno=nut eggplant=orange=radish=tomato pear=soy vanilla 0
+69 cherry apple=date grape eggplant banana=soy hazelnut=kiwi=orange=radish fig=litchi pear=vanilla jalapeno=nut=quinoa mushroom=tomato 0
+76 apple=cherry eggplant=grape banana=hazelnut=jalapeno date=mushroom fig=litchi kiwi=orange nut=vanilla pear quinoa=soy tomato radish 0
+67 cherry=date=grape jalapeno apple=banana=kiwi=nut fig=orange hazelnut=litchi eggplant=soy mushroom=radish quinoa pear=tomato vanilla 0
+43 cherry=date banana apple=jalapeno=kiwi eggplant=fig grape=nut=orange=radish hazelnut=litchi mushroom pear=vanilla soy=tomato quinoa 0
+45 eggplant date apple=cherry fig=grape jalapeno=litchi kiwi=mushroom banana=nut quinoa=tomato hazelnut=vanilla pear=radish=soy orange 0
+55 date banana=cherry=fig=hazelnut apple=grape eggplant jalapeno=mushroom kiwi=litchi=pear=quinoa tomato nut=orange=radish soy=vanilla 0
+95 cherry=eggplant apple=banana hazelnut date=kiwi nut=pear grape=litchi fig=orange=soy mushroom jalapeno=vanilla quinoa=radish tomato 0
+13 fig apple=date kiwi=litchi eggplant banana=cherry=hazelnut grape=vanilla jalapeno=soy pear=quinoa mushroom=nut=orange=radish tomato 0
+92 cherry banana apple=mushroom date=litchi eggplant=fig=orange hazelnut=jalapeno kiwi=radish grape=quinoa nut pear=tomato soy=vanilla 0
+25 apple banana cherry=eggplant=hazelnut fig=jalapeno date=grape=kiwi=pear soy=vanilla litchi=mushroom nut quinoa=radish orange=tomato 0
+36 banana eggplant=fig apple=cherry date=litchi hazelnut=jalapeno=mushroom=quinoa nut=orange=vanilla grape=kiwi pear soy radish=tomato 0
+53 apple hazelnut banana=date fig=orange eggplant=nut cherry=litchi jalapeno=kiwi vanilla grape=mushroom pear=radish=soy quinoa=tomato 0
+54 apple banana=eggplant date cherry=grape=hazelnut=kiwi pear=radish litchi=mushroom fig=orange soy=tomato jalapeno=nut=vanilla quinoa 0
+99 cherry apple=fig=jalapeno banana=eggplant date=litchi kiwi=orange grape=hazelnut quinoa radish mushroom=tomato pear=soy nut=vanilla 0
+98 date banana=hazelnut apple=grape eggplant=radish kiwi=orange cherry=jalapeno fig=litchi=quinoa mushroom=nut=pear=soy tomato vanilla 0
+24 banana=cherry date=jalapeno apple=grape eggplant=nut fig=litchi orange hazelnut kiwi=radish=vanilla quinoa mushroom=pear soy=tomato 0
+44 apple=banana fig date=kiwi cherry eggplant=mushroom grape=litchi jalapeno=nut=radish orange=tomato pear=quinoa hazelnut=soy vanilla 0
+83 eggplant apple=cherry date=kiwi grape=jalapeno fig=mushroom hazelnut=litchi pear=quinoa=vanilla banana=soy orange nut radish=tomato 0
+63 apple=cherry eggplant=fig banana=kiwi date=hazelnut litchi grape=tomato=vanilla jalapeno=nut mushroom=orange=pear=soy quinoa radish 0
+53 apple=fig date=eggplant banana=nut cherry=grape kiwi=litchi=mushroom jalapeno=pear soy radish hazelnut=orange quinoa tomato=vanilla 0
+54 cherry=fig apple=date grape=kiwi banana=eggplant=nut quinoa=vanilla hazelnut=jalapeno=litchi=orange mushroom pear radish=tomato soy 0
+99 apple date=eggplant fig=kiwi banana=cherry=jalapeno grape=mushroom pear hazelnut=orange litchi=radish vanilla quinoa=tomato nut=soy 0
+32 cherry=eggplant banana=date=hazelnut=litchi fig apple=grape=kiwi nut=orange jalapeno quinoa pear=vanilla mushroom=soy radish=tomato 0
+68 apple=litchi hazelnut banana=date cherry=grape jalapeno=kiwi eggplant=pear fig=mushroom=nut=radish soy orange=quinoa=vanilla tomato 0
+73 apple=banana grape date=fig eggplant=hazelnut=jalapeno=orange litchi=nut cherry=mushroom soy kiwi=tomato radish pear=quinoa=vanilla 0
+55 banana cherry=hazelnut apple=grape eggplant=jalapeno date nut=pear=quinoa soy=vanilla fig=orange=radish litchi kiwi=mushroom=tomato 0
+95 banana=cherry=kiwi date=eggplant jalapeno=orange fig=grape=mushroom apple=hazelnut=litchi soy pear=radish vanilla tomato nut=quinoa 0
+81 apple=eggplant kiwi banana=cherry=date fig=grape=jalapeno hazelnut litchi=mushroom=nut=orange radish=tomato pear=quinoa=vanilla soy 0
+46 apple=date=mushroom cherry=eggplant=radish banana=grape=kiwi fig hazelnut=litchi=orange=tomato jalapeno=quinoa nut=pear vanilla soy 0
+5 fig date apple=eggplant=hazelnut banana=cherry=jalapeno grape=kiwi mushroom=orange litchi=nut=radish pear=quinoa=soy=vanilla tomato 0
+90 apple cherry=eggplant=fig kiwi date=litchi=vanilla nut=orange banana=hazelnut=mushroom grape=pear quinoa=radish jalapeno soy=tomato 0
+3 date=fig cherry apple=hazelnut=kiwi banana eggplant=grape=mushroom jalapeno=tomato soy pear=quinoa orange=radish=vanilla litchi=nut 0
+43 apple=cherry=date eggplant=jalapeno=litchi banana=fig=mushroom grape=hazelnut=nut=soy kiwi radish orange=pear=tomato=vanilla quinoa 0
+98 apple eggplant=grape banana=date cherry hazelnut=jalapeno=litchi kiwi=mushroom=nut fig=orange=quinoa pear=vanilla radish=soy tomato 0
+46 cherry=date banana apple=eggplant=grape jalapeno fig=kiwi hazelnut=nut litchi=pear=tomato quinoa=radish=vanilla mushroom orange=soy 0
+66 cherry=jalapeno apple=eggplant banana=date=litchi fig=kiwi=mushroom grape hazelnut=nut quinoa=vanilla pear=radish=soy orange tomato 0
+91 date banana=eggplant=fig apple=litchi cherry=hazelnut=jalapeno pear grape=nut=orange quinoa=soy kiwi=tomato mushroom=radish vanilla 0
+6 banana apple=date=eggplant cherry=fig=grape=pear jalapeno=kiwi=litchi=radish hazelnut=mushroom=quinoa orange nut=soy=tomato vanilla 0
+18 apple=cherry date=hazelnut banana kiwi=nut=orange eggplant fig=mushroom=pear jalapeno=litchi=quinoa grape=radish soy=tomato vanilla 0
+88 cherry=date=hazelnut apple=fig grape=jalapeno=pear kiwi=litchi banana=eggplant=radish mushroom=quinoa nut tomato vanilla orange=soy 0
+83 cherry apple=banana=date eggplant jalapeno=nut hazelnut=kiwi grape fig=litchi=mushroom orange=quinoa pear=tomato=vanilla radish=soy 0
+2 jalapeno apple=date banana=eggplant=fig mushroom=nut=quinoa cherry=soy grape=hazelnut=orange pear litchi=tomato kiwi=radish vanilla 0
+49 apple=banana=hazelnut cherry=kiwi eggplant=fig=litchi grape=pear=tomato date soy nut jalapeno=orange=radish=vanilla mushroom=quinoa 0
+65 eggplant fig apple=cherry=date banana=grape jalapeno=litchi hazelnut=kiwi=mushroom=vanilla nut=radish=soy orange pear=quinoa=tomato 0
+74 cherry apple=hazelnut banana=grape kiwi=litchi date=fig=jalapeno eggplant=vanilla nut=radish=soy pear=quinoa=tomato mushroom orange 0
+47 apple=banana cherry=grape=mushroom eggplant=fig date=orange hazelnut=jalapeno=nut pear radish=vanilla soy kiwi=litchi=quinoa tomato 0
+27 apple=fig=grape banana=eggplant=kiwi date=mushroom cherry=jalapeno=litchi=orange radish hazelnut=quinoa=vanilla tomato soy nut=pear 0
+52 apple banana=cherry date=litchi eggplant=hazelnut=jalapeno grape=kiwi fig=nut=radish mushroom=soy=vanilla pear orange quinoa=tomato 0
+71 cherry jalapeno fig=grape apple=banana=date=kiwi=litchi hazelnut=mushroom=nut=radish=vanilla eggplant=orange=tomato pear=quinoa=soy 0
+29 banana=date apple=cherry eggplant=jalapeno fig=hazelnut grape=orange=pear=radish=vanilla litchi kiwi nut=quinoa=soy mushroom=tomato 0
+35 banana=eggplant cherry=litchi=nut apple=fig=grape=jalapeno=kiwi date mushroom orange=radish quinoa=tomato hazelnut=pear soy=vanilla 0
+31 eggplant=radish apple=banana=date=grape cherry=hazelnut=jalapeno=kiwi=litchi fig=orange=quinoa mushroom=nut soy pear=tomato vanilla 0
+10 cherry=date banana kiwi=mushroom apple=eggplant=grape=litchi=quinoa fig=pear=vanilla jalapeno hazelnut=orange nut=radish=soy=tomato 0
+98 cherry apple eggplant=grape date=hazelnut=mushroom=pear=tomato banana=fig=jalapeno kiwi=litchi=nut=quinoa radish=soy orange=vanilla 0
+21 apple=banana=cherry=date=eggplant fig=jalapeno hazelnut=kiwi litchi=orange mushroom grape=nut=quinoa pear=radish=soy=tomato vanilla 0
+46 cherry date apple=banana=eggplant=litchi hazelnut=jalapeno fig=pear grape=kiwi=mushroom=orange=radish quinoa=soy nut=tomato=vanilla 0
+73 banana apple=cherry=date=eggplant=fig hazelnut=kiwi=mushroom grape=litchi orange nut=pear jalapeno=quinoa=radish=tomato soy=vanilla 0
+32 apple date=grape eggplant=hazelnut=mushroom banana=cherry=jalapeno fig=kiwi=orange litchi=nut=tomato soy pear=quinoa=radish vanilla 0
+41 eggplant apple=hazelnut banana=cherry grape=litchi date=fig=jalapeno=kiwi mushroom=nut orange=vanilla radish=tomato quinoa=soy pear 0
+51 banana apple cherry=eggplant grape=hazelnut date=quinoa jalapeno=orange fig=nut pear=soy kiwi=litchi=mushroom=vanilla radish=tomato 0
+38 apple=banana fig date=kiwi hazelnut=pear eggplant cherry=grape nut=orange quinoa=radish=soy=tomato jalapeno=litchi=mushroom=vanilla 0
+40 banana=date apple=cherry=fig=grape eggplant=hazelnut kiwi=pear nut=orange litchi=mushroom=quinoa=tomato jalapeno=soy vanilla radish 0
+36 apple=cherry=fig banana date=eggplant=mushroom hazelnut=quinoa grape=jalapeno=kiwi=litchi=nut radish=tomato pear=soy=vanilla orange 0
+83 apple banana=date fig grape=jalapeno=mushroom hazelnut=nut cherry=eggplant kiwi=litchi=soy=tomato pear=quinoa=radish orange=vanilla 0
+28 cherry apple=grape banana=eggplant date=litchi=mushroom kiwi=orange jalapeno=quinoa hazelnut=nut=pear fig=soy tomato=vanilla radish 0
+41 grape=hazelnut apple=eggplant cherry=date=pear fig=jalapeno banana=kiwi=mushroom orange=radish nut litchi=soy quinoa=tomato vanilla 0
+71 banana date=eggplant=kiwi apple=cherry=fig orange=quinoa litchi=mushroom jalapeno=nut grape=radish hazelnut soy=tomato pear=vanilla 0
+81 apple=date=fig=orange banana=cherry=litchi=quinoa hazelnut=jalapeno=kiwi=mushroom=nut=tomato eggplant=grape=pear radish soy=vanilla 0
+45 banana cherry=date eggplant=grape fig=mushroom apple=orange=pear=soy kiwi=nut=tomato litchi quinoa=vanilla hazelnut=jalapeno=radish 0
+89 apple=cherry banana=date eggplant=litchi fig hazelnut=orange=pear=quinoa grape=jalapeno=kiwi mushroom=tomato=vanilla nut radish=soy 0
+17 apple=banana grape=kiwi fig=nut=orange cherry=eggplant jalapeno=quinoa date=hazelnut=pear litchi=mushroom tomato=vanilla radish soy 0
+74 date=kiwi banana=cherry=jalapeno hazelnut=litchi apple=eggplant grape=radish mushroom=quinoa=soy fig=orange tomato vanilla nut=pear 0
+27 banana=cherry=hazelnut apple=eggplant=grape=kiwi date=litchi fig=mushroom=orange jalapeno nut=quinoa pear=tomato vanilla radish=soy 0
+13 cherry=date=grape apple=nut banana=fig kiwi=quinoa hazelnut=jalapeno eggplant=litchi=pear soy mushroom=orange radish tomato=vanilla 0
+75 apple cherry=eggplant fig=hazelnut grape=kiwi=orange banana=jalapeno nut date=quinoa litchi=mushroom pear=radish=tomato soy=vanilla 0
+89 apple=cherry=date=mushroom banana=grape hazelnut=kiwi=orange eggplant=fig=litchi pear=vanilla jalapeno=nut quinoa=radish soy tomato 0
+40 banana=cherry litchi=nut apple=date=eggplant fig=grape=hazelnut kiwi=mushroom orange quinoa=radish=soy=vanilla pear=tomato jalapeno 0
+84 apple=banana eggplant=jalapeno cherry fig=kiwi grape=nut=quinoa date=litchi=orange=radish hazelnut=pear=tomato mushroom=soy vanilla 0
+37 fig grape=kiwi banana=date=eggplant apple=cherry=jalapeno litchi=nut mushroom=quinoa hazelnut=pear=radish=soy orange=tomato vanilla 0
+4 fig apple=cherry=grape banana=eggplant=nut date=hazelnut jalapeno=kiwi litchi=mushroom pear=soy orange=radish=tomato=vanilla quinoa 0
+3 apple=banana=date cherry=hazelnut eggplant=fig=mushroom grape jalapeno=kiwi litchi=pear orange=tomato quinoa=radish nut soy=vanilla 0
+69 apple=cherry banana=fig eggplant=jalapeno grape=litchi=pear date=hazelnut=mushroom kiwi=nut=soy tomato quinoa=radish=vanilla orange 0
+35 apple eggplant=fig banana=cherry=grape date nut=orange jalapeno=kiwi=litchi hazelnut=pear=vanilla quinoa=radish mushroom=soy=tomato 0
+91 apple=grape=hazelnut banana=cherry eggplant date=fig=mushroom litchi nut=pear jalapeno=quinoa=soy kiwi=orange=radish tomato=vanilla 0
+76 apple cherry banana=eggplant=kiwi date=hazelnut=orange grape=nut fig=pear jalapeno=mushroom=quinoa litchi=radish soy=tomato=vanilla 0
+45 banana=cherry=grape apple=date fig=hazelnut=jalapeno eggplant=litchi=pear kiwi mushroom=soy=vanilla nut orange=quinoa radish=tomato 0
+54 hazelnut apple=date eggplant=nut banana=fig=grape kiwi=mushroom=orange cherry=jalapeno=litchi quinoa=tomato=vanilla soy pear=radish 0
+95 eggplant apple=banana cherry=date grape=jalapeno=mushroom fig=quinoa nut=orange kiwi=radish litchi=vanilla pear=tomato hazelnut=soy 0
+4 apple=banana=eggplant=grape orange cherry=date hazelnut=quinoa fig=litchi=nut=pear jalapeno=radish=tomato kiwi=soy mushroom=vanilla 0
+61 apple=banana eggplant=litchi cherry=grape fig=hazelnut date=jalapeno=mushroom=pear kiwi=orange=soy=tomato nut=radish=vanilla quinoa 0
+25 eggplant=mushroom banana=cherry jalapeno=kiwi apple=orange=quinoa fig=hazelnut date=tomato grape=nut litchi pear=radish soy=vanilla 0
+46 banana=grape=kiwi fig=jalapeno eggplant=hazelnut cherry=nut mushroom=orange apple=vanilla date=litchi pear=radish=soy=tomato quinoa 0
+87 cherry=date apple=banana=jalapeno eggplant=mushroom grape=hazelnut=kiwi=litchi quinoa=soy=tomato nut=orange pear fig=radish=vanilla 0
+50 apple=banana=cherry=hazelnut date eggplant=quinoa fig=jalapeno=kiwi nut=orange grape=litchi=pear mushroom=soy=vanilla radish=tomato 0
+46 apple=banana=cherry=eggplant orange=quinoa date=kiwi fig=nut grape=jalapeno=litchi=pear radish=tomato hazelnut=mushroom=soy=vanilla 0
+0
+"Apple"
+"Banana"
+"Cherry"
+"Date"
+"Eggplant"
+"Fig"
+"Grape"
+"Hazelnut"
+"Jalapeno"
+"Kiwi"
+"Litchi"
+"Mushroom"
+"Nut"
+"Orange"
+"Pear"
+"Quinoa"
+"Radish"
+"Soy"
+"Tomato"
+"Vanilla"
+"Vegetable contest"
