@@ -149,7 +149,6 @@ impl Mul<&'_ Self> for FixedDecimal9 {
 }
 impl Div<&'_ Self> for FixedDecimal9 {
     type Output = Self;
-    #[allow(clippy::suspicious_arithmetic_impl)]
     fn div(self, rhs: &'_ Self) -> Self {
         self / *rhs
     }
