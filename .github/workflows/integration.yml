@@ -170,9 +170,6 @@ jobs:
           - random/rand_5x4
           - random/rand_hypergeometric
           - vegetables
-        parallel:
-          - false
-          - true
       fail-fast: false
     runs-on: ubuntu-latest
     steps:
