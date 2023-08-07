@@ -8,7 +8,7 @@ repository = "https://github.com/gendx/stv-rs"
 readme = "README.md"
 categories = ["voting"]
 keywords = ["voting", "election", "stv", "meek"]
-exclude = ["man/*", "testdata/*", ".github/*"]
+exclude = ["man/*", "testdata/*", "tools/*", ".github/*"]
 edition = "2021"
 
 [dependencies]
