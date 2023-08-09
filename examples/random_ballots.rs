@@ -45,6 +45,9 @@ fn main() -> Result<()> {
     let file = File::create("rand_hypergeometric.blt")?;
     write_blt_hypergeometric(&mut thread_rng(), &mut BufWriter::new(file), 1000)?;
 
+    let file = File::create("rand_hypergeometric_10k.blt")?;
+    write_blt_hypergeometric(&mut thread_rng(), &mut BufWriter::new(file), 10000)?;
+
     Ok(())
 }
 

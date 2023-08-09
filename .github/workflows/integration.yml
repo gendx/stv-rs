@@ -98,6 +98,7 @@ jobs:
           - random/rand_2x10
           - random/rand_5x4
           - random/rand_hypergeometric
+          - random/rand_hypergeometric_10k
           - recursive_descent/transfer
           - recursive_descent/transfer_is_blocked
           - ties/tie_break_explicit
@@ -144,6 +145,7 @@ jobs:
           - random/rand_2x10
           - random/rand_5x4
           - random/rand_hypergeometric
+          - random/rand_hypergeometric_10k
           - vegetables
       fail-fast: false
     runs-on: ubuntu-latest
@@ -169,6 +171,7 @@ jobs:
           - random/rand_2x10
           - random/rand_5x4
           - random/rand_hypergeometric
+          - random/rand_hypergeometric_10k
           - vegetables
       fail-fast: false
     runs-on: ubuntu-latest
@@ -262,6 +265,9 @@ jobs:
           - rand_sorted_by_product
           - rand_sorted_lexicographically
           - rand_sorted_by_lexico_product
+          - rand_10k_sorted_by_product
+          - rand_10k_sorted_lexicographically
+          - rand_10k_sorted_by_lexico_product
         include:
           - file: rand_sorted_by_product
             src: random/rand_hypergeometric
@@ -271,6 +277,15 @@ jobs:
             strategy: "lexicographic"
           - file: rand_sorted_by_lexico_product
             src: random/rand_hypergeometric
+            strategy: "lexico-product"
+          - file: rand_10k_sorted_by_product
+            src: random/rand_hypergeometric_10k
+            strategy: "product"
+          - file: rand_10k_sorted_lexicographically
+            src: random/rand_hypergeometric_10k
+            strategy: "lexicographic"
+          - file: rand_10k_sorted_by_lexico_product
+            src: random/rand_hypergeometric_10k
             strategy: "lexico-product"
       fail-fast: false
     runs-on: ubuntu-latest
