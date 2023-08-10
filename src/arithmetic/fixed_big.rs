@@ -16,7 +16,7 @@
 //! For now, it only implements 9 decimal places (i.e. with a factor `10^-9`).
 //! This implementation is backed by a [`BigInt`].
 
-use super::Rational;
+use super::{Rational, RationalRef};
 use num::bigint::Sign;
 use num::traits::{One, Zero};
 use num::{BigInt, BigRational, Integer, Signed};
@@ -240,6 +240,8 @@ impl<'a> Sum<&'a Self> for BigFixedDecimal9 {
         BigFixedDecimal9(iter.map(|item| &item.0).sum())
     }
 }
+
+impl RationalRef<&BigInt, BigFixedDecimal9> for &BigFixedDecimal9 {}
 
 impl Rational<BigInt> for BigFixedDecimal9 {
     fn from_int(i: BigInt) -> Self {

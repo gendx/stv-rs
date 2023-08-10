@@ -15,13 +15,12 @@
 //! Module to count votes, based on input ballots and the current keep factor
 //! values.
 
-use crate::arithmetic::{Integer, Rational};
+use crate::arithmetic::{Integer, IntegerRef, Rational, RationalRef};
 use crate::types::{Ballot, Election};
 use log::{debug, trace, warn};
 use rayon::prelude::*;
 use std::io;
 use std::marker::PhantomData;
-use std::ops::{Add, Div, Mul, Sub};
 
 /// Result of a vote count.
 #[cfg_attr(test, derive(Debug, PartialEq))]
@@ -61,16 +60,9 @@ struct VoteAccumulator<I, R> {
 impl<I, R> VoteAccumulator<I, R>
 where
     I: Integer,
-    for<'a> &'a I: Add<&'a I, Output = I>,
-    for<'a> &'a I: Sub<&'a I, Output = I>,
-    for<'a> &'a I: Mul<&'a I, Output = I>,
+    for<'a> &'a I: IntegerRef<I>,
     R: Rational<I>,
-    for<'a> &'a R: Add<&'a R, Output = R>,
-    for<'a> &'a R: Sub<&'a R, Output = R>,
-    for<'a> &'a R: Mul<&'a R, Output = R>,
-    for<'a> &'a R: Mul<&'a I, Output = R>,
-    for<'a> &'a R: Div<&'a R, Output = R>,
-    for<'a> &'a R: Div<&'a I, Output = R>,
+    for<'a> &'a R: RationalRef<&'a I, R>,
 {
     fn new(num_candidates: usize) -> Self {
         Self {
@@ -104,16 +96,9 @@ where
 impl<I, R> VoteCount<I, R>
 where
     I: Integer + Send + Sync,
-    for<'a> &'a I: Add<&'a I, Output = I>,
-    for<'a> &'a I: Sub<&'a I, Output = I>,
-    for<'a> &'a I: Mul<&'a I, Output = I>,
+    for<'a> &'a I: IntegerRef<I>,
     R: Rational<I> + Send + Sync,
-    for<'a> &'a R: Add<&'a R, Output = R>,
-    for<'a> &'a R: Sub<&'a R, Output = R>,
-    for<'a> &'a R: Mul<&'a R, Output = R>,
-    for<'a> &'a R: Mul<&'a I, Output = R>,
-    for<'a> &'a R: Div<&'a R, Output = R>,
-    for<'a> &'a R: Div<&'a I, Output = R>,
+    for<'a> &'a R: RationalRef<&'a I, R>,
 {
     /// Counts the votes, based on the given keep factors.
     pub fn count_votes(
@@ -172,16 +157,9 @@ where
 impl<I, R> VoteCount<I, R>
 where
     I: Integer,
-    for<'a> &'a I: Add<&'a I, Output = I>,
-    for<'a> &'a I: Sub<&'a I, Output = I>,
-    for<'a> &'a I: Mul<&'a I, Output = I>,
+    for<'a> &'a I: IntegerRef<I>,
     R: Rational<I>,
-    for<'a> &'a R: Add<&'a R, Output = R>,
-    for<'a> &'a R: Sub<&'a R, Output = R>,
-    for<'a> &'a R: Mul<&'a R, Output = R>,
-    for<'a> &'a R: Mul<&'a I, Output = R>,
-    for<'a> &'a R: Div<&'a R, Output = R>,
-    for<'a> &'a R: Div<&'a I, Output = R>,
+    for<'a> &'a R: RationalRef<&'a I, R>,
 {
     /// Writes statistics about this vote count to the given output.
     pub fn write_stats(
@@ -350,16 +328,9 @@ struct BallotCounter<'a, I, R> {
 impl<I, R> BallotCounter<'_, I, R>
 where
     I: Integer,
-    for<'a> &'a I: Add<&'a I, Output = I>,
-    for<'a> &'a I: Sub<&'a I, Output = I>,
-    for<'a> &'a I: Mul<&'a I, Output = I>,
+    for<'a> &'a I: IntegerRef<I>,
     R: Rational<I>,
-    for<'a> &'a R: Add<&'a R, Output = R>,
-    for<'a> &'a R: Sub<&'a R, Output = R>,
-    for<'a> &'a R: Mul<&'a R, Output = R>,
-    for<'a> &'a R: Mul<&'a I, Output = R>,
-    for<'a> &'a R: Div<&'a R, Output = R>,
-    for<'a> &'a R: Div<&'a I, Output = R>,
+    for<'a> &'a R: RationalRef<&'a I, R>,
 {
     /// Processes a ballot, using a recursive method (consistent with Droop.py)
     /// to count ballots that contain candidates ranked equally.
@@ -627,16 +598,9 @@ where
 fn expand_polynomial<I, R>(coefficients: &[R], skip: usize) -> Vec<R>
 where
     I: Integer,
-    for<'a> &'a I: Add<&'a I, Output = I>,
-    for<'a> &'a I: Sub<&'a I, Output = I>,
-    for<'a> &'a I: Mul<&'a I, Output = I>,
+    for<'a> &'a I: IntegerRef<I>,
     R: Rational<I>,
-    for<'a> &'a R: Add<&'a R, Output = R>,
-    for<'a> &'a R: Sub<&'a R, Output = R>,
-    for<'a> &'a R: Mul<&'a R, Output = R>,
-    for<'a> &'a R: Mul<&'a I, Output = R>,
-    for<'a> &'a R: Div<&'a R, Output = R>,
-    for<'a> &'a R: Div<&'a I, Output = R>,
+    for<'a> &'a R: RationalRef<&'a I, R>,
 {
     // One coefficient is excluded, so the degree `n` of the output polynomial is
     // one less of that.
@@ -685,9 +649,7 @@ where
 pub fn pascal<I>(n: usize) -> Vec<Vec<I>>
 where
     I: Integer,
-    for<'a> &'a I: Add<&'a I, Output = I>,
-    for<'a> &'a I: Sub<&'a I, Output = I>,
-    for<'a> &'a I: Mul<&'a I, Output = I>,
+    for<'a> &'a I: IntegerRef<I>,
 {
     let mut result = Vec::new();
 
@@ -857,16 +819,9 @@ mod test {
     impl<I, R> NumericTests<I, R>
     where
         I: Integer + Send + Sync + Display + Debug + PartialEq,
-        for<'a> &'a I: Add<&'a I, Output = I>,
-        for<'a> &'a I: Sub<&'a I, Output = I>,
-        for<'a> &'a I: Mul<&'a I, Output = I>,
+        for<'a> &'a I: IntegerRef<I>,
         R: Rational<I> + Send + Sync,
-        for<'a> &'a R: Add<&'a R, Output = R>,
-        for<'a> &'a R: Sub<&'a R, Output = R>,
-        for<'a> &'a R: Mul<&'a R, Output = R>,
-        for<'a> &'a R: Mul<&'a I, Output = R>,
-        for<'a> &'a R: Div<&'a R, Output = R>,
-        for<'a> &'a R: Div<&'a I, Output = R>,
+        for<'a> &'a R: RationalRef<&'a I, R>,
     {
         fn test_write_stats() {
             let mut buf = Vec::new();

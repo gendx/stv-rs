@@ -38,9 +38,7 @@ use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 pub trait Integer:
     Clone + Zero + One + Add<Output = Self> + Sub<Output = Self> + Mul<Output = Self>
 where
-    for<'a> &'a Self: Add<&'a Self, Output = Self>,
-    for<'a> &'a Self: Sub<&'a Self, Output = Self>,
-    for<'a> &'a Self: Mul<&'a Self, Output = Self>,
+    for<'a> &'a Self: IntegerRef<Self>,
 {
     /// Obtains an integer from a primitive `usize` integer.
     fn from_usize(i: usize) -> Self;
@@ -67,26 +65,19 @@ pub trait Rational<I>:
     + Mul<I, Output = Self>
     + Div<Output = Self>
     + Div<I, Output = Self>
+    + for<'a> AddAssign<&'a Self>
+    + for<'a> SubAssign<&'a Self>
+    + for<'a> MulAssign<&'a Self>
+    + for<'a> DivAssign<&'a I>
+    + for<'a> Sum<&'a Self>
+    + for<'a> Add<&'a Self, Output = Self>
+    + for<'a> Sub<&'a Self, Output = Self>
+    + for<'a> Mul<&'a Self, Output = Self>
+    + for<'a> Div<&'a Self, Output = Self>
 where
     I: Integer,
-    for<'a> &'a I: Add<&'a I, Output = I>,
-    for<'a> &'a I: Sub<&'a I, Output = I>,
-    for<'a> &'a I: Mul<&'a I, Output = I>,
-    for<'a> Self: AddAssign<&'a Self>,
-    for<'a> Self: SubAssign<&'a Self>,
-    for<'a> Self: MulAssign<&'a Self>,
-    for<'a> Self: DivAssign<&'a I>,
-    for<'a> Self: Sum<&'a Self>,
-    for<'a> Self: Add<&'a Self, Output = Self>,
-    for<'a> Self: Sub<&'a Self, Output = Self>,
-    for<'a> Self: Mul<&'a Self, Output = Self>,
-    for<'a> Self: Div<&'a Self, Output = Self>,
-    for<'a> &'a Self: Add<&'a Self, Output = Self>,
-    for<'a> &'a Self: Sub<&'a Self, Output = Self>,
-    for<'a> &'a Self: Mul<&'a Self, Output = Self>,
-    for<'a> &'a Self: Mul<&'a I, Output = Self>,
-    for<'a> &'a Self: Div<&'a Self, Output = Self>,
-    for<'a> &'a Self: Div<&'a I, Output = Self>,
+    for<'a> &'a I: IntegerRef<I>,
+    for<'a> &'a Self: RationalRef<&'a I, Self>,
 {
     /// Obtains a number equal to the given integer.
     fn from_int(i: I) -> Self;
@@ -147,6 +138,24 @@ where
 
     #[cfg(test)]
     fn get_positive_test_values() -> Vec<Self>;
+}
+
+/// Helper trait that integer references implement.
+pub trait IntegerRef<Output>:
+    Sized + Add<Self, Output = Output> + Sub<Self, Output = Output> + Mul<Self, Output = Output>
+{
+}
+
+/// Helper trait that rational references implement.
+pub trait RationalRef<RefI, Output>:
+    Sized
+    + Add<Self, Output = Output>
+    + Sub<Self, Output = Output>
+    + Mul<Self, Output = Output>
+    + Mul<RefI, Output = Output>
+    + Div<Self, Output = Output>
+    + Div<RefI, Output = Output>
+{
 }
 
 #[cfg(test)]
@@ -224,16 +233,9 @@ pub(crate) mod test {
     impl<I, R> NumericTests<I, R>
     where
         I: Integer + Display,
-        for<'a> &'a I: Add<&'a I, Output = I>,
-        for<'a> &'a I: Sub<&'a I, Output = I>,
-        for<'a> &'a I: Mul<&'a I, Output = I>,
+        for<'a> &'a I: IntegerRef<I>,
         R: Rational<I>,
-        for<'a> &'a R: Add<&'a R, Output = R>,
-        for<'a> &'a R: Sub<&'a R, Output = R>,
-        for<'a> &'a R: Mul<&'a R, Output = R>,
-        for<'a> &'a R: Mul<&'a I, Output = R>,
-        for<'a> &'a R: Div<&'a R, Output = R>,
-        for<'a> &'a R: Div<&'a I, Output = R>,
+        for<'a> &'a R: RationalRef<&'a I, R>,
     {
         pub fn test_values_are_positive() {
             let test_values = R::get_positive_test_values();

@@ -15,13 +15,12 @@
 //! Module providing exact arithmetic, implementing the [`Integer`] trait for
 //! [`i64`] and [`BigInt`], and the [`Rational`] trait for [`Ratio<I>`].
 
-use super::{Integer, Rational};
+use super::{Integer, IntegerRef, Rational, RationalRef};
 use num::bigint::ToBigInt;
 use num::rational::Ratio;
 use num::traits::{NumAssign, ToPrimitive, Zero};
 use num::BigInt;
 use std::fmt::{Debug, Display};
-use std::ops::{Add, Mul, Sub};
 
 impl Integer for i64 {
     fn from_usize(i: usize) -> Self {
@@ -29,11 +28,17 @@ impl Integer for i64 {
     }
 }
 
+impl IntegerRef<i64> for &i64 {}
+
 impl Integer for BigInt {
     fn from_usize(i: usize) -> Self {
         BigInt::from(i)
     }
 }
+
+impl IntegerRef<BigInt> for &BigInt {}
+
+impl<I> RationalRef<&I, Ratio<I>> for &Ratio<I> where I: Clone + num::Integer {}
 
 impl<I> Rational<I> for Ratio<I>
 where
@@ -43,9 +48,7 @@ where
     I: ToPrimitive,
     I: ToBigInt,
     I: Integer,
-    for<'a> &'a I: Add<&'a I, Output = I>,
-    for<'a> &'a I: Sub<&'a I, Output = I>,
-    for<'a> &'a I: Mul<&'a I, Output = I>,
+    for<'a> &'a I: IntegerRef<I>,
 {
     fn from_int(i: I) -> Self {
         Ratio::from_integer(i)

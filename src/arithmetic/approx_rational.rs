@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use super::Rational;
+use super::{Rational, RationalRef};
 use num::traits::{One, Zero};
 use num::{BigInt, BigRational};
 use std::fmt::{Debug, Display};
@@ -207,6 +207,8 @@ impl<'a> Sum<&'a Self> for ApproxRational {
         ApproxRational(iter.map(|item| &item.0).sum())
     }
 }
+
+impl RationalRef<&BigInt, ApproxRational> for &ApproxRational {}
 
 impl Rational<BigInt> for ApproxRational {
     fn from_int(i: BigInt) -> Self {

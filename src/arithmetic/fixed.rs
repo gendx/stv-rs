@@ -17,7 +17,7 @@
 //! This implementation is backed by [`i64`], and will panic in case of overflow
 //! if the `checked_i64` feature is enabled.
 
-use super::Rational;
+use super::{Rational, RationalRef};
 use num::traits::{One, Zero};
 use num::Integer;
 use std::fmt::{Debug, Display};
@@ -254,6 +254,8 @@ impl<'a> Sum<&'a Self> for FixedDecimal9 {
         FixedDecimal9(iter.map(|item| &item.0).sum())
     }
 }
+
+impl RationalRef<&i64, FixedDecimal9> for &FixedDecimal9 {}
 
 impl Rational<i64> for FixedDecimal9 {
     fn from_int(i: i64) -> Self {

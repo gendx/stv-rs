@@ -14,11 +14,10 @@
 
 //! A simulation of plurality block voting based on ranked ballots.
 
-use crate::arithmetic::{Integer, Rational};
+use crate::arithmetic::{Integer, IntegerRef, Rational, RationalRef};
 use crate::types::{Election, ElectionResult};
 use log::{debug, info, trace};
 use std::io;
-use std::ops::{Add, Div, Mul, Sub};
 
 /// A simulation of plurality block voting, where each ballot attributes 1 vote
 /// to the first N candidates (where N is the number of seats), and 0 votes to
@@ -42,16 +41,9 @@ pub fn plurality_block_voting<I, R>(
 ) -> io::Result<ElectionResult>
 where
     I: Integer + Send + Sync,
-    for<'a> &'a I: Add<&'a I, Output = I>,
-    for<'a> &'a I: Sub<&'a I, Output = I>,
-    for<'a> &'a I: Mul<&'a I, Output = I>,
+    for<'a> &'a I: IntegerRef<I>,
     R: Rational<I> + Send + Sync,
-    for<'a> &'a R: Add<&'a R, Output = R>,
-    for<'a> &'a R: Sub<&'a R, Output = R>,
-    for<'a> &'a R: Mul<&'a R, Output = R>,
-    for<'a> &'a R: Mul<&'a I, Output = R>,
-    for<'a> &'a R: Div<&'a R, Output = R>,
-    for<'a> &'a R: Div<&'a I, Output = R>,
+    for<'a> &'a R: RationalRef<&'a I, R>,
 {
     let votes_per_ballot = votes_per_ballot.unwrap_or(election.num_seats);
     info!(

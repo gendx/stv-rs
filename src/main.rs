@@ -20,9 +20,10 @@ use clap::{ArgAction, Parser, Subcommand, ValueEnum};
 use num::{BigInt, BigRational};
 use std::fs::File;
 use std::io::{self, stdin, stdout, BufRead, BufReader, Write};
-use std::ops::{Add, Div, Mul, Sub};
 use stv_rs::{
-    arithmetic::{ApproxRational, BigFixedDecimal9, FixedDecimal9, Integer, Rational},
+    arithmetic::{
+        ApproxRational, BigFixedDecimal9, FixedDecimal9, Integer, IntegerRef, Rational, RationalRef,
+    },
     meek::stv_droop,
     parse::{parse_election, ParsingOptions},
     pbv::plurality_block_voting,
@@ -147,16 +148,9 @@ impl Cli {
     ) -> io::Result<()>
     where
         I: Integer + Send + Sync,
-        for<'a> &'a I: Add<&'a I, Output = I>,
-        for<'a> &'a I: Sub<&'a I, Output = I>,
-        for<'a> &'a I: Mul<&'a I, Output = I>,
+        for<'a> &'a I: IntegerRef<I>,
         R: Rational<I> + Send + Sync,
-        for<'a> &'a R: Add<&'a R, Output = R>,
-        for<'a> &'a R: Sub<&'a R, Output = R>,
-        for<'a> &'a R: Mul<&'a R, Output = R>,
-        for<'a> &'a R: Mul<&'a I, Output = R>,
-        for<'a> &'a R: Div<&'a R, Output = R>,
-        for<'a> &'a R: Div<&'a I, Output = R>,
+        for<'a> &'a R: RationalRef<&'a I, R>,
     {
         match self.algorithm {
             Algorithm::Meek(meek_params) => {

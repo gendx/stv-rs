@@ -14,7 +14,7 @@
 
 //! Module implementing the [`Integer`] and [`Rational`] traits for [`f64`].
 
-use super::{Integer, Rational};
+use super::{Integer, IntegerRef, Rational, RationalRef};
 use log::trace;
 use num::traits::Zero;
 
@@ -23,6 +23,10 @@ impl Integer for f64 {
         i as f64
     }
 }
+
+impl IntegerRef<f64> for &f64 {}
+
+impl RationalRef<&f64, f64> for &f64 {}
 
 impl Rational<f64> for f64 {
     fn from_int(i: f64) -> Self {

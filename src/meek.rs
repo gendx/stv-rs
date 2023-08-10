@@ -15,14 +15,13 @@
 //! Single Transferable Vote implementation of Meek's algorithm. This aims to
 //! give consistent results with Droop.py.
 
-use crate::arithmetic::{Integer, Rational};
+use crate::arithmetic::{Integer, IntegerRef, Rational, RationalRef};
 use crate::types::{Election, ElectionResult};
 use crate::vote_count::{self, VoteCount};
 use log::{debug, info, warn};
 use std::fmt::{self, Debug, Display};
 use std::io;
 use std::marker::PhantomData;
-use std::ops::{Add, Div, Mul, Sub};
 use std::time::Instant;
 
 /// Runs an election according to Meek's rules. This aims to produce
@@ -38,16 +37,9 @@ pub fn stv_droop<I, R>(
 ) -> io::Result<ElectionResult>
 where
     I: Integer + Send + Sync,
-    for<'a> &'a I: Add<&'a I, Output = I>,
-    for<'a> &'a I: Sub<&'a I, Output = I>,
-    for<'a> &'a I: Mul<&'a I, Output = I>,
+    for<'a> &'a I: IntegerRef<I>,
     R: Rational<I> + Send + Sync,
-    for<'a> &'a R: Add<&'a R, Output = R>,
-    for<'a> &'a R: Sub<&'a R, Output = R>,
-    for<'a> &'a R: Mul<&'a R, Output = R>,
-    for<'a> &'a R: Mul<&'a I, Output = R>,
-    for<'a> &'a R: Div<&'a R, Output = R>,
-    for<'a> &'a R: Div<&'a I, Output = R>,
+    for<'a> &'a R: RationalRef<&'a I, R>,
 {
     info!(
         "Parallel vote counting is {}",
@@ -152,16 +144,9 @@ impl<'e, I, R> State<'e, I, R> {
 impl<'e, I, R> State<'e, I, R>
 where
     I: Integer + Send + Sync + 'e,
-    for<'a> &'a I: Add<&'a I, Output = I>,
-    for<'a> &'a I: Sub<&'a I, Output = I>,
-    for<'a> &'a I: Mul<&'a I, Output = I>,
+    for<'a> &'a I: IntegerRef<I>,
     R: Rational<I> + Send + Sync,
-    for<'a> &'a R: Add<&'a R, Output = R>,
-    for<'a> &'a R: Sub<&'a R, Output = R>,
-    for<'a> &'a R: Mul<&'a R, Output = R>,
-    for<'a> &'a R: Mul<&'a I, Output = R>,
-    for<'a> &'a R: Div<&'a R, Output = R>,
-    for<'a> &'a R: Div<&'a I, Output = R>,
+    for<'a> &'a R: RationalRef<&'a I, R>,
 {
     fn new<'a>(
         election: &'a Election,
