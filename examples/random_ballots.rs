@@ -18,7 +18,9 @@
 
 use rand::distributions::{Distribution, Uniform};
 use rand::seq::index::sample;
+use rand::SeedableRng;
 use rand::{thread_rng, RngCore};
+use rand_chacha::ChaChaRng;
 use rand_distr::{Geometric, Hypergeometric};
 use std::collections::BTreeMap;
 use std::fs::File;
@@ -47,6 +49,13 @@ fn main() -> Result<()> {
 
     let file = File::create("rand_hypergeometric_10k.blt")?;
     write_blt_hypergeometric(&mut thread_rng(), &mut BufWriter::new(file), 10000)?;
+
+    let file = File::create("rand_hypergeometric_100k.blt")?;
+    write_blt_hypergeometric(
+        &mut ChaChaRng::seed_from_u64(42),
+        &mut BufWriter::new(file),
+        100000,
+    )?;
 
     Ok(())
 }
@@ -190,26 +199,24 @@ fn generate_distributions<D: Distribution<u64>>(
 #[cfg(test)]
 mod test {
     use super::*;
-    use rand::rngs::StdRng;
-    use rand::SeedableRng;
 
     #[test]
     fn test_blt_2x10() {
         let mut buf = Vec::new();
-        let mut rng = StdRng::seed_from_u64(42);
+        let mut rng = ChaChaRng::seed_from_u64(42);
         write_blt_2x10(&mut rng, &mut buf, /* ballot_count = */ 7).unwrap();
 
         assert_eq!(
             std::str::from_utf8(&buf).unwrap(),
             r#"20 10
 [nick apple banana cherry date eggplant fig grape hazelnut jalapeno kiwi litchi mushroom nut orange pear quinoa radish soy tomato vanilla]
-53 soy=orange kiwi=vanilla pear=nut grape=apple date=quinoa cherry=eggplant banana=tomato hazelnut=jalapeno radish=mushroom litchi=fig 0
-66 fig=soy litchi=mushroom nut=date grape=jalapeno eggplant=hazelnut pear=kiwi tomato=banana quinoa=orange vanilla=apple cherry=radish 0
-64 radish=fig jalapeno=kiwi litchi=grape hazelnut=nut cherry=quinoa pear=orange banana=vanilla date=eggplant mushroom=tomato apple=soy 0
-38 eggplant=vanilla grape=tomato pear=kiwi nut=banana hazelnut=jalapeno soy=quinoa orange=radish apple=cherry litchi=date fig=mushroom 0
-72 kiwi=vanilla orange=radish jalapeno=cherry eggplant=fig hazelnut=litchi banana=tomato nut=pear mushroom=date soy=grape apple=quinoa 0
-61 banana=eggplant kiwi=quinoa date=vanilla fig=litchi cherry=hazelnut tomato=orange soy=jalapeno mushroom=radish grape=apple nut=pear 0
-29 tomato=apple quinoa=pear jalapeno=hazelnut orange=nut litchi=grape date=radish cherry=vanilla fig=mushroom kiwi=eggplant soy=banana 0
+51 jalapeno=banana radish=pear soy=tomato nut=orange hazelnut=apple mushroom=eggplant quinoa=litchi fig=date kiwi=cherry grape=vanilla 0
+64 soy=eggplant kiwi=tomato fig=banana nut=radish cherry=apple jalapeno=hazelnut orange=quinoa pear=date grape=litchi mushroom=vanilla 0
+92 jalapeno=grape hazelnut=vanilla nut=quinoa tomato=cherry litchi=date orange=fig radish=eggplant apple=soy mushroom=kiwi pear=banana 0
+46 quinoa=vanilla kiwi=tomato pear=apple soy=hazelnut fig=nut banana=mushroom cherry=orange date=eggplant grape=jalapeno radish=litchi 0
+71 radish=eggplant cherry=orange quinoa=pear banana=litchi date=fig mushroom=tomato vanilla=apple kiwi=jalapeno grape=hazelnut nut=soy 0
+52 eggplant=pear vanilla=nut hazelnut=kiwi mushroom=soy cherry=radish banana=orange date=grape apple=litchi quinoa=fig jalapeno=tomato 0
+73 orange=mushroom date=hazelnut banana=cherry eggplant=grape kiwi=fig quinoa=tomato soy=radish pear=litchi vanilla=jalapeno nut=apple 0
 0
 "Apple"
 "Banana"
@@ -239,20 +246,20 @@ mod test {
     #[test]
     fn test_blt_5x4() {
         let mut buf = Vec::new();
-        let mut rng = StdRng::seed_from_u64(42);
+        let mut rng = ChaChaRng::seed_from_u64(42);
         write_blt_5x4(&mut rng, &mut buf, /* ballot_count = */ 7).unwrap();
 
         assert_eq!(
             std::str::from_utf8(&buf).unwrap(),
             r#"20 10
 [nick apple banana cherry date eggplant fig grape hazelnut jalapeno kiwi litchi mushroom nut orange pear quinoa radish soy tomato vanilla]
-53 soy=orange=kiwi=vanilla=pear nut=grape=apple=date=quinoa cherry=eggplant=banana=tomato=hazelnut jalapeno=radish=mushroom=litchi=fig 0
-66 fig=soy=litchi=mushroom=nut date=grape=jalapeno=eggplant=hazelnut pear=kiwi=tomato=banana=quinoa orange=vanilla=apple=cherry=radish 0
-64 radish=fig=jalapeno=kiwi=litchi grape=hazelnut=nut=cherry=quinoa pear=orange=banana=vanilla=date eggplant=mushroom=tomato=apple=soy 0
-38 eggplant=vanilla=grape=tomato=pear kiwi=nut=banana=hazelnut=jalapeno soy=quinoa=orange=radish=apple cherry=litchi=date=fig=mushroom 0
-72 kiwi=vanilla=orange=radish=jalapeno cherry=eggplant=fig=hazelnut=litchi banana=tomato=nut=pear=mushroom date=soy=grape=apple=quinoa 0
-61 banana=eggplant=kiwi=quinoa=date vanilla=fig=litchi=cherry=hazelnut tomato=orange=soy=jalapeno=mushroom radish=grape=apple=nut=pear 0
-29 tomato=apple=quinoa=pear=jalapeno hazelnut=orange=nut=litchi=grape date=radish=cherry=vanilla=fig mushroom=kiwi=eggplant=soy=banana 0
+51 jalapeno=banana=radish=pear=soy tomato=nut=orange=hazelnut=apple mushroom=eggplant=quinoa=litchi=fig date=kiwi=cherry=grape=vanilla 0
+64 soy=eggplant=kiwi=tomato=fig banana=nut=radish=cherry=apple jalapeno=hazelnut=orange=quinoa=pear date=grape=litchi=mushroom=vanilla 0
+92 jalapeno=grape=hazelnut=vanilla=nut quinoa=tomato=cherry=litchi=date orange=fig=radish=eggplant=apple soy=mushroom=kiwi=pear=banana 0
+46 quinoa=vanilla=kiwi=tomato=pear apple=soy=hazelnut=fig=nut banana=mushroom=cherry=orange=date eggplant=grape=jalapeno=radish=litchi 0
+71 radish=eggplant=cherry=orange=quinoa pear=banana=litchi=date=fig mushroom=tomato=vanilla=apple=kiwi jalapeno=grape=hazelnut=nut=soy 0
+52 eggplant=pear=vanilla=nut=hazelnut kiwi=mushroom=soy=cherry=radish banana=orange=date=grape=apple litchi=quinoa=fig=jalapeno=tomato 0
+73 orange=mushroom=date=hazelnut=banana cherry=eggplant=grape=kiwi=fig quinoa=tomato=soy=radish=pear litchi=vanilla=jalapeno=nut=apple 0
 0
 "Apple"
 "Banana"
@@ -282,20 +289,20 @@ mod test {
     #[test]
     fn test_blt_geometric() {
         let mut buf = Vec::new();
-        let mut rng = StdRng::seed_from_u64(42);
+        let mut rng = ChaChaRng::seed_from_u64(42);
         write_blt_geometric(&mut rng, &mut buf, /* ballot_count = */ 7).unwrap();
 
         assert_eq!(
             std::str::from_utf8(&buf).unwrap(),
             r#"20 10
 [nick apple banana cherry date eggplant fig grape hazelnut jalapeno kiwi litchi mushroom nut orange pear quinoa radish soy tomato vanilla]
-53 eggplant=fig=nut=orange=pear=radish=tomato apple=jalapeno=kiwi=litchi=quinoa=vanilla date=grape=mushroom=soy cherry=hazelnut banana 0
-49 date=jalapeno=orange=radish=soy=vanilla apple=eggplant=fig=kiwi=litchi=mushroom=nut=pear=quinoa=tomato banana=hazelnut cherry=grape 0
-1 apple=cherry=date=grape=jalapeno=kiwi=nut=quinoa=soy=tomato=vanilla fig=litchi=orange eggplant=pear mushroom banana=radish hazelnut 0
-35 apple=cherry=fig=hazelnut=nut=orange=pear=quinoa=radish=soy=vanilla banana=grape=jalapeno kiwi=litchi mushroom=tomato eggplant date 0
-20 banana=jalapeno=nut=orange=quinoa=radish=soy=tomato=vanilla cherry=eggplant=grape=litchi=mushroom kiwi=pear date hazelnut fig apple 0
-61 kiwi=litchi=pear=radish=soy banana=cherry=eggplant=fig=jalapeno=mushroom=orange=vanilla grape=hazelnut=nut date apple=tomato quinoa 0
-52 date=fig=jalapeno=mushroom=nut=orange=pear=quinoa=radish=soy=vanilla apple=grape=kiwi=litchi=tomato cherry=hazelnut eggplant banana 0
+51 cherry=date=hazelnut=jalapeno=mushroom=orange=pear=quinoa=radish=vanilla kiwi=litchi=tomato eggplant=nut=soy grape banana fig apple 0
+28 apple=cherry=grape=hazelnut=jalapeno=litchi=mushroom=nut=pear=soy=tomato=vanilla kiwi=orange=quinoa=radish banana=fig date eggplant 0
+47 cherry=date=hazelnut=litchi=nut=pear=quinoa=radish=tomato=vanilla grape=orange banana=fig=jalapeno=kiwi=mushroom apple=soy eggplant 0
+65 fig=hazelnut=jalapeno=litchi=mushroom=nut=orange=pear=radish=soy=tomato=vanilla apple=kiwi banana=cherry=quinoa eggplant date=grape 0
+9 banana=cherry=eggplant=hazelnut=jalapeno=pear=quinoa=radish=soy=tomato=vanilla litchi=mushroom=nut=orange apple=fig=grape date kiwi 0
+47 fig=grape=mushroom=orange=pear=quinoa=soy=tomato=vanilla cherry=hazelnut=jalapeno=radish eggplant=nut litchi apple=kiwi banana=date 0
+65 banana=cherry=hazelnut=jalapeno=kiwi=litchi=mushroom=orange=quinoa=soy=vanilla fig=grape=radish=tomato eggplant=nut=pear date apple 0
 0
 "Apple"
 "Banana"
@@ -325,20 +332,20 @@ mod test {
     #[test]
     fn test_blt_hypergeometric() {
         let mut buf = Vec::new();
-        let mut rng = StdRng::seed_from_u64(42);
+        let mut rng = ChaChaRng::seed_from_u64(42);
         write_blt_hypergeometric(&mut rng, &mut buf, /* ballot_count = */ 7).unwrap();
 
         assert_eq!(
             std::str::from_utf8(&buf).unwrap(),
             r#"20 10
 [nick apple banana cherry date eggplant fig grape hazelnut jalapeno kiwi litchi mushroom nut orange pear quinoa radish soy tomato vanilla]
-53 fig apple=banana=cherry=grape eggplant=kiwi jalapeno=mushroom date=hazelnut=litchi=orange=soy pear nut=quinoa=tomato radish vanilla 0
-55 cherry banana=grape apple hazelnut fig date kiwi=litchi=nut=quinoa=vanilla jalapeno=mushroom=orange=tomato eggplant pear=radish soy 0
-27 apple banana=jalapeno date=litchi=mushroom=nut cherry=hazelnut=pear kiwi=tomato eggplant=fig=quinoa=soy grape orange=radish vanilla 0
-10 eggplant banana cherry=grape apple=kiwi litchi date=fig hazelnut jalapeno=mushroom=soy=vanilla orange pear nut quinoa radish=tomato 0
-58 date banana jalapeno cherry=hazelnut apple=eggplant=grape=mushroom fig kiwi=soy quinoa litchi=nut orange=pear=vanilla tomato radish 0
-5 apple jalapeno cherry=date=litchi fig eggplant=mushroom=nut banana=grape=kiwi=tomato hazelnut=orange pear=radish soy=vanilla quinoa 0
-27 date cherry apple banana=eggplant=fig grape jalapeno=mushroom=nut litchi orange=pear radish hazelnut=soy kiwi=quinoa tomato vanilla 0
+51 banana apple=cherry=grape eggplant date fig=jalapeno=mushroom=soy kiwi hazelnut=quinoa litchi orange=pear nut tomato vanilla radish 0
+46 banana apple date cherry=fig eggplant=mushroom=nut grape hazelnut=jalapeno=kiwi=orange=quinoa radish=soy pear=vanilla litchi tomato 0
+33 cherry jalapeno banana=date apple=grape eggplant nut fig=litchi=pear hazelnut=mushroom=quinoa kiwi=tomato orange vanilla soy radish 0
+16 banana date apple=eggplant=fig=jalapeno grape=kiwi pear litchi=mushroom cherry hazelnut=nut vanilla orange=quinoa radish soy tomato 0
+2 banana cherry=eggplant apple=hazelnut=jalapeno date nut=radish grape=orange fig=pear kiwi=litchi=tomato quinoa=soy vanilla mushroom 0
+20 apple banana=litchi cherry=nut fig=grape=hazelnut=kiwi date=eggplant jalapeno radish pear=tomato mushroom quinoa orange=soy vanilla 0
+44 banana apple cherry=grape date=nut eggplant=fig hazelnut=jalapeno pear kiwi=orange radish litchi=mushroom vanilla tomato quinoa=soy 0
 0
 "Apple"
 "Banana"

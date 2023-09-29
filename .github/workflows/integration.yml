@@ -50,6 +50,17 @@ jobs:
             target/release/examples/shuffle_ballots
           if-no-files-found: error
 
+      - name: Generate random ballots
+        run: |
+          cargo run --release --example random_ballots
+          mv rand_hypergeometric_100k.blt testdata/ballots/random/
+      - uses: actions/upload-artifact@v3
+        with:
+          name: large-test-files
+          path: |
+            testdata/ballots/random/rand_hypergeometric_100k.blt
+          if-no-files-found: error
+
   help_tests:
     needs: build
     strategy:
@@ -99,6 +110,7 @@ jobs:
           - random/rand_5x4
           - random/rand_hypergeometric
           - random/rand_hypergeometric_10k
+          - random/rand_hypergeometric_100k
           - recursive_descent/transfer
           - recursive_descent/transfer_is_blocked
           - ties/tie_break_explicit
@@ -107,6 +119,10 @@ jobs:
         parallel:
           - false
           - true
+        include:
+          - droop: true
+          - file: random/rand_hypergeometric_100k
+            droop: false
       fail-fast: false
     runs-on: ubuntu-latest
     steps:
@@ -115,6 +131,10 @@ jobs:
         with:
           name: build-artifacts
           path: target/release/
+      - uses: actions/download-artifact@v3
+        with:
+          name: large-test-files
+          path: testdata/ballots/random/
       - name: Install Droop
         if: ${{ matrix.parallel == true }}
         run: git clone https://github.com/jklundell/droop
@@ -131,7 +151,7 @@ jobs:
         run: |
           target/release/stv-rs --arithmetic fixed9 --input testdata/ballots/${{ matrix.file }}.blt meek --parallel=${{ matrix.parallel }} --equalize | diff -s testdata/meek/${{ matrix.file }}.equalize.fixed9.log -
       - name: Check Droop output
-        if: ${{ matrix.parallel == true }}
+        if: matrix.droop == true && matrix.parallel == true
         run: |
           sed -i "s/Implementation: STV-rs/Droop package: droop v0.14/g" testdata/meek/${{ matrix.file }}.fixed9.log
           python3 droop/Droop.py meek fixed precision=9 omega=6 defeat_batch=none testdata/ballots/${{ matrix.file }}.blt 2> droop.err | diff -s testdata/meek/${{ matrix.file }}.fixed9.log -
@@ -146,6 +166,7 @@ jobs:
           - random/rand_5x4
           - random/rand_hypergeometric
           - random/rand_hypergeometric_10k
+          - random/rand_hypergeometric_100k
           - vegetables
       fail-fast: false
     runs-on: ubuntu-latest
@@ -155,6 +176,10 @@ jobs:
         with:
           name: build-artifacts
           path: target/release/
+      - uses: actions/download-artifact@v3
+        with:
+          name: large-test-files
+          path: testdata/ballots/random/
       - name: Prepare STV-rs binary
         run: chmod +x target/release/stv-rs
 
@@ -172,6 +197,7 @@ jobs:
           - random/rand_5x4
           - random/rand_hypergeometric
           - random/rand_hypergeometric_10k
+          - random/rand_hypergeometric_100k
           - vegetables
       fail-fast: false
     runs-on: ubuntu-latest
@@ -181,6 +207,10 @@ jobs:
         with:
           name: build-artifacts
           path: target/release/
+      - uses: actions/download-artifact@v3
+        with:
+          name: large-test-files
+          path: testdata/ballots/random/
       - name: Prepare histogram binary
         run: chmod +x target/release/examples/histogram
 
