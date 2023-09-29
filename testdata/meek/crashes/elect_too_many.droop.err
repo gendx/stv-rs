@@ -7,6 +7,6 @@ Traceback (most recent call last):
     E.count()
   File "/home/runner/work/stv-rs/stv-rs/droop/droop/election.py", line 139, in count
     self.postCheck()    # post-election sanity check
-  File "/home/runner/work/stv-rs/stv-rs/droop/droop/election.py", line 145, in postCheck
-    assert(nElected == self.nSeats or
+  File "/home/runner/work/stv-rs/stv-rs/droop/droop/election.py", line 146, in postCheck
+    nElected < self.nSeats and nElected == nEligible)
 AssertionError
