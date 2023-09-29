@@ -94,37 +94,37 @@ mod test {
         test_is_exact,
         test_ceil_precision,
         test_ratio,
-        test_ratio_invert => fail(r"assertion failed: `(left == right)`
-  left: `0.9999999999999999`,
- right: `1.0`: R::ratio(1, a) * a != 1 for 49"),
+        test_ratio_invert => fail(r"assertion `left == right` failed: R::ratio(1, a) * a != 1 for 49
+  left: 0.9999999999999999
+ right: 1.0"),
         test_is_zero,
         test_zero_is_add_neutral,
         test_add_is_commutative,
         test_opposite,
         test_sub_self,
-        test_add_sub => fail(r"assertion failed: `(left == right)`
-  left: `0.9999999999999999`,
- right: `1.0`: (a + b) - b != a for 1, 0.0000000004656613430357376"),
-        test_sub_add => fail(r"assertion failed: `(left == right)`
-  left: `0.0`,
- right: `1.1920928955078125e-7`: (a - b) + b != a for 0.00000011920928955078125, 2147483646"),
+        test_add_sub => fail(r"assertion `left == right` failed: (a + b) - b != a for 1, 0.0000000004656613430357376
+  left: 0.9999999999999999
+ right: 1.0"),
+        test_sub_add => fail(r"assertion `left == right` failed: (a - b) + b != a for 0.00000011920928955078125, 2147483646
+  left: 0.0
+ right: 1.1920928955078125e-7"),
         test_one_is_mul_neutral,
         test_mul_is_commutative,
         test_mul_up_is_commutative,
         test_mul_up_integers,
         test_mul_up_wrt_mul,
-        test_invert => fail(r"assertion failed: `(left == right)`
-  left: `2147483631.0000002`,
- right: `2147483631.0`: 1/(1/a) != a for 2147483631"),
+        test_invert => fail(r"assertion `left == right` failed: 1/(1/a) != a for 2147483631
+  left: 2147483631.0000002
+ right: 2147483631.0"),
         test_div_self,
         test_div_up_self,
         test_div_up_wrt_div,
-        test_mul_div => fail(r"assertion failed: `(left == right)`
-  left: `2147483646.0000002`,
- right: `2147483646.0`: (a * b) / b != a for 2147483646, 0.000000000465661315280157"),
-        test_div_mul => fail(r"assertion failed: `(left == right)`
-  left: `0.9999999999999999`,
- right: `1.0`: (a / b) * b != a for 1, 2147483631"),
+        test_mul_div => fail(r"assertion `left == right` failed: (a * b) / b != a for 2147483646, 0.000000000465661315280157
+  left: 2147483646.0000002
+ right: 2147483646.0"),
+        test_div_mul => fail(r"assertion `left == right` failed: (a / b) * b != a for 1, 2147483631
+  left: 0.9999999999999999
+ right: 1.0"),
         test_mul_by_int,
         test_div_by_int,
         test_references,
@@ -135,27 +135,27 @@ mod test {
         f64,
         f64,
         None,
-        test_add_is_associative => fail(r"assertion failed: `(left == right)`
-  left: `2.0000000004656617`,
- right: `2.0000000004656613`: (a + b) + c != a + (b + c) for 1, 1, 0.0000000004656615095692907"),
-        test_mul_is_associative => fail(r"assertion failed: `(left == right)`
-  left: `9.903519996076708e27`,
- right: `9.903519996076707e27`: (a * b) * c != a * (b * c) for 2147483646, 2147483646, 2147483583"),
-        test_mul_is_distributive => fail(r"assertion failed: `(left == right)`
-  left: `4.6116857392545137e18`,
- right: `4.611685739254514e18`: a * (b + c) != (a * b) + (a * c) for 2147483646, 1, 2147483519"),
-        test_mul_by_int_is_associative => fail(r"assertion failed: `(left == right)`
-  left: `4.190951650171264e-9`,
- right: `4.190951650171263e-9`: (a * b) * c != a * (b * c) for 0.0000000004656612944634737, 3, 3"),
-        test_mul_by_int_is_distributive => fail(r"assertion failed: `(left == right)`
-  left: `3.0000000013969848`,
- right: `3.0000000013969843`: (a + b) * c != (a * c) + (b * c) for 1, 0.0000000004656613985469087, 3"),
-        test_div_by_int_is_associative => fail(r"assertion failed: `(left == right)`
-  left: `0.0303030303030303`,
- right: `0.030303030303030304`: (a / b) / c != a / (b * c) for 1, 3, 11"),
-        test_div_by_int_is_distributive => fail(r"assertion failed: `(left == right)`
-  left: `0.6`,
- right: `0.6000000000000001`: (a + b) / c != (a / c) + (b / c) for 1, 2, 5"),
+        test_add_is_associative => fail(r"assertion `left == right` failed: (a + b) + c != a + (b + c) for 1, 1, 0.0000000004656615095692907
+  left: 2.0000000004656617
+ right: 2.0000000004656613"),
+        test_mul_is_associative => fail(r"assertion `left == right` failed: (a * b) * c != a * (b * c) for 2147483646, 2147483646, 2147483583
+  left: 9.903519996076708e27
+ right: 9.903519996076707e27"),
+        test_mul_is_distributive => fail(r"assertion `left == right` failed: a * (b + c) != (a * b) + (a * c) for 2147483646, 1, 2147483519
+  left: 4.6116857392545137e18
+ right: 4.611685739254514e18"),
+        test_mul_by_int_is_associative => fail(r"assertion `left == right` failed: (a * b) * c != a * (b * c) for 0.0000000004656612944634737, 3, 3
+  left: 4.190951650171264e-9
+ right: 4.190951650171263e-9"),
+        test_mul_by_int_is_distributive => fail(r"assertion `left == right` failed: (a + b) * c != (a * c) + (b * c) for 1, 0.0000000004656613985469087, 3
+  left: 3.0000000013969848
+ right: 3.0000000013969843"),
+        test_div_by_int_is_associative => fail(r"assertion `left == right` failed: (a / b) / c != a / (b * c) for 1, 3, 11
+  left: 0.0303030303030303
+ right: 0.030303030303030304"),
+        test_div_by_int_is_distributive => fail(r"assertion `left == right` failed: (a + b) / c != (a / c) + (b / c) for 1, 2, 5
+  left: 0.6
+ right: 0.6000000000000001"),
         test_sum,
         test_product,
     );

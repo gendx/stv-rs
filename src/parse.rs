@@ -239,13 +239,13 @@ mod test {
     }
 
     #[test]
-    #[should_panic(expected = "assertion failed: `(left == right)`\n  left: `102`,\n right: `34`")]
+    #[should_panic(expected = "assertion `left == right` failed\n  left: 102\n right: 34")]
     fn test_remove_quotes_no_quotes() {
         remove_quotes("foo");
     }
 
     #[test]
-    #[should_panic(expected = "assertion failed: `(left == right)`\n  left: `225`,\n right: `34`")]
+    #[should_panic(expected = "assertion `left == right` failed\n  left: 225\n right: 34")]
     fn test_remove_quotes_mid_utf8() {
         remove_quotes("\u{1234}foo\"");
     }
@@ -632,7 +632,7 @@ mod test {
 
     #[test]
     #[should_panic(
-        expected = "assertion failed: `(left == right)`\n  left: `1`,\n right: `2`: Tie-break order must mention all candidates"
+        expected = "assertion `left == right` failed: Tie-break order must mention all candidates\n  left: 1\n right: 2"
     )]
     fn test_parse_tie_not_all_candidates() {
         let file = r#"2 1
@@ -663,7 +663,7 @@ mod test {
     }
 
     #[test]
-    #[should_panic(expected = "assertion failed: `(left == right)`\n  left: `2`,\n right: `1`")]
+    #[should_panic(expected = "assertion `left == right` failed\n  left: 2\n right: 1")]
     fn test_parse_ballot_repeated_candidate() {
         let file = r#"2 1
 [nick apple banana]

@@ -306,9 +306,9 @@ mod test {
         test_is_exact,
         test_ceil_precision,
         test_ratio,
-        test_ratio_invert => fail(r"assertion failed: `(left == right)`
-  left: `BigFixedDecimal9(999999999)`,
- right: `BigFixedDecimal9(1000000000)`: R::ratio(1, a) * a != 1 for 3"),
+        test_ratio_invert => fail(r"assertion `left == right` failed: R::ratio(1, a) * a != 1 for 3
+  left: BigFixedDecimal9(999999999)
+ right: BigFixedDecimal9(1000000000)"),
         test_is_zero,
         test_zero_is_add_neutral,
         test_add_is_commutative,
@@ -321,18 +321,18 @@ mod test {
         test_mul_up_is_commutative,
         test_mul_up_integers,
         test_mul_up_wrt_mul,
-        test_invert => fail(r"assertion failed: `(left == right)`
-  left: `BigFixedDecimal9(2147483649)`,
- right: `BigFixedDecimal9(2147483648)`: 1/(1/a) != a for 2.147483648"),
+        test_invert => fail(r"assertion `left == right` failed: 1/(1/a) != a for 2.147483648
+  left: BigFixedDecimal9(2147483649)
+ right: BigFixedDecimal9(2147483648)"),
         test_div_self,
         test_div_up_self,
         test_div_up_wrt_div,
-        test_mul_div => fail(r"assertion failed: `(left == right)`
-  left: `BigFixedDecimal9(0)`,
- right: `BigFixedDecimal9(1)`: (a * b) / b != a for 0.000000001, 0.000000001"),
-        test_div_mul => fail(r"assertion failed: `(left == right)`
-  left: `BigFixedDecimal9(0)`,
- right: `BigFixedDecimal9(1)`: (a / b) * b != a for 0.000000001, 0.000001024"),
+        test_mul_div => fail(r"assertion `left == right` failed: (a * b) / b != a for 0.000000001, 0.000000001
+  left: BigFixedDecimal9(0)
+ right: BigFixedDecimal9(1)"),
+        test_div_mul => fail(r"assertion `left == right` failed: (a / b) * b != a for 0.000000001, 0.000001024
+  left: BigFixedDecimal9(0)
+ right: BigFixedDecimal9(1)"),
         test_mul_by_int,
         test_div_by_int,
         test_references,
@@ -344,18 +344,18 @@ mod test {
         BigFixedDecimal9,
         None,
         test_add_is_associative,
-        test_mul_is_associative => fail(r"assertion failed: `(left == right)`
-  left: `BigFixedDecimal9(0)`,
- right: `BigFixedDecimal9(1)`: (a * b) * c != a * (b * c) for 0.000000001, 0.000000001, 1152921504.606846976"),
-        test_mul_is_distributive => fail(r"assertion failed: `(left == right)`
-  left: `BigFixedDecimal9(281475)`,
- right: `BigFixedDecimal9(281474)`: a * (b + c) != (a * b) + (a * c) for 0.000000001, 0.033554432, 281474.976710656"),
+        test_mul_is_associative => fail(r"assertion `left == right` failed: (a * b) * c != a * (b * c) for 0.000000001, 0.000000001, 1152921504.606846976
+  left: BigFixedDecimal9(0)
+ right: BigFixedDecimal9(1)"),
+        test_mul_is_distributive => fail(r"assertion `left == right` failed: a * (b + c) != (a * b) + (a * c) for 0.000000001, 0.033554432, 281474.976710656
+  left: BigFixedDecimal9(281475)
+ right: BigFixedDecimal9(281474)"),
         test_mul_by_int_is_associative,
         test_mul_by_int_is_distributive,
         test_div_by_int_is_associative,
-        test_div_by_int_is_distributive => fail(r"assertion failed: `(left == right)`
-  left: `BigFixedDecimal9(1)`,
- right: `BigFixedDecimal9(0)`: (a + b) / c != (a / c) + (b / c) for 0.000000001, 0.000000001, 2"),
+        test_div_by_int_is_distributive => fail(r"assertion `left == right` failed: (a + b) / c != (a / c) + (b / c) for 0.000000001, 0.000000001, 2
+  left: BigFixedDecimal9(1)
+ right: BigFixedDecimal9(0)"),
         test_sum,
         test_product,
     );

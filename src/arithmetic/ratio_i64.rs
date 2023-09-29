@@ -52,19 +52,19 @@ mod test {
         i64,
         Ratio<i64>,
         None,
-        test_add_is_associative => fail(r"assertion failed: `(left == right)`
-  left: `Ratio { numer: -6148914815790568570, denom: 1537228657060915911 }`,
- right: `Ratio { numer: 4099276419306327682, denom: 512409552353638637 }`: (a + b) + c != a + (b + c) for 8, 1/2147483643, 1/2147483631"),
+        test_add_is_associative => fail(r"assertion `left == right` failed: (a + b) + c != a + (b + c) for 8, 1/2147483643, 1/2147483631
+  left: Ratio { numer: -6148914815790568570, denom: 1537228657060915911 }
+ right: Ratio { numer: 4099276419306327682, denom: 512409552353638637 }"),
         test_mul_is_associative => fail(r"denominator == 0"),
-        test_mul_is_distributive => fail(r"assertion failed: `(left == right)`
-  left: `Ratio { numer: -4294967291, denom: 42949672936 }`,
- right: `Ratio { numer: 5, denom: 21474836468 }`: a * (b + c) != (a * b) + (a * c) for 1/4, 1/2147483646, 1/2147483645"),
+        test_mul_is_distributive => fail(r"assertion `left == right` failed: a * (b + c) != (a * b) + (a * c) for 1/4, 1/2147483646, 1/2147483645
+  left: Ratio { numer: -4294967291, denom: 42949672936 }
+ right: Ratio { numer: 5, denom: 21474836468 }"),
         test_mul_by_int_is_associative,
         test_mul_by_int_is_distributive,
         test_div_by_int_is_associative,
-        test_div_by_int_is_distributive => fail(r"assertion failed: `(left == right)`
-  left: `Ratio { numer: -738197503, denom: 3026418953955049472 }`,
- right: `Ratio { numer: 2146451207, denom: 9079256861865148416 }`: (a + b) / c != (a / c) + (b / c) for 1/67108864, 1/2147483645, 65"),
+        test_div_by_int_is_distributive => fail(r"assertion `left == right` failed: (a + b) / c != (a / c) + (b / c) for 1/67108864, 1/2147483645, 65
+  left: Ratio { numer: -738197503, denom: 3026418953955049472 }
+ right: Ratio { numer: 2146451207, denom: 9079256861865148416 }"),
         test_sum,
         test_product => fail(r"denominator == 0"),
     );
