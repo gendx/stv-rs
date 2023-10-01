@@ -121,6 +121,8 @@ jobs:
           - true
         include:
           - droop: true
+          - file: random/rand_hypergeometric_10k
+            droop: false
           - file: random/rand_hypergeometric_100k
             droop: false
       fail-fast: false
