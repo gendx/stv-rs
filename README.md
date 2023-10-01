@@ -3,7 +3,7 @@
 [![Crate](https://img.shields.io/crates/v/stv-rs.svg)](https://crates.io/crates/stv-rs)
 [![Documentation](https://docs.rs/stv-rs/badge.svg)](https://docs.rs/stv-rs)
 [![Safety Dance](https://img.shields.io/badge/unsafe-forbidden-success.svg)](https://github.com/rust-secure-code/safety-dance/)
-[![Minimum Rust 1.67](https://img.shields.io/badge/rust-1.67%2B-orange.svg)](https://releases.rs/docs/1.67.0/)
+[![Minimum Rust 1.64.0](https://img.shields.io/badge/rust-1.64.0%2B-orange.svg)](https://releases.rs/docs/1.64.0/)
 [![Codecov](https://codecov.io/gh/gendx/stv-rs/branch/main/graph/badge.svg?token=JB5S8MYBZ0)](https://codecov.io/gh/gendx/stv-rs)
 [![Lines of Code](https://tokei.rs/b1/github/gendx/stv-rs?category=code)](https://github.com/XAMPPRocky/tokei_rs)
 [![Build Status](https://github.com/gendx/stv-rs/workflows/Build/badge.svg)](https://github.com/gendx/stv-rs/actions/workflows/build.yml)
