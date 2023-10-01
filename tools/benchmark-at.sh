@@ -27,13 +27,17 @@ function benchmark() {
     EQUALIZE=$2
     INPUT=$3
 
-    sleep ${SLEEP_SECONDS}
-    ${HYPERFINE_PATH} --warmup 1 \
+    ${HYPERFINE_PATH} \
+        --style color \
+        --setup "sleep ${SLEEP_SECONDS}" \
+        --warmup 1 \
         "${BINARY} --arithmetic ${ARITHMETIC} --input ${INPUT} meek ${EQUALIZE} --parallel=false > /dev/null"
     for NUM_THREADS in 2 4 8
     do
-        sleep ${SLEEP_SECONDS}
-        RAYON_NUM_THREADS=${NUM_THREADS} ${HYPERFINE_PATH} --warmup 1 \
+        RAYON_NUM_THREADS=${NUM_THREADS} ${HYPERFINE_PATH} \
+            --style color \
+            --setup "sleep ${SLEEP_SECONDS}" \
+            --warmup 1 \
             "${BINARY} --arithmetic ${ARITHMETIC} --input ${INPUT} meek ${EQUALIZE} --parallel=true > /dev/null"
     done
 }
