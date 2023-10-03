@@ -41,4 +41,5 @@ log_parallelism = []
 rustdoc-args = ["--document-private-items"]
 
 [profile.release]
+codegen-units = 1
 panic = "abort"
