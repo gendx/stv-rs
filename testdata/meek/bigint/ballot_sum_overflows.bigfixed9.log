@@ -1,0 +1,30 @@
+
+Election: Example election where a candidate's count overflows to 0
+
+	Implementation: STV-rs
+	Rule: Meek Parametric (omega = 1/10^6)
+	Arithmetic: fixed-point decimal arithmetic (9 places)
+	Seats: 1
+	Ballots: 1
+	Quota: 0.500000001
+	Omega: 0.000001000
+
+	Add eligible: Apple
+	Add eligible: Banana
+Action: Begin Count
+	Hopeful:  Apple (18446744073709551616.000000000)
+	Hopeful:  Banana (1.000000000)
+	Quota: 0.500000001
+	Votes: 18446744073709551617.000000000
+	Residual: 0.000000000
+	Total: 18446744073709551617.000000000
+	Surplus: 0.000000000
+Round 1:
+Action: Elect: Apple
+	Elected:  Apple (18446744073709551616.000000000)
+	Hopeful:  Banana (1.000000000)
+	Quota: 0.500000001
+	Votes: 18446744073709551617.000000000
+	Residual: 0.000000000
+	Total: 18446744073709551617.000000000
+	Surplus: 0.000000000

@@ -194,6 +194,8 @@ jobs:
     strategy:
       matrix:
         file:
+          - bigint/ballot_count_overflows
+          - bigint/ballot_sum_overflows
           - equal_preference/equal_preference
           - random/rand_2x10
           - random/rand_5x4
@@ -333,6 +335,45 @@ jobs:
       - name: Check shuffled ballot
         run: |
           target/release/examples/shuffle_ballots --strategy=${{ matrix.strategy }} < testdata/ballots/${{ matrix.src }}.blt | diff -s testdata/shuffle_ballots/${{ matrix.file }}.blt -
+
+  bigint_tests:
+    needs: build
+    strategy:
+      matrix:
+        file:
+          - bigint/ballot_count_overflows
+          - bigint/ballot_sum_overflows
+        parallel:
+          - false
+          - true
+        include:
+          - error_suffix: ""
+          - file: bigint/ballot_sum_overflows
+            parallel: true
+            error_suffix: ".parallel"
+      fail-fast: false
+    runs-on: ubuntu-latest
+    env:
+      RAYON_NUM_THREADS: 1
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+          path: target/release/
+      - name: Prepare STV-rs binary
+        run: chmod +x target/release/stv-rs
+
+      - name: Check STV-rs output
+        run: |
+          target/release/stv-rs --arithmetic fixed9 --input testdata/ballots/${{ matrix.file }}.blt meek --parallel=${{ matrix.parallel }} > stv.log 2> stv.err || true
+          diff -s testdata/meek/${{ matrix.file }}.fixed9.log stv.log
+          diff -s testdata/meek/${{ matrix.file }}.fixed9${{ matrix.error_suffix }}.err stv.err
+      - name: Check STV-rs output (big integer)
+        run: |
+          target/release/stv-rs --arithmetic bigfixed9 --input testdata/ballots/${{ matrix.file }}.blt meek --parallel=${{ matrix.parallel }} > stv.log 2> stv.err || true
+          diff -s testdata/meek/${{ matrix.file }}.bigfixed9.log stv.log
+          diff -s testdata/meek/${{ matrix.file }}.bigfixed9.err stv.err
 
   crash_fixed9_tests:
     needs: build

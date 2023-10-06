@@ -1,0 +1,10 @@
+2 1
+[nick apple banana]
+9223372036854775807 apple 0
+9223372036854775807 apple 0
+2 apple 0
+1 banana 0
+0
+"Apple"
+"Banana"
+"Example election where a candidate's count overflows to 0"

@@ -17,10 +17,14 @@ It is organized as follows.
     example in this repository.
 -   `plurality_block_voting/`: election transcripts using plurality block
     voting.
+-   `shuffle_ballots/`: ballot files where ballots are ordered following various
+    heuristics (to test performance).
 
 In detail, the following ballot files are available.
 
 -   `vegetables.blt`: simple ballot file to illustrate Meek's method.
+-   `bigint/`: input files that require a big integer implementation to count
+    correctly.
 -   `crashes/`: input files that trigger a crash for
     [Droop.py](https://github.com/jklundell/droop) (v0.14).
 -   `equal_preference/`: simple cases of ballots containing candidates ranked

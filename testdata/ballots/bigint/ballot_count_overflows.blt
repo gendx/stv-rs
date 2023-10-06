@@ -1,0 +1,8 @@
+2 1
+[nick apple banana]
+18446744074 apple 0
+1 banana 0
+0
+"Apple"
+"Banana"
+"Example election where a ballot count overflows just between 0 and 1"
