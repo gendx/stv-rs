@@ -23,6 +23,9 @@ It is organized as follows.
 In detail, the following ballot files are available.
 
 -   `vegetables.blt`: simple ballot file to illustrate Meek's method.
+-   `skewed.blt`: input file where the distribution of ballots is skewed, with a
+    few complex ballots followed by many simple ballots. This allows to test the
+    effectiveness of work-stealing strategies when counting ballots in parallel.
 -   `bigint/`: input files that require a big integer implementation to count
     correctly.
 -   `crashes/`: input files that trigger a crash for

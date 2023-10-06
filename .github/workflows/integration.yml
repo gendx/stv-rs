@@ -115,6 +115,7 @@ jobs:
           - recursive_descent/transfer_is_blocked
           - ties/tie_break_explicit
           - ties/tie_break_implicit
+          - skewed
           - vegetables
         parallel:
           - false
@@ -124,6 +125,8 @@ jobs:
           - file: random/rand_hypergeometric_10k
             droop: false
           - file: random/rand_hypergeometric_100k
+            droop: false
+          - file: skewed
             droop: false
       fail-fast: false
     runs-on: ubuntu-latest
