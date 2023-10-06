@@ -67,7 +67,11 @@ fn write_histograms(
     for (i, hist) in histograms.iter().enumerate() {
         write!(output, "{}", election.candidates[i].name)?;
         for x in hist {
-            write!(output, ",{}", x.to_f64().unwrap_or(f64::NAN))?;
+            if x.is_integer() {
+                write!(output, ",{x}")?;
+            } else {
+                write!(output, ",{}", x.to_f64().unwrap_or(f64::NAN))?;
+            }
         }
         writeln!(output)?;
     }
