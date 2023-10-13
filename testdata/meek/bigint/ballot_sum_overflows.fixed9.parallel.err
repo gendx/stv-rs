@@ -1,5 +1,5 @@
-thread '<unnamed>' panicked at src/arithmetic/fixed.rs:268:60:
+thread '<unnamed>' panicked at src/arithmetic/fixed.rs:357:60:
 called `Option::unwrap()` on a `None` value
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-thread '<unnamed>' panicked at src/arithmetic/fixed.rs:268:60:
+thread '<unnamed>' panicked at src/arithmetic/fixed.rs:357:60:
 called `Option::unwrap()` on a `None` value

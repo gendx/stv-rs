@@ -17,13 +17,102 @@
 //! This implementation is backed by [`i64`], and will panic in case of overflow
 //! if the `checked_i64` feature is enabled.
 
-use super::exact::Integer64;
-use super::{Rational, RationalRef};
+use super::{Integer, IntegerRef, Rational, RationalRef};
 use num::traits::{One, Zero};
-use num::Integer;
+use num::Integer as NumInteger;
 use std::fmt::{Debug, Display};
 use std::iter::{Product, Sum};
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
+
+/// An integer wrapping a [`i64`], performing arithmetic overflow checks if the
+/// `checked_i64` feature is enabled.
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd)]
+pub struct Integer64(i64);
+
+impl Debug for Integer64 {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
+        write!(f, "{}", self.0)
+    }
+}
+
+#[cfg(test)]
+impl Display for Integer64 {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl Zero for Integer64 {
+    fn zero() -> Self {
+        Integer64(i64::zero())
+    }
+    fn is_zero(&self) -> bool {
+        self.0.is_zero()
+    }
+}
+impl One for Integer64 {
+    fn one() -> Self {
+        Integer64(1)
+    }
+}
+
+impl Add for Integer64 {
+    type Output = Self;
+    fn add(self, rhs: Self) -> Self {
+        #[cfg(feature = "checked_i64")]
+        return Integer64(self.0.checked_add(rhs.0).unwrap());
+        #[cfg(not(feature = "checked_i64"))]
+        return Integer64(self.0 + rhs.0);
+    }
+}
+impl Sub for Integer64 {
+    type Output = Self;
+    fn sub(self, rhs: Self) -> Self {
+        #[cfg(feature = "checked_i64")]
+        return Integer64(self.0.checked_sub(rhs.0).unwrap());
+        #[cfg(not(feature = "checked_i64"))]
+        return Integer64(self.0 - rhs.0);
+    }
+}
+impl Mul for Integer64 {
+    type Output = Self;
+    fn mul(self, rhs: Self) -> Self {
+        #[cfg(feature = "checked_i64")]
+        return Integer64(self.0.checked_mul(rhs.0).unwrap());
+        #[cfg(not(feature = "checked_i64"))]
+        return Integer64(self.0 * rhs.0);
+    }
+}
+
+impl Add<&'_ Integer64> for &'_ Integer64 {
+    type Output = Integer64;
+    fn add(self, rhs: &'_ Integer64) -> Integer64 {
+        *self + *rhs
+    }
+}
+impl Sub<&'_ Integer64> for &'_ Integer64 {
+    type Output = Integer64;
+    fn sub(self, rhs: &'_ Integer64) -> Integer64 {
+        *self - *rhs
+    }
+}
+impl Mul<&'_ Integer64> for &'_ Integer64 {
+    type Output = Integer64;
+    fn mul(self, rhs: &'_ Integer64) -> Integer64 {
+        *self * *rhs
+    }
+}
+
+impl Integer for Integer64 {
+    fn from_usize(i: usize) -> Self {
+        #[cfg(feature = "checked_i64")]
+        return Integer64(i.try_into().unwrap());
+        #[cfg(not(feature = "checked_i64"))]
+        return Integer64(i as i64);
+    }
+}
+
+impl IntegerRef<Integer64> for &Integer64 {}
 
 /// A fixed-point decimal arithmetic for 9 decimal places. This type represents
 /// a number `x` by the integer `x * 10^9`, backed by a [`i64`].

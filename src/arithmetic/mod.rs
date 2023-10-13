@@ -24,8 +24,7 @@ mod float64;
 mod ratio_i64;
 
 pub use approx_rational::ApproxRational;
-pub use exact::Integer64;
-pub use fixed::FixedDecimal9;
+pub use fixed::{FixedDecimal9, Integer64};
 pub use fixed_big::BigFixedDecimal9;
 
 use num::traits::{One, Zero};
