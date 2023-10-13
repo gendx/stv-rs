@@ -110,6 +110,16 @@ impl Integer for Integer64 {
         #[cfg(not(feature = "checked_i64"))]
         return Integer64(i as i64);
     }
+
+    #[cfg(test)]
+    fn get_positive_test_values() -> Vec<Self> {
+        let mut result = Vec::new();
+        for i in 0..=30 {
+            result.push(Integer64(1 << i));
+            result.push(Integer64(0x7FFF_FFFF ^ (1 << i)));
+        }
+        result
+    }
 }
 
 impl IntegerRef<Integer64> for &Integer64 {}
@@ -435,7 +445,41 @@ impl Rational<Integer64> for FixedDecimal9 {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::{big_numeric_tests, numeric_benchmarks, numeric_tests};
+    use crate::{
+        big_integer_tests, big_numeric_tests, integer_tests, numeric_benchmarks, numeric_tests,
+    };
+
+    integer_tests!(
+        Integer64,
+        testi_values_are_positive,
+        testi_is_zero,
+        testi_zero_is_add_neutral,
+        testi_add_is_commutative,
+        testi_opposite,
+        testi_sub_self,
+        testi_add_sub,
+        testi_sub_add,
+        testi_one_is_mul_neutral,
+        testi_mul_is_commutative,
+    );
+
+    #[cfg(feature = "checked_i64")]
+    big_integer_tests!(
+        Integer64,
+        None,
+        testi_add_is_associative,
+        testi_mul_is_associative => fail(r"called `Option::unwrap()` on a `None` value"),
+        testi_mul_is_distributive,
+    );
+
+    #[cfg(not(feature = "checked_i64"))]
+    big_integer_tests!(
+        Integer64,
+        None,
+        testi_add_is_associative,
+        testi_mul_is_associative,
+        testi_mul_is_distributive,
+    );
 
     numeric_tests!(
         Integer64,

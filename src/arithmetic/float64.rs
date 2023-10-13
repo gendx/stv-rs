@@ -22,6 +22,16 @@ impl Integer for f64 {
     fn from_usize(i: usize) -> Self {
         i as f64
     }
+
+    #[cfg(test)]
+    fn get_positive_test_values() -> Vec<Self> {
+        let mut result = Vec::new();
+        for i in 0..=30 {
+            result.push((1 << i) as f64);
+            result.push((0x7FFF_FFFF ^ (1 << i)) as f64);
+        }
+        result
+    }
 }
 
 impl IntegerRef<f64> for &f64 {}
@@ -72,13 +82,13 @@ impl Rational<f64> for f64 {
             result.push((1 << i) as f64);
         }
         for i in 0..=30 {
-            result.push((0x7FFF_FFFF - (1 << i)) as f64);
+            result.push((0x7FFF_FFFF ^ (1 << i)) as f64);
         }
         for i in 0..=30 {
             result.push(1.0 / (1 << i) as f64);
         }
         for i in 0..=30 {
-            result.push(1.0 / (0x7FFF_FFFF - (1 << i)) as f64);
+            result.push(1.0 / (0x7FFF_FFFF ^ (1 << i)) as f64);
         }
         result
     }
@@ -88,8 +98,36 @@ impl Rational<f64> for f64 {
 mod test {
     use super::*;
     use crate::util::log_tester::ThreadLocalLogger;
-    use crate::{big_numeric_tests, numeric_benchmarks, numeric_tests};
+    use crate::{
+        big_integer_tests, big_numeric_tests, integer_tests, numeric_benchmarks, numeric_tests,
+    };
     use log::Level::Trace;
+
+    integer_tests!(
+        f64,
+        testi_values_are_positive,
+        testi_is_zero,
+        testi_zero_is_add_neutral,
+        testi_add_is_commutative,
+        testi_opposite,
+        testi_sub_self,
+        testi_add_sub,
+        testi_sub_add,
+        testi_one_is_mul_neutral,
+        testi_mul_is_commutative,
+    );
+
+    big_integer_tests!(
+        f64,
+        None,
+        testi_add_is_associative,
+        testi_mul_is_associative => fail(r"assertion `left == right` failed: (a * b) * c != a * (b * c) for 2147483646, 2147483646, 2147483583
+  left: 9.903519996076708e27
+ right: 9.903519996076707e27"),
+        testi_mul_is_distributive => fail(r"assertion `left == right` failed: a * (b + c) != (a * b) + (a * c) for 2147483646, 1, 2147483519
+  left: 4.6116857392545137e18
+ right: 4.611685739254514e18"),
+    );
 
     numeric_tests!(
         f64,
@@ -253,7 +291,7 @@ mod test {
           "0.0000000004967053733749714", "0.0000000005321843286349222",
           "0.0000000006208817167958132", "0.0000000009313225754828403"
         ];
-        let actual_displays: Vec<String> = f64::get_positive_test_values()
+        let actual_displays: Vec<String> = <f64 as Rational<_>>::get_positive_test_values()
             .iter()
             .map(|x| format!("{x}"))
             .collect();

@@ -36,12 +36,23 @@ use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 /// `Integer` trait provided by the [`num` crate](https://crates.io/crates/num),
 /// here we only consider the arithmetic operations needed for STV.
 pub trait Integer:
-    Clone + Zero + One + Add<Output = Self> + Sub<Output = Self> + Mul<Output = Self>
+    Clone
+    + Debug
+    + PartialEq
+    + PartialOrd
+    + Zero
+    + One
+    + Add<Output = Self>
+    + Sub<Output = Self>
+    + Mul<Output = Self>
 where
     for<'a> &'a Self: IntegerRef<Self>,
 {
     /// Obtains an integer from a primitive `usize` integer.
     fn from_usize(i: usize) -> Self;
+
+    #[cfg(test)]
+    fn get_positive_test_values() -> Vec<Self>;
 }
 
 /// Trait representing rational numbers w.r.t. an [`Integer`] type. Here we only
@@ -169,6 +180,50 @@ pub(crate) mod test {
     use std::marker::PhantomData;
 
     #[macro_export]
+    macro_rules! integer_tests {
+        ( $typei:ty, ) => {};
+        ( $typei:ty, $case:ident, $( $others:tt )* ) => {
+            #[test]
+            fn $case() {
+                $crate::arithmetic::test::IntegerTests::<$typei>::$case();
+            }
+
+            integer_tests!($typei, $($others)*);
+        };
+        ( $typei:ty, $case:ident => fail($msg:expr), $( $others:tt )* ) => {
+            #[test]
+            #[should_panic(expected = $msg)]
+            fn $case() {
+                $crate::arithmetic::test::IntegerTests::<$typei>::$case();
+            }
+
+            integer_tests!($typei, $($others)*);
+        };
+    }
+
+    #[macro_export]
+    macro_rules! big_integer_tests {
+        ( $typei:ty, $num_samples:expr, ) => {};
+        ( $typei:ty, $num_samples:expr, $case:ident, $( $others:tt )* ) => {
+            #[test]
+            fn $case() {
+                $crate::arithmetic::test::IntegerTests::<$typei>::$case($num_samples);
+            }
+
+            big_integer_tests!($typei, $num_samples, $($others)*);
+        };
+        ( $typei:ty, $num_samples:expr, $case:ident => fail($msg:expr), $( $others:tt )* ) => {
+            #[test]
+            #[should_panic(expected = $msg)]
+            fn $case() {
+                $crate::arithmetic::test::IntegerTests::<$typei>::$case($num_samples);
+            }
+
+            big_integer_tests!($typei, $num_samples, $($others)*);
+        };
+    }
+
+    #[macro_export]
     macro_rules! numeric_tests {
         ( $typei:ty, $typer:ty, ) => {};
         ( $typei:ty, $typer:ty, $case:ident, $( $others:tt )* ) => {
@@ -223,6 +278,171 @@ pub(crate) mod test {
 
             numeric_benchmarks!($typei, $typer, $($others)*);
         };
+    }
+
+    pub struct IntegerTests<I> {
+        _phantomi: PhantomData<I>,
+    }
+
+    impl<I> IntegerTests<I>
+    where
+        I: Integer + Display,
+        for<'a> &'a I: IntegerRef<I>,
+    {
+        pub fn testi_values_are_positive() {
+            let test_values = I::get_positive_test_values();
+            Self::loopi_check1(&test_values, |a| {
+                assert!(*a > I::zero(), "{a} is not positive");
+            });
+        }
+
+        pub fn testi_is_zero() {
+            let test_values = I::get_positive_test_values();
+            assert!(I::zero().is_zero());
+            assert!(!I::one().is_zero());
+            Self::loopi_check1(&test_values, |a| {
+                assert!(!a.is_zero(), "{a} is zero");
+            });
+        }
+
+        pub fn testi_zero_is_add_neutral() {
+            let test_values = I::get_positive_test_values();
+            Self::loopi_check1(&test_values, |a| {
+                assert_eq!(a + &I::zero(), *a, "a + 0 != a for {a}");
+                assert_eq!(&I::zero() + a, *a, "0 + a != a for {a}");
+                assert_eq!(a - &I::zero(), *a, "a - 0 != a for {a}");
+            })
+        }
+
+        #[allow(clippy::eq_op)]
+        pub fn testi_add_is_commutative() {
+            let test_values = I::get_positive_test_values();
+            Self::loopi_check2(&test_values, |a, b| {
+                assert_eq!(a + b, b + a, "a + b != b + a for {a}, {b}");
+            })
+        }
+
+        pub fn testi_add_is_associative(num_samples: Option<usize>) {
+            let test_values = I::get_positive_test_values();
+            Self::loopi_check3(&test_values, num_samples, |a, b, c| {
+                assert_eq!(
+                    &(a + b) + c,
+                    a + &(b + c),
+                    "(a + b) + c != a + (b + c) for {a}, {b}, {c}"
+                );
+            })
+        }
+
+        pub fn testi_opposite() {
+            let test_values = I::get_positive_test_values();
+            Self::loopi_check1(&test_values, |a| {
+                assert_eq!(
+                    I::zero() - (I::zero() - a.clone()),
+                    *a,
+                    "-(-a) != a for {a}"
+                );
+            });
+        }
+
+        #[allow(clippy::eq_op)]
+        pub fn testi_sub_self() {
+            let test_values = I::get_positive_test_values();
+            Self::loopi_check1(&test_values, |a| {
+                assert_eq!(a - a, I::zero(), "a - a != 0 for {a}");
+            });
+        }
+
+        pub fn testi_add_sub() {
+            let test_values = I::get_positive_test_values();
+            Self::loopi_check2(&test_values, |a, b| {
+                assert_eq!(&(a + b) - b, *a, "(a + b) - b != a for {a}, {b}");
+            });
+        }
+
+        pub fn testi_sub_add() {
+            let test_values = I::get_positive_test_values();
+            Self::loopi_check2(&test_values, |a, b| {
+                assert_eq!(&(a - b) + b, *a, "(a - b) + b != a for {a}, {b}");
+            });
+        }
+
+        pub fn testi_one_is_mul_neutral() {
+            let test_values = I::get_positive_test_values();
+            Self::loopi_check1(&test_values, |a| {
+                assert_eq!(a * &I::one(), *a, "a * 1 != a for {a}");
+                assert_eq!(&I::one() * a, *a, "1 * a != a for {a}");
+            })
+        }
+
+        pub fn testi_mul_is_commutative() {
+            let test_values = I::get_positive_test_values();
+            Self::loopi_check2(&test_values, |a, b| {
+                assert_eq!(a * b, b * a, "a * b != b * a for {a}, {b}");
+            })
+        }
+
+        pub fn testi_mul_is_associative(num_samples: Option<usize>) {
+            let test_values = I::get_positive_test_values();
+            Self::loopi_check3(&test_values, num_samples, |a, b, c| {
+                assert_eq!(
+                    &(a * b) * c,
+                    a * &(b * c),
+                    "(a * b) * c != a * (b * c) for {a}, {b}, {c}"
+                );
+            })
+        }
+
+        pub fn testi_mul_is_distributive(num_samples: Option<usize>) {
+            let test_values = I::get_positive_test_values();
+            Self::loopi_check3(&test_values, num_samples, |a, b, c| {
+                assert_eq!(
+                    a * &(b + c),
+                    &(a * b) + &(a * c),
+                    "a * (b + c) != (a * b) + (a * c) for {a}, {b}, {c}"
+                );
+            })
+        }
+
+        fn loopi_check1(test_values: &[I], f: impl Fn(&I)) {
+            for a in test_values {
+                f(a);
+            }
+        }
+
+        fn loopi_check2(test_values: &[I], f: impl Fn(&I, &I)) {
+            for a in test_values {
+                for b in test_values {
+                    f(a, b);
+                }
+            }
+        }
+
+        fn loopi_check3(test_values: &[I], num_samples: Option<usize>, f: impl Fn(&I, &I, &I)) {
+            match num_samples {
+                None => {
+                    // Exhaustive check.
+                    for a in test_values {
+                        for b in test_values {
+                            for c in test_values {
+                                f(a, b, c);
+                            }
+                        }
+                    }
+                }
+                Some(n) => {
+                    // Randomly sample values rather than conducting an exhaustive O(n^3) search on
+                    // the test values.
+                    let mut rng = thread_rng();
+
+                    for _ in 0..n {
+                        let a = test_values.choose(&mut rng).unwrap();
+                        let b = test_values.choose(&mut rng).unwrap();
+                        let c = test_values.choose(&mut rng).unwrap();
+                        f(a, b, c);
+                    }
+                }
+            }
+        }
     }
 
     pub struct NumericTests<I, R> {

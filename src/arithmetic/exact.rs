@@ -27,6 +27,15 @@ impl Integer for i64 {
     fn from_usize(i: usize) -> Self {
         i as i64
     }
+
+    fn get_positive_test_values() -> Vec<Self> {
+        let mut result = Vec::new();
+        for i in 0..=30 {
+            result.push(1 << i);
+            result.push(0x7FFF_FFFF ^ (1 << i));
+        }
+        result
+    }
 }
 
 #[cfg(test)]
@@ -35,6 +44,16 @@ impl IntegerRef<i64> for &i64 {}
 impl Integer for BigInt {
     fn from_usize(i: usize) -> Self {
         BigInt::from(i)
+    }
+
+    #[cfg(test)]
+    fn get_positive_test_values() -> Vec<Self> {
+        let mut result = Vec::new();
+        for i in 0..64 {
+            result.push(BigInt::from(1u64 << i));
+            result.push(BigInt::from(!(1u64 << i)));
+        }
+        result
     }
 }
 
@@ -84,10 +103,10 @@ where
             result.push(Self::ratio(1, 1 << i));
         }
         for i in 0..=30 {
-            result.push(Self::ratio(0x7FFF_FFFF - (1 << i), 1));
+            result.push(Self::ratio(0x7FFF_FFFF ^ (1 << i), 1));
         }
         for i in 0..=30 {
-            result.push(Self::ratio(1, 0x7FFF_FFFF - (1 << i)));
+            result.push(Self::ratio(1, 0x7FFF_FFFF ^ (1 << i)));
         }
         result
     }
@@ -96,13 +115,37 @@ where
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::{big_numeric_tests, numeric_benchmarks, numeric_tests};
+    use crate::{
+        big_integer_tests, big_numeric_tests, integer_tests, numeric_benchmarks, numeric_tests,
+    };
     use num::traits::One;
     use num::BigRational;
 
     fn make_ratio(num: i64, denom: i64) -> BigRational {
         BigRational::ratio_i(BigInt::from(num), BigInt::from(denom))
     }
+
+    integer_tests!(
+        BigInt,
+        testi_values_are_positive,
+        testi_is_zero,
+        testi_zero_is_add_neutral,
+        testi_add_is_commutative,
+        testi_opposite,
+        testi_sub_self,
+        testi_add_sub,
+        testi_sub_add,
+        testi_one_is_mul_neutral,
+        testi_mul_is_commutative,
+    );
+
+    big_integer_tests!(
+        BigInt,
+        Some(100_000),
+        testi_add_is_associative,
+        testi_mul_is_associative,
+        testi_mul_is_distributive,
+    );
 
     numeric_tests!(
         BigInt,
