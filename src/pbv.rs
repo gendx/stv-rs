@@ -165,7 +165,7 @@ Election: {}
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::arithmetic::FixedDecimal9;
+    use crate::arithmetic::{FixedDecimal9, Integer64};
     use crate::types::{Ballot, Candidate};
 
     fn make_election() -> Election {
@@ -202,9 +202,13 @@ mod test {
         let election = make_election();
 
         let mut buf = Vec::new();
-        let result =
-            plurality_block_voting::<i64, FixedDecimal9>(&mut buf, &election, "package name", None)
-                .unwrap();
+        let result = plurality_block_voting::<Integer64, FixedDecimal9>(
+            &mut buf,
+            &election,
+            "package name",
+            None,
+        )
+        .unwrap();
         assert_eq!(
             result,
             ElectionResult {
@@ -249,7 +253,7 @@ Action: Count Complete
         let election = make_election();
 
         let mut buf = Vec::new();
-        let result = plurality_block_voting::<i64, FixedDecimal9>(
+        let result = plurality_block_voting::<Integer64, FixedDecimal9>(
             &mut buf,
             &election,
             "package name",
@@ -300,7 +304,7 @@ Action: Count Complete
         let election = make_election();
 
         let mut buf = Vec::new();
-        let result = plurality_block_voting::<i64, FixedDecimal9>(
+        let result = plurality_block_voting::<Integer64, FixedDecimal9>(
             &mut buf,
             &election,
             "package name",
@@ -351,7 +355,7 @@ Action: Count Complete
         let election = make_election();
 
         let mut buf = Vec::new();
-        let result = plurality_block_voting::<i64, FixedDecimal9>(
+        let result = plurality_block_voting::<Integer64, FixedDecimal9>(
             &mut buf,
             &election,
             "package name",
@@ -402,7 +406,7 @@ Action: Count Complete
         let election = make_election();
 
         let mut buf = Vec::new();
-        let result = plurality_block_voting::<i64, FixedDecimal9>(
+        let result = plurality_block_voting::<Integer64, FixedDecimal9>(
             &mut buf,
             &election,
             "package name",
@@ -453,7 +457,7 @@ Action: Count Complete
         let election = make_election();
 
         let mut buf = Vec::new();
-        let result = plurality_block_voting::<i64, FixedDecimal9>(
+        let result = plurality_block_voting::<Integer64, FixedDecimal9>(
             &mut buf,
             &election,
             "package name",

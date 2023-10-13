@@ -672,7 +672,7 @@ where
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::arithmetic::{ApproxRational, BigFixedDecimal9, FixedDecimal9};
+    use crate::arithmetic::{ApproxRational, BigFixedDecimal9, FixedDecimal9, Integer64};
     use crate::types::Candidate;
     use ::test::Bencher;
     use num::rational::Ratio;
@@ -682,13 +682,23 @@ mod test {
     use std::hint::black_box;
 
     macro_rules! numeric_tests {
-        ( $typei:ty, $typer:ty, $($case:ident,)+ ) => {
-            $(
+        ( $typei:ty, $typer:ty, ) => {};
+        ( $typei:ty, $typer:ty, $case:ident, $( $others:tt )* ) => {
             #[test]
             fn $case() {
                 $crate::vote_count::test::NumericTests::<$typei, $typer>::$case();
             }
-            )+
+
+            numeric_tests!($typei, $typer, $($others)*);
+        };
+        ( $typei:ty, $typer:ty, $case:ident => fail($msg:expr), $( $others:tt )* ) => {
+            #[test]
+            #[should_panic(expected = $msg)]
+            fn $case() {
+                $crate::vote_count::test::NumericTests::<$typei, $typer>::$case();
+            }
+
+            numeric_tests!($typei, $typer, $($others)*);
         };
     }
 
@@ -770,8 +780,8 @@ mod test {
                 test_process_ballot_rec_ties,
                 test_process_ballot_multiplier,
                 test_increment_candidate_ballot_multiplier,
-                test_pascal,
-                test_pascal_properties,
+                test_pascal_small,
+                test_pascal_50,
                 test_expand_polynomial,
                 test_polyweights,
             );
@@ -785,30 +795,41 @@ mod test {
     }
 
     macro_rules! all_numeric_tests {
-        ( $mod:ident, $typei:ty, $typer:ty ) => {
+        ( $mod:ident, $typei:ty, $typer:ty, $( $other_tests:tt )* ) => {
             mod $mod {
                 use super::*;
 
                 base_numeric_tests!($typei, $typer);
                 advanced_numeric_tests!($typei, $typer);
+                numeric_tests!($typei, $typer, $($other_tests)*);
                 all_numeric_benches!($typei, $typer);
             }
         };
     }
 
-    all_numeric_tests!(exact, BigInt, BigRational);
-    all_numeric_tests!(approx_rational, BigInt, ApproxRational);
-    all_numeric_tests!(fixed, i64, FixedDecimal9);
-    all_numeric_tests!(fixed_big, BigInt, BigFixedDecimal9);
+    all_numeric_tests!(exact, BigInt, BigRational, test_pascal_100,);
+    all_numeric_tests!(approx_rational, BigInt, ApproxRational, test_pascal_100,);
+    #[cfg(not(feature = "checked_i64"))]
+    all_numeric_tests!(fixed, Integer64, FixedDecimal9, test_pascal_100,);
+    #[cfg(feature = "checked_i64")]
+    all_numeric_tests!(
+        fixed,
+        Integer64,
+        FixedDecimal9,
+        test_pascal_100 => fail(r"called `Option::unwrap()` on a `None` value"),
+    );
+    all_numeric_tests!(fixed_big, BigInt, BigFixedDecimal9, test_pascal_100,);
 
     mod ratio_i64 {
         use super::*;
         base_numeric_tests!(i64, Ratio<i64>);
+        numeric_tests!(i64, Ratio<i64>, test_pascal_100,);
         all_numeric_benches!(i64, Ratio<i64>);
     }
 
     mod float64 {
         all_numeric_benches!(f64, f64);
+        numeric_tests!(f64, f64, test_pascal_100,);
     }
 
     pub struct NumericTests<I, R> {
@@ -1318,7 +1339,7 @@ mod test {
             }
         }
 
-        fn test_pascal() {
+        fn test_pascal_small() {
             assert_eq!(
                 pascal::<I>(0),
                 [[1]].map(|row| row.map(I::from_usize).to_vec()).to_vec()
@@ -1362,21 +1383,25 @@ mod test {
             );
         }
 
-        fn test_pascal_properties() {
-            let count = 50;
-            let pascal50 = pascal::<I>(count);
+        fn test_pascal_50() {
+            Self::test_pascal_properties(50);
+        }
+
+        fn test_pascal_100() {
+            Self::test_pascal_properties(100);
+        }
+
+        fn test_pascal_properties(count: usize) {
+            let pascal = pascal::<I>(count);
             for i in 0..=count {
-                assert_eq!(pascal50[i][0], I::from_usize(1));
-                assert_eq!(pascal50[i][i], I::from_usize(1));
-                assert_eq!(pascal50[i][1], I::from_usize(i));
+                assert_eq!(pascal[i][0], I::from_usize(1));
+                assert_eq!(pascal[i][i], I::from_usize(1));
+                assert_eq!(pascal[i][1], I::from_usize(i));
                 if i < count {
-                    assert_eq!(pascal50[i + 1][i], I::from_usize(i + 1));
+                    assert_eq!(pascal[i + 1][i], I::from_usize(i + 1));
                 }
                 for j in 1..=i {
-                    assert_eq!(
-                        pascal50[i][j],
-                        &pascal50[i - 1][j - 1] + &pascal50[i - 1][j]
-                    );
+                    assert_eq!(pascal[i][j], &pascal[i - 1][j - 1] + &pascal[i - 1][j]);
                 }
             }
         }

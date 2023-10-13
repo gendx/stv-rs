@@ -18,16 +18,109 @@
 use super::{Integer, IntegerRef, Rational, RationalRef};
 use num::bigint::ToBigInt;
 use num::rational::Ratio;
-use num::traits::{NumAssign, ToPrimitive, Zero};
+use num::traits::{NumAssign, One, ToPrimitive, Zero};
 use num::BigInt;
 use std::fmt::{Debug, Display};
+use std::ops::{Add, Mul, Sub};
 
+/// An integer wrapping a [`i64`], performing arithmetic overflow checks if the
+/// `checked_i64` feature is enabled.
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd)]
+pub struct Integer64(pub(super) i64);
+
+impl Debug for Integer64 {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
+        write!(f, "{}", self.0)
+    }
+}
+
+#[cfg(test)]
+impl Display for Integer64 {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl Zero for Integer64 {
+    fn zero() -> Self {
+        Integer64(i64::zero())
+    }
+    fn is_zero(&self) -> bool {
+        self.0.is_zero()
+    }
+}
+impl One for Integer64 {
+    fn one() -> Self {
+        Integer64(1)
+    }
+}
+
+impl Add for Integer64 {
+    type Output = Self;
+    fn add(self, rhs: Self) -> Self {
+        #[cfg(feature = "checked_i64")]
+        return Integer64(self.0.checked_add(rhs.0).unwrap());
+        #[cfg(not(feature = "checked_i64"))]
+        return Integer64(self.0 + rhs.0);
+    }
+}
+impl Sub for Integer64 {
+    type Output = Self;
+    fn sub(self, rhs: Self) -> Self {
+        #[cfg(feature = "checked_i64")]
+        return Integer64(self.0.checked_sub(rhs.0).unwrap());
+        #[cfg(not(feature = "checked_i64"))]
+        return Integer64(self.0 - rhs.0);
+    }
+}
+impl Mul for Integer64 {
+    type Output = Self;
+    fn mul(self, rhs: Self) -> Self {
+        #[cfg(feature = "checked_i64")]
+        return Integer64(self.0.checked_mul(rhs.0).unwrap());
+        #[cfg(not(feature = "checked_i64"))]
+        return Integer64(self.0 * rhs.0);
+    }
+}
+
+impl Add<&'_ Integer64> for &'_ Integer64 {
+    type Output = Integer64;
+    fn add(self, rhs: &'_ Integer64) -> Integer64 {
+        *self + *rhs
+    }
+}
+impl Sub<&'_ Integer64> for &'_ Integer64 {
+    type Output = Integer64;
+    fn sub(self, rhs: &'_ Integer64) -> Integer64 {
+        *self - *rhs
+    }
+}
+impl Mul<&'_ Integer64> for &'_ Integer64 {
+    type Output = Integer64;
+    fn mul(self, rhs: &'_ Integer64) -> Integer64 {
+        *self * *rhs
+    }
+}
+
+impl Integer for Integer64 {
+    fn from_usize(i: usize) -> Self {
+        #[cfg(feature = "checked_i64")]
+        return Integer64(i.try_into().unwrap());
+        #[cfg(not(feature = "checked_i64"))]
+        return Integer64(i as i64);
+    }
+}
+
+impl IntegerRef<Integer64> for &Integer64 {}
+
+#[cfg(test)]
 impl Integer for i64 {
     fn from_usize(i: usize) -> Self {
         i as i64
     }
 }
 
+#[cfg(test)]
 impl IntegerRef<i64> for &i64 {}
 
 impl Integer for BigInt {
@@ -44,10 +137,8 @@ impl<I> Rational<I> for Ratio<I>
 where
     I: Display + Debug,
     I: num::Integer,
-    I: NumAssign,
-    I: ToPrimitive,
-    I: ToBigInt,
-    I: Integer,
+    I: ToPrimitive + ToBigInt,
+    I: Integer + NumAssign,
     for<'a> &'a I: IntegerRef<I>,
 {
     fn from_int(i: I) -> Self {

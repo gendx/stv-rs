@@ -728,7 +728,7 @@ Election: {}
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::arithmetic::fixed::FixedDecimal9;
+    use crate::arithmetic::{FixedDecimal9, Integer64};
     use crate::types::{Ballot, Candidate};
     use crate::util::log_tester::ThreadLocalLogger;
     use log::Level::{Debug, Info, Warn};
@@ -878,7 +878,7 @@ mod test {
             .build()
     }
 
-    fn make_fake_state(election: &Election) -> State<i64, FixedDecimal9> {
+    fn make_fake_state(election: &Election) -> State<Integer64, FixedDecimal9> {
         State::builder()
             .election(election)
             .statuses([
@@ -912,7 +912,7 @@ mod test {
             .build()
     }
 
-    fn make_fake_count() -> VoteCount<i64, FixedDecimal9> {
+    fn make_fake_count() -> VoteCount<Integer64, FixedDecimal9> {
         VoteCount::new(
             [
                 FixedDecimal9::ratio(7, 9),
@@ -957,7 +957,7 @@ mod test {
             .build();
 
         let mut buf = Vec::new();
-        let result = stv_droop::<i64, FixedDecimal9>(
+        let result = stv_droop::<Integer64, FixedDecimal9>(
             &mut buf,
             &election,
             "package name",
@@ -1168,7 +1168,7 @@ Action: Count Complete
             .build();
 
         let mut buf = Vec::new();
-        let result = stv_droop::<i64, FixedDecimal9>(
+        let result = stv_droop::<Integer64, FixedDecimal9>(
             &mut buf,
             &election,
             "package name",
@@ -1332,7 +1332,7 @@ Action: Count Complete
 
         let logger = ThreadLocalLogger::start();
         let mut buf = Vec::new();
-        let result = stv_droop::<i64, FixedDecimal9>(
+        let result = stv_droop::<Integer64, FixedDecimal9>(
             &mut buf,
             &election,
             "package name",
@@ -1558,7 +1558,10 @@ Action: Begin Count
                 .build()
         }
 
-        fn make_state(election: &Election, statuses: [Status; 5]) -> State<'_, i64, FixedDecimal9> {
+        fn make_state(
+            election: &Election,
+            statuses: [Status; 5],
+        ) -> State<'_, Integer64, FixedDecimal9> {
             State::builder()
                 .election(election)
                 .statuses(statuses)
@@ -1684,7 +1687,7 @@ Weights:
         fn make_state(
             election: &Election,
             statuses: impl Into<Vec<Status>>,
-        ) -> State<'_, i64, FixedDecimal9> {
+        ) -> State<'_, Integer64, FixedDecimal9> {
             State::builder()
                 .election(election)
                 .statuses(statuses)
@@ -1698,7 +1701,7 @@ Weights:
                 .build()
         }
 
-        fn make_count() -> VoteCount<i64, FixedDecimal9> {
+        fn make_count() -> VoteCount<Integer64, FixedDecimal9> {
             VoteCount::new([FixedDecimal9::zero(); 4], FixedDecimal9::zero())
         }
 
@@ -1998,7 +2001,7 @@ Action: Defeat (stable surplus 0.000066666): Apple
         fn make_state(
             election: &Election,
             statuses: impl Into<Vec<Status>>,
-        ) -> State<'_, i64, FixedDecimal9> {
+        ) -> State<'_, Integer64, FixedDecimal9> {
             State::builder()
                 .election(election)
                 .statuses(statuses)
@@ -2012,7 +2015,7 @@ Action: Defeat (stable surplus 0.000066666): Apple
                 .build()
         }
 
-        fn make_count() -> VoteCount<i64, FixedDecimal9> {
+        fn make_count() -> VoteCount<Integer64, FixedDecimal9> {
             VoteCount::new([FixedDecimal9::zero(); 4], FixedDecimal9::zero())
         }
 

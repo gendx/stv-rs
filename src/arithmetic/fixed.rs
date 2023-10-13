@@ -17,6 +17,7 @@
 //! This implementation is backed by [`i64`], and will panic in case of overflow
 //! if the `checked_i64` feature is enabled.
 
+use super::exact::Integer64;
 use super::{Rational, RationalRef};
 use num::traits::{One, Zero};
 use num::Integer;
@@ -38,6 +39,10 @@ impl FixedDecimal9 {
 impl FixedDecimal9 {
     pub(crate) fn new(x: i64) -> Self {
         FixedDecimal9(x)
+    }
+
+    fn from_i64(x: i64) -> Self {
+        FixedDecimal9::from_int(Integer64(x))
     }
 }
 
@@ -94,13 +99,13 @@ impl Mul for FixedDecimal9 {
         return FixedDecimal9(((self.0 as i128 * rhs.0 as i128) / Self::FACTOR_I128) as i64);
     }
 }
-impl Mul<i64> for FixedDecimal9 {
+impl Mul<Integer64> for FixedDecimal9 {
     type Output = Self;
-    fn mul(self, rhs: i64) -> Self {
+    fn mul(self, rhs: Integer64) -> Self {
         #[cfg(feature = "checked_i64")]
-        return FixedDecimal9(self.0.checked_mul(rhs).unwrap());
+        return FixedDecimal9(self.0.checked_mul(rhs.0).unwrap());
         #[cfg(not(feature = "checked_i64"))]
-        return FixedDecimal9(self.0 * rhs);
+        return FixedDecimal9(self.0 * rhs.0);
     }
 }
 impl Div for FixedDecimal9 {
@@ -119,13 +124,13 @@ impl Div for FixedDecimal9 {
         return FixedDecimal9(((self.0 as i128 * Self::FACTOR_I128) / rhs.0 as i128) as i64);
     }
 }
-impl Div<i64> for FixedDecimal9 {
+impl Div<Integer64> for FixedDecimal9 {
     type Output = Self;
-    fn div(self, rhs: i64) -> Self {
+    fn div(self, rhs: Integer64) -> Self {
         #[cfg(feature = "checked_i64")]
-        return FixedDecimal9(self.0.checked_div(rhs).unwrap());
+        return FixedDecimal9(self.0.checked_div(rhs.0).unwrap());
         #[cfg(not(feature = "checked_i64"))]
-        return FixedDecimal9(self.0 / rhs);
+        return FixedDecimal9(self.0 / rhs.0);
     }
 }
 
@@ -172,9 +177,9 @@ impl Mul<&'_ FixedDecimal9> for &'_ FixedDecimal9 {
         *self * *rhs
     }
 }
-impl Mul<&'_ i64> for &'_ FixedDecimal9 {
+impl Mul<&'_ Integer64> for &'_ FixedDecimal9 {
     type Output = FixedDecimal9;
-    fn mul(self, rhs: &'_ i64) -> FixedDecimal9 {
+    fn mul(self, rhs: &'_ Integer64) -> FixedDecimal9 {
         *self * *rhs
     }
 }
@@ -184,9 +189,9 @@ impl Div<&'_ FixedDecimal9> for &'_ FixedDecimal9 {
         *self / *rhs
     }
 }
-impl Div<&'_ i64> for &'_ FixedDecimal9 {
+impl Div<&'_ Integer64> for &'_ FixedDecimal9 {
     type Output = FixedDecimal9;
-    fn div(self, rhs: &'_ i64) -> FixedDecimal9 {
+    fn div(self, rhs: &'_ Integer64) -> FixedDecimal9 {
         *self / *rhs
     }
 }
@@ -222,8 +227,8 @@ impl MulAssign<&'_ Self> for FixedDecimal9 {
         *self = *self * *rhs
     }
 }
-impl DivAssign<&'_ i64> for FixedDecimal9 {
-    fn div_assign(&mut self, rhs: &'_ i64) {
+impl DivAssign<&'_ Integer64> for FixedDecimal9 {
+    fn div_assign(&mut self, rhs: &'_ Integer64) {
         *self = *self / *rhs
     }
 }
@@ -255,27 +260,27 @@ impl<'a> Sum<&'a Self> for FixedDecimal9 {
     }
 }
 
-impl RationalRef<&i64, FixedDecimal9> for &FixedDecimal9 {}
+impl RationalRef<&Integer64, FixedDecimal9> for &FixedDecimal9 {}
 
-impl Rational<i64> for FixedDecimal9 {
-    fn from_int(i: i64) -> Self {
+impl Rational<Integer64> for FixedDecimal9 {
+    fn from_int(i: Integer64) -> Self {
         #[cfg(feature = "checked_i64")]
-        return FixedDecimal9(i.checked_mul(Self::FACTOR).unwrap());
+        return FixedDecimal9(i.0.checked_mul(Self::FACTOR).unwrap());
         #[cfg(not(feature = "checked_i64"))]
-        return FixedDecimal9(i * Self::FACTOR);
+        return FixedDecimal9(i.0 * Self::FACTOR);
     }
 
-    fn ratio_i(num: i64, denom: i64) -> Self {
+    fn ratio_i(num: Integer64, denom: Integer64) -> Self {
         #[cfg(feature = "checked_i64")]
         return FixedDecimal9(
-            (num as i128 * Self::FACTOR_I128)
-                .checked_div(denom as i128)
+            (num.0 as i128 * Self::FACTOR_I128)
+                .checked_div(denom.0 as i128)
                 .unwrap()
                 .try_into()
                 .unwrap(),
         );
         #[cfg(not(feature = "checked_i64"))]
-        return FixedDecimal9(((num as i128 * Self::FACTOR_I128) / denom as i128) as i64);
+        return FixedDecimal9(((num.0 as i128 * Self::FACTOR_I128) / denom.0 as i128) as i64);
     }
 
     fn to_f64(&self) -> f64 {
@@ -344,7 +349,7 @@ mod test {
     use crate::{big_numeric_tests, numeric_benchmarks, numeric_tests};
 
     numeric_tests!(
-        i64,
+        Integer64,
         FixedDecimal9,
         test_values_are_positive,
         test_is_exact,
@@ -384,7 +389,7 @@ mod test {
     );
 
     big_numeric_tests!(
-        i64,
+        Integer64,
         FixedDecimal9,
         None,
         test_add_is_associative,
@@ -405,7 +410,7 @@ mod test {
     );
 
     numeric_benchmarks!(
-        i64,
+        Integer64,
         FixedDecimal9,
         bench_add,
         bench_sub,
@@ -466,24 +471,24 @@ mod test {
         // Even though the intermediate multiplication overflows a i64, the result
         // doesn't and is correct.
         assert_eq!(
-            FixedDecimal9::from_int(1_000) * FixedDecimal9::from_int(1_000),
-            FixedDecimal9::from_int(1_000_000)
+            FixedDecimal9::from_i64(1_000) * FixedDecimal9::from_i64(1_000),
+            FixedDecimal9::from_i64(1_000_000)
         );
         // The intermediate result of 10^19 is just between 2^63 and 2^64. Therefore it
         // overflows i64 as well.
         assert_eq!(
-            FixedDecimal9::from_int(5) * FixedDecimal9::from_int(2),
-            FixedDecimal9::from_int(10)
+            FixedDecimal9::from_i64(5) * FixedDecimal9::from_i64(2),
+            FixedDecimal9::from_i64(10)
         );
         assert_eq!(
-            FixedDecimal9::from_int(9_000_000_000) / FixedDecimal9::from_int(3),
-            FixedDecimal9::from_int(3_000_000_000)
+            FixedDecimal9::from_i64(9_000_000_000) / FixedDecimal9::from_i64(3),
+            FixedDecimal9::from_i64(3_000_000_000)
         );
 
         // Same check for MulAssign.
-        let mut x = FixedDecimal9::from_int(1_000);
-        x *= FixedDecimal9::from_int(1_000);
-        assert_eq!(x, FixedDecimal9::from_int(1_000_000));
+        let mut x = FixedDecimal9::from_i64(1_000);
+        x *= FixedDecimal9::from_i64(1_000);
+        assert_eq!(x, FixedDecimal9::from_i64(1_000_000));
     }
 
     #[cfg(feature = "checked_i64")]
@@ -491,7 +496,7 @@ mod test {
     #[should_panic(expected = "called `Result::unwrap()` on an `Err` value: TryFromIntError(())")]
     fn test_mul_overflow() {
         // The result overflows an i64, which is caught by checked_i64.
-        let _ = FixedDecimal9::from_int(1_000_000) * FixedDecimal9::from_int(1_000_000);
+        let _ = FixedDecimal9::from_i64(1_000_000) * FixedDecimal9::from_i64(1_000_000);
     }
 
     #[cfg(feature = "checked_i64")]
@@ -499,8 +504,8 @@ mod test {
     #[should_panic(expected = "called `Result::unwrap()` on an `Err` value: TryFromIntError(())")]
     fn test_mul_assign_overflow() {
         // The result overflows an i64, which is caught by checked_i64.
-        let mut x = FixedDecimal9::from_int(1_000_000);
-        x *= FixedDecimal9::from_int(1_000_000);
+        let mut x = FixedDecimal9::from_i64(1_000_000);
+        x *= FixedDecimal9::from_i64(1_000_000);
     }
 
     #[cfg(not(feature = "checked_i64"))]
@@ -508,12 +513,12 @@ mod test {
     fn test_overflow() {
         // When checked_i64 is disabled, overflow leads to incorrect values.
         assert_eq!(
-            FixedDecimal9::from_int(1_000_000) * FixedDecimal9::from_int(1_000_000),
+            FixedDecimal9::from_i64(1_000_000) * FixedDecimal9::from_i64(1_000_000),
             FixedDecimal9(3_875_820_019_684_212_736)
         );
 
-        let mut x = FixedDecimal9::from_int(1_000_000);
-        x *= FixedDecimal9::from_int(1_000_000);
+        let mut x = FixedDecimal9::from_i64(1_000_000);
+        x *= FixedDecimal9::from_i64(1_000_000);
         assert_eq!(x, FixedDecimal9(3_875_820_019_684_212_736));
     }
 }

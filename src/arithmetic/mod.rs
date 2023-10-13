@@ -15,15 +15,16 @@
 //! Module providing traits to abstract over the arithmetic needed for STV, and
 //! various implementations of this arithmetic.
 
-pub(crate) mod approx_rational;
-pub(crate) mod exact;
-pub(crate) mod fixed;
-pub(crate) mod fixed_big;
-pub(crate) mod float64;
+mod approx_rational;
+mod exact;
+mod fixed;
+mod fixed_big;
+mod float64;
 #[cfg(test)]
 mod ratio_i64;
 
 pub use approx_rational::ApproxRational;
+pub use exact::Integer64;
 pub use fixed::FixedDecimal9;
 pub use fixed_big::BigFixedDecimal9;
 

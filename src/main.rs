@@ -22,7 +22,8 @@ use std::fs::File;
 use std::io::{self, stdin, stdout, BufRead, BufReader, Write};
 use stv_rs::{
     arithmetic::{
-        ApproxRational, BigFixedDecimal9, FixedDecimal9, Integer, IntegerRef, Rational, RationalRef,
+        ApproxRational, BigFixedDecimal9, FixedDecimal9, Integer, Integer64, IntegerRef, Rational,
+        RationalRef,
     },
     meek::stv_droop,
     parse::{parse_election, ParsingOptions},
@@ -127,7 +128,9 @@ impl Cli {
     /// Run the given election based on the command-line parameters.
     fn run_election(self, election: &Election, output: &mut impl Write) -> io::Result<()> {
         match self.arithmetic {
-            Arithmetic::Fixed9 => self.dispatch_algorithm::<i64, FixedDecimal9>(election, output),
+            Arithmetic::Fixed9 => {
+                self.dispatch_algorithm::<Integer64, FixedDecimal9>(election, output)
+            }
             Arithmetic::Bigfixed9 => {
                 self.dispatch_algorithm::<BigInt, BigFixedDecimal9>(election, output)
             }
