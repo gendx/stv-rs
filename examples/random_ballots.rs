@@ -17,7 +17,6 @@
 #![forbid(missing_docs, unsafe_code)]
 
 use rand::distributions::{Distribution, Uniform};
-use rand::seq::index::sample;
 use rand::SeedableRng;
 use rand::{thread_rng, RngCore};
 use rand_chacha::ChaChaRng;
@@ -28,7 +27,7 @@ use std::io::{BufWriter, Result, Write};
 use stv_rs::blt::{write_blt, CandidateFormat, WriteTieOrder};
 use stv_rs::types::{Ballot, Candidate, Election, ElectionBuilder};
 
-static VEGETABLES: [&str; 20] = [
+const VEGETABLES: [&str; 20] = [
     "apple", "banana", "cherry", "date", "eggplant", "fig", "grape", "hazelnut", "jalapeno",
     "kiwi", "litchi", "mushroom", "nut", "orange", "pear", "quinoa", "radish", "soy", "tomato",
     "vanilla",
@@ -36,36 +35,62 @@ static VEGETABLES: [&str; 20] = [
 
 fn main() -> Result<()> {
     let file = File::create("rand_2x10.blt")?;
-    write_blt_2x10(&mut thread_rng(), &mut BufWriter::new(file), 1000)?;
+    write_blt_2x10(
+        &mut thread_rng(),
+        &mut BufWriter::new(file),
+        &VEGETABLES,
+        1000,
+    )?;
 
     let file = File::create("rand_5x4.blt")?;
-    write_blt_5x4(&mut thread_rng(), &mut BufWriter::new(file), 1000)?;
+    write_blt_5x4(
+        &mut thread_rng(),
+        &mut BufWriter::new(file),
+        &VEGETABLES,
+        1000,
+    )?;
 
     let file = File::create("rand_geometric.blt")?;
-    write_blt_geometric(&mut thread_rng(), &mut BufWriter::new(file), 1000)?;
+    write_blt_geometric(
+        &mut thread_rng(),
+        &mut BufWriter::new(file),
+        &VEGETABLES,
+        1000,
+    )?;
 
     let file = File::create("rand_hypergeometric.blt")?;
-    write_blt_hypergeometric(&mut thread_rng(), &mut BufWriter::new(file), 1000)?;
+    write_blt_hypergeometric(
+        &mut thread_rng(),
+        &mut BufWriter::new(file),
+        &VEGETABLES,
+        1000,
+    )?;
 
     let file = File::create("rand_hypergeometric_10k.blt")?;
-    write_blt_hypergeometric(&mut thread_rng(), &mut BufWriter::new(file), 10000)?;
+    write_blt_hypergeometric(
+        &mut thread_rng(),
+        &mut BufWriter::new(file),
+        &VEGETABLES,
+        10000,
+    )?;
 
     let file = File::create("rand_hypergeometric_100k.blt")?;
     write_blt_hypergeometric(
         &mut ChaChaRng::seed_from_u64(42),
         &mut BufWriter::new(file),
+        &VEGETABLES,
         100000,
     )?;
 
     Ok(())
 }
 
-fn new_election_builder() -> ElectionBuilder {
+fn new_election_builder(nicknames: &[&str]) -> ElectionBuilder {
     Election::builder()
         .title("Vegetable contest")
         .num_seats(10)
         .candidates(
-            VEGETABLES
+            nicknames
                 .iter()
                 .map(|&nickname| Candidate::new(nickname, /* is_withdrawn = */ false))
                 .collect::<Vec<_>>(),
@@ -75,10 +100,11 @@ fn new_election_builder() -> ElectionBuilder {
 fn write_blt_2x10(
     rng: &mut impl RngCore,
     output: &mut impl Write,
+    nicknames: &[&str],
     ballot_count: usize,
 ) -> Result<()> {
-    let election = new_election_builder()
-        .ballots(generate_tuples(rng, ballot_count, 2))
+    let election = new_election_builder(nicknames)
+        .ballots(generate_tuples(rng, nicknames.len(), ballot_count, 2))
         .build();
     write_blt(
         output,
@@ -92,10 +118,11 @@ fn write_blt_2x10(
 fn write_blt_5x4(
     rng: &mut impl RngCore,
     output: &mut impl Write,
+    nicknames: &[&str],
     ballot_count: usize,
 ) -> Result<()> {
-    let election = new_election_builder()
-        .ballots(generate_tuples(rng, ballot_count, 5))
+    let election = new_election_builder(nicknames)
+        .ballots(generate_tuples(rng, nicknames.len(), ballot_count, 5))
         .build();
     write_blt(
         output,
@@ -109,10 +136,11 @@ fn write_blt_5x4(
 fn write_blt_geometric(
     rng: &mut impl RngCore,
     output: &mut impl Write,
+    nicknames: &[&str],
     ballot_count: usize,
 ) -> Result<()> {
-    let election = new_election_builder()
-        .ballots(generate_geometric(rng, ballot_count))
+    let election = new_election_builder(nicknames)
+        .ballots(generate_geometric(rng, nicknames.len(), ballot_count))
         .build();
     write_blt(
         output,
@@ -126,10 +154,11 @@ fn write_blt_geometric(
 fn write_blt_hypergeometric(
     rng: &mut impl RngCore,
     output: &mut impl Write,
+    nicknames: &[&str],
     ballot_count: usize,
 ) -> Result<()> {
-    let election = new_election_builder()
-        .ballots(generate_hypergeometric(rng, ballot_count))
+    let election = new_election_builder(nicknames)
+        .ballots(generate_hypergeometric(rng, nicknames.len(), ballot_count))
         .build();
     write_blt(
         output,
@@ -140,27 +169,40 @@ fn write_blt_hypergeometric(
     Ok(())
 }
 
-fn generate_geometric(rng: &mut impl RngCore, ballot_count: usize) -> Vec<Ballot> {
-    let distributions = (0..20)
+fn generate_geometric(
+    rng: &mut impl RngCore,
+    candidate_count: usize,
+    ballot_count: usize,
+) -> Vec<Ballot> {
+    let distributions = (0..candidate_count)
         .map(|i| Geometric::new(0.3 + i as f64 / 50.0).unwrap())
         .collect::<Vec<_>>();
     generate_distributions(rng, ballot_count, &distributions)
 }
 
-fn generate_hypergeometric(rng: &mut impl RngCore, ballot_count: usize) -> Vec<Ballot> {
-    let distributions = (0..20)
-        .map(|i| Hypergeometric::new(100, 50, 20 + i).unwrap())
+fn generate_hypergeometric(
+    rng: &mut impl RngCore,
+    candidate_count: usize,
+    ballot_count: usize,
+) -> Vec<Ballot> {
+    let distributions = (0..candidate_count)
+        .map(|i| Hypergeometric::new(100, 50, 20 + i as u64).unwrap())
         .collect::<Vec<_>>();
     generate_distributions(rng, ballot_count, &distributions)
 }
 
-fn generate_tuples(rng: &mut impl RngCore, ballot_count: usize, tuple_size: usize) -> Vec<Ballot> {
+fn generate_tuples(
+    rng: &mut impl RngCore,
+    candidate_count: usize,
+    ballot_count: usize,
+    tuple_size: usize,
+) -> Vec<Ballot> {
     let count_dist = Uniform::from(1..100);
 
     let mut ballots = Vec::new();
     for _ in 0..ballot_count {
         let count = count_dist.sample(rng);
-        let order = sample(rng, 20, 20);
+        let order = rand::seq::index::sample(rng, candidate_count, candidate_count);
         ballots.push(Ballot::new(
             count,
             order
@@ -204,7 +246,7 @@ mod test {
     fn test_blt_2x10() {
         let mut buf = Vec::new();
         let mut rng = ChaChaRng::seed_from_u64(42);
-        write_blt_2x10(&mut rng, &mut buf, /* ballot_count = */ 7).unwrap();
+        write_blt_2x10(&mut rng, &mut buf, &VEGETABLES, /* ballot_count = */ 7).unwrap();
 
         assert_eq!(
             std::str::from_utf8(&buf).unwrap(),
@@ -247,7 +289,7 @@ mod test {
     fn test_blt_5x4() {
         let mut buf = Vec::new();
         let mut rng = ChaChaRng::seed_from_u64(42);
-        write_blt_5x4(&mut rng, &mut buf, /* ballot_count = */ 7).unwrap();
+        write_blt_5x4(&mut rng, &mut buf, &VEGETABLES, /* ballot_count = */ 7).unwrap();
 
         assert_eq!(
             std::str::from_utf8(&buf).unwrap(),
@@ -290,7 +332,7 @@ mod test {
     fn test_blt_geometric() {
         let mut buf = Vec::new();
         let mut rng = ChaChaRng::seed_from_u64(42);
-        write_blt_geometric(&mut rng, &mut buf, /* ballot_count = */ 7).unwrap();
+        write_blt_geometric(&mut rng, &mut buf, &VEGETABLES, /* ballot_count = */ 7).unwrap();
 
         assert_eq!(
             std::str::from_utf8(&buf).unwrap(),
@@ -333,7 +375,7 @@ mod test {
     fn test_blt_hypergeometric() {
         let mut buf = Vec::new();
         let mut rng = ChaChaRng::seed_from_u64(42);
-        write_blt_hypergeometric(&mut rng, &mut buf, /* ballot_count = */ 7).unwrap();
+        write_blt_hypergeometric(&mut rng, &mut buf, &VEGETABLES, /* ballot_count = */ 7).unwrap();
 
         assert_eq!(
             std::str::from_utf8(&buf).unwrap(),
