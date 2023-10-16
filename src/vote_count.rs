@@ -1100,7 +1100,6 @@ mod test {
                             vote_count, vote_count_parallel,
                             "Mismatch with {n} candidates"
                         );
-                        thread_pool.join();
                     });
                 }
             }

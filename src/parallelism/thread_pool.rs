@@ -17,12 +17,12 @@
 use crate::arithmetic::{Integer, IntegerRef, Rational, RationalRef};
 use crate::types::Election;
 use crate::vote_count::{VoteAccumulator, VoteCount};
-use log::debug;
+use log::{debug, error};
 use std::cell::Cell;
 use std::num::NonZeroUsize;
 use std::ops::{DerefMut, Range};
 use std::sync::atomic::{AtomicUsize, Ordering};
-use std::sync::{Arc, Condvar, Mutex, RwLock};
+use std::sync::{Arc, Condvar, Mutex, MutexGuard, PoisonError, RwLock};
 use std::thread::{Scope, ScopedJoinHandle};
 
 /// Status of the main thread.
@@ -32,6 +32,8 @@ enum MainStatus {
     Waiting,
     /// The main thread is ready to prepare the next round.
     Ready,
+    /// One of the worker threads panicked.
+    WorkerPanic,
 }
 
 /// Status sent to the worker threads.
@@ -61,6 +63,58 @@ impl RoundColor {
     }
 }
 
+/// An ergonomic wrapper around a [`Mutex`]-[`Condvar`] pair.
+struct Status<T> {
+    mutex: Mutex<T>,
+    condvar: Condvar,
+}
+
+impl<T> Status<T> {
+    /// Creates a new status initialized with the given value.
+    fn new(t: T) -> Self {
+        Self {
+            mutex: Mutex::new(t),
+            condvar: Condvar::new(),
+        }
+    }
+
+    /// Attempts to set the status to the given value and notifies one waiting
+    /// thread.
+    ///
+    /// Fails if the [`Mutex`] is poisoned.
+    fn try_notify_one(&self, t: T) -> Result<(), PoisonError<MutexGuard<'_, T>>> {
+        *self.mutex.lock()? = t;
+        self.condvar.notify_one();
+        Ok(())
+    }
+
+    /// If the predicate is true on this status, sets the status to the given
+    /// value and notifies one waiting thread.
+    fn notify_one_if(&self, predicate: impl Fn(&T) -> bool, t: T) {
+        let mut locked = self.mutex.lock().unwrap();
+        if predicate(&*locked) {
+            *locked = t;
+            self.condvar.notify_one();
+        }
+    }
+
+    /// Sets the status to the given value and notifies all waiting threads.
+    fn notify_all(&self, t: T) {
+        *self.mutex.lock().unwrap() = t;
+        self.condvar.notify_all();
+    }
+
+    /// Waits until the predicate is true on this status.
+    ///
+    /// This returns a [`MutexGuard`], allowing to further inspect or modify the
+    /// status.
+    fn wait_while(&self, predicate: impl FnMut(&mut T) -> bool) -> MutexGuard<T> {
+        self.condvar
+            .wait_while(self.mutex.lock().unwrap(), predicate)
+            .unwrap()
+    }
+}
+
 /// A thread pool tied to a scope, that can perform vote counting rounds.
 pub struct ThreadPool<'scope, I, R> {
     /// Handles to all the threads in the pool.
@@ -70,9 +124,9 @@ pub struct ThreadPool<'scope, I, R> {
     /// Color of the current round.
     round: Cell<RoundColor>,
     /// Status of the worker threads.
-    worker_status: Arc<(Mutex<WorkerStatus>, Condvar)>,
+    worker_status: Arc<Status<WorkerStatus>>,
     /// Status of the main thread.
-    main_status: Arc<(Mutex<MainStatus>, Condvar)>,
+    main_status: Arc<Status<MainStatus>>,
     /// Storage for the keep factors, used as input of the current round by the
     /// worker threads.
     keep_factors: Arc<RwLock<Vec<R>>>,
@@ -103,8 +157,8 @@ where
     ) -> Self {
         let color = RoundColor::Blue;
         let num_active_threads = Arc::new(AtomicUsize::new(0));
-        let worker_status = Arc::new((Mutex::new(WorkerStatus::Round(color)), Condvar::new()));
-        let main_status = Arc::new((Mutex::new(MainStatus::Waiting), Condvar::new()));
+        let worker_status = Arc::new(Status::new(WorkerStatus::Round(color)));
+        let main_status = Arc::new(Status::new(MainStatus::Waiting));
         let keep_factors = Arc::new(RwLock::new(Vec::new()));
         let num_ballots = election.ballots.len();
         let threads: Vec<_> = (0..num_threads.into())
@@ -159,21 +213,21 @@ where
 
         debug!("[main thread, round {round:?}] Ready to accumulate votes.");
 
-        let (lock, condvar) = &*self.worker_status;
-        *lock.lock().unwrap() = WorkerStatus::Round(round);
-        condvar.notify_all();
+        self.worker_status.notify_all(WorkerStatus::Round(round));
 
         debug!(
             "[main thread, round {round:?}] Waiting for all threads to finish accumulating votes."
         );
 
-        let (lock, condvar) = &*self.main_status;
-        let mut guard = condvar
-            .wait_while(lock.lock().unwrap(), |status| {
-                *status == MainStatus::Waiting
-            })
-            .unwrap();
+        let mut guard = self
+            .main_status
+            .wait_while(|status| *status == MainStatus::Waiting);
+        if *guard == MainStatus::WorkerPanic {
+            error!("[main thread] A worker thread panicked!");
+            panic!("A worker thread panicked!");
+        }
         *guard = MainStatus::Waiting;
+        drop(guard);
 
         debug!("[main thread, round {round:?}] All threads have now finished accumulating votes.");
 
@@ -183,18 +237,21 @@ where
             .reduce(|a, b| a.reduce(b))
             .unwrap()
     }
+}
 
+impl<I, R> Drop for ThreadPool<'_, I, R> {
     /// Joins all the threads in the pool.
-    pub fn join(self) {
+    fn drop(&mut self) {
         debug!("[main thread] Notifying threads to finish...");
-        let (lock, condvar) = &*self.worker_status;
-        *lock.lock().unwrap() = WorkerStatus::Finished;
-        condvar.notify_all();
+        self.worker_status.notify_all(WorkerStatus::Finished);
 
         debug!("[main thread] Joining threads in the pool...");
-        for (i, t) in self.threads.into_iter().enumerate() {
+        for (i, t) in self.threads.drain(..).enumerate() {
             let result = t.handle.join();
-            debug!("[main thread] Thread {i} joined with result: {result:?}");
+            match result {
+                Ok(_) => debug!("[main thread] Thread {i} joined with result: {result:?}"),
+                Err(_) => error!("[main thread] Thread {i} joined with result: {result:?}"),
+            }
         }
         debug!("[main thread] Joined threads.");
     }
@@ -207,9 +264,9 @@ struct ThreadContext<'e, I, R> {
     /// Number of worker threads active in the current round.
     num_active_threads: Arc<AtomicUsize>,
     /// Status of the worker threads.
-    worker_status: Arc<(Mutex<WorkerStatus>, Condvar)>,
+    worker_status: Arc<Status<WorkerStatus>>,
     /// Status of the main thread.
-    main_status: Arc<(Mutex<MainStatus>, Condvar)>,
+    main_status: Arc<Status<MainStatus>>,
     /// Election input.
     election: &'e Election,
     /// Pre-computed Pascal triangle.
@@ -239,13 +296,11 @@ where
                 self.id
             );
 
-            let (lock, condvar) = &*self.worker_status;
-            let worker_status: WorkerStatus = *condvar
-                .wait_while(lock.lock().unwrap(), |status| match status {
+            let worker_status: WorkerStatus =
+                *self.worker_status.wait_while(|status| match status {
                     WorkerStatus::Finished => false,
                     WorkerStatus::Round(r) => *r != round,
-                })
-                .unwrap();
+                });
             match worker_status {
                 WorkerStatus::Finished => {
                     debug!(
@@ -261,7 +316,14 @@ where
                         self.id
                     );
 
+                    // Counting votes may panic, and we want to notify the main thread in that case
+                    // to avoid a deadlock.
+                    let panic_notifier = PanicNotifier {
+                        id: self.id,
+                        main_status: &self.main_status,
+                    };
                     self.count_votes();
+                    std::mem::forget(panic_notifier);
 
                     let thread_count = self.num_active_threads.fetch_sub(1, Ordering::SeqCst);
                     assert!(thread_count > 0);
@@ -277,9 +339,10 @@ where
                             self.id
                         );
 
-                        let (lock, condvar) = &*self.main_status;
-                        *lock.lock().unwrap() = MainStatus::Ready;
-                        condvar.notify_one();
+                        self.main_status.notify_one_if(
+                            |&status| status == MainStatus::Waiting,
+                            MainStatus::Ready,
+                        );
 
                         debug!(
                             "[thread {}, round {round:?}] Notified the main thread.",
@@ -312,6 +375,36 @@ where
                 self.pascal,
                 i,
                 ballot,
+            );
+        }
+    }
+}
+
+/// Object whose destructor notifies the main thread that a panic happened.
+///
+/// The way to use this is to create an instance before a section that may
+/// panic, and to [`std::mem::forget()`] it at the end of the section. That way:
+/// - If a panic happens, the [`std::mem::forget()`] call will be skipped but
+///   the destructor will run due to RAII.
+/// - If no panic happens, the destructor won't run because this object will be
+///   forgotten.
+struct PanicNotifier<'a> {
+    /// Thread index.
+    id: usize,
+    /// Status of the main thread.
+    main_status: &'a Status<MainStatus>,
+}
+
+impl Drop for PanicNotifier<'_> {
+    fn drop(&mut self) {
+        error!(
+            "[thread {}] Detected panic in this thread, notifying the main thread",
+            self.id
+        );
+        if let Err(e) = self.main_status.try_notify_one(MainStatus::WorkerPanic) {
+            error!(
+                "[thread {}] Failed to notify the main thread, the mutex was poisoned: {e:?}",
+                self.id
             );
         }
     }

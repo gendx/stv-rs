@@ -213,7 +213,7 @@ impl Cli {
 }
 
 fn main() {
-    env_logger::init();
+    env_logger::builder().format_timestamp(None).init();
     Cli::parse().run().unwrap();
 }
 
