@@ -37,8 +37,8 @@ pub fn parse_election(
     options: ParsingOptions,
 ) -> Result<Election, Box<dyn std::error::Error>> {
     let re_count = Regex::new(r"^([0-9]+) ([0-9]+)$").unwrap();
-    let re_option = Regex::new(r"^\[[a-z]+(?: [a-z]+)+\]$").unwrap();
-    let re_ballot = Regex::new(r"^([0-9]+)((?: [a-z=]+)*) 0$").unwrap();
+    let re_option = Regex::new(r"^\[[a-z]+(?: [a-z][a-z0-9]*)+\]$").unwrap();
+    let re_ballot = Regex::new(r"^([0-9]+)((?: [a-z0-9=]*)*) 0$").unwrap();
 
     let mut lines = input.lines().peekable();
 
@@ -312,6 +312,60 @@ mod test {
                 (Trace, "Parsed ballot: count 42 for [[2]]"),
                 (Trace, "Parsed ballot: count 123 for [[1], [3]]"),
                 (Info, "Number of ballots: 171"),
+                (Info, "Election title: Vegetable contest"),
+            ],
+        );
+    }
+
+    #[test]
+    fn test_parse_names_with_digits() {
+        let file = r#"3 2
+[nick apple ba2nana34 cherry]
+[tie cherry apple ba2nana34]
+1 apple ba2nana34 0
+0
+"Apple"
+"Ba 2 nana 34"
+"Cherry"
+"Vegetable contest"
+"#;
+        let logger = ThreadLocalLogger::start();
+        let election = parse_election(Cursor::new(file), basic_parsing_options()).unwrap();
+
+        assert_eq!(
+            election,
+            Election::builder()
+                .title("Vegetable contest")
+                .num_seats(2)
+                .candidates([
+                    Candidate::new("apple", false),
+                    Candidate {
+                        nickname: "ba2nana34".to_owned(),
+                        name: "Ba 2 nana 34".to_owned(),
+                        is_withdrawn: false,
+                    },
+                    Candidate::new("cherry", false),
+                ])
+                .ballots(vec![Ballot::new(1, [vec![0], vec![1]])])
+                .check_num_ballots(1)
+                .tie_order([2, 0, 1])
+                .build()
+        );
+        logger.check_target_logs(
+            "stv_rs::parse",
+            [
+                (Info, "2 seats / 3 candidates"),
+                (Info, "Nicknames: [\"apple\", \"ba2nana34\", \"cherry\"]"),
+                (
+                    Info,
+                    "Tie-break order: [\"cherry\", \"apple\", \"ba2nana34\"]",
+                ),
+                (
+                    Info,
+                    "Candidates (by nickname): [\"apple\", \"ba2nana34\", \"cherry\"]",
+                ),
+                (Trace, "Parsed ballot: count 1 for [[0], [1]]"),
+                (Info, "Number of ballots: 1"),
                 (Info, "Election title: Vegetable contest"),
             ],
         );
