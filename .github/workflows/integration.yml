@@ -199,6 +199,7 @@ jobs:
         file:
           - bigint/ballot_count_overflows
           - bigint/ballot_sum_overflows
+          - bigint/rand_hypergeometric_many
           - equal_preference/equal_preference
           - random/rand_2x10
           - random/rand_5x4
@@ -346,14 +347,18 @@ jobs:
         file:
           - bigint/ballot_count_overflows
           - bigint/ballot_sum_overflows
+          - bigint/rand_hypergeometric_many
         parallel:
           - false
           - true
         include:
           - error_suffix: ""
+          - equalize: false
           - file: bigint/ballot_sum_overflows
             parallel: true
             error_suffix: ".parallel"
+          - file: bigint/rand_hypergeometric_many
+            equalize: true
       fail-fast: false
     runs-on: ubuntu-latest
     env:
@@ -368,15 +373,30 @@ jobs:
         run: chmod +x target/release/stv-rs
 
       - name: Check STV-rs output
+        if: ${{ matrix.equalize == false }}
         run: |
           target/release/stv-rs --arithmetic fixed9 --input testdata/ballots/${{ matrix.file }}.blt meek --parallel=${{ matrix.parallel }} > stv.log 2> stv.err || true
           diff -s testdata/meek/${{ matrix.file }}.fixed9.log stv.log
           diff -s testdata/meek/${{ matrix.file }}.fixed9${{ matrix.error_suffix }}.err stv.err
       - name: Check STV-rs output (big integer)
+        if: ${{ matrix.equalize == false }}
         run: |
           target/release/stv-rs --arithmetic bigfixed9 --input testdata/ballots/${{ matrix.file }}.blt meek --parallel=${{ matrix.parallel }} > stv.log 2> stv.err || true
           diff -s testdata/meek/${{ matrix.file }}.bigfixed9.log stv.log
           diff -s testdata/meek/${{ matrix.file }}.bigfixed9.err stv.err
+
+      - name: Check STV-rs output (equalized counting)
+        if: ${{ matrix.equalize == true }}
+        run: |
+          target/release/stv-rs --arithmetic fixed9 --input testdata/ballots/${{ matrix.file }}.blt meek --equalize --parallel=${{ matrix.parallel }} > stv.log 2> stv.err || true
+          diff -s testdata/meek/${{ matrix.file }}.equalize.fixed9.log stv.log
+          diff -s testdata/meek/${{ matrix.file }}.equalize.fixed9${{ matrix.error_suffix }}.err stv.err
+      - name: Check STV-rs output (equalized counting, big integer)
+        if: ${{ matrix.equalize == true }}
+        run: |
+          target/release/stv-rs --arithmetic bigfixed9 --input testdata/ballots/${{ matrix.file }}.blt meek --equalize --parallel=${{ matrix.parallel }} > stv.log 2> stv.err || true
+          diff -s testdata/meek/${{ matrix.file }}.equalize.bigfixed9.log stv.log
+          diff -s testdata/meek/${{ matrix.file }}.equalize.bigfixed9.err stv.err
 
   crash_fixed9_tests:
     needs: build
