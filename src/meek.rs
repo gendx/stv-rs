@@ -283,10 +283,6 @@ where
             not_elected: self.not_elected,
         };
 
-        if let Some(thread_pool) = self.thread_pool {
-            thread_pool.join();
-        }
-
         writeln!(stdout)?;
         Ok(result)
     }
@@ -1547,6 +1543,126 @@ Action: Count Complete
 
 "
         );
+    }
+
+    #[cfg(feature = "checked_i64")]
+    fn make_panicking_election() -> Election {
+        Election::builder()
+            .title("Vegetable contest")
+            .num_seats(1)
+            .candidates([Candidate::new("apple", false)])
+            .ballots([
+                Ballot::new(9223372036854775807, [vec![0]]),
+                Ballot::new(9223372036854775807, [vec![0]]),
+                Ballot::new(9223372036854775807, [vec![0]]),
+                Ballot::new(9223372036854775807, [vec![0]]),
+                Ballot::new(9223372036854775807, [vec![0]]),
+            ])
+            .build()
+    }
+
+    #[cfg(feature = "checked_i64")]
+    #[test]
+    #[cfg_attr(
+        not(overflow_checks),
+        should_panic(expected = "called `Option::unwrap()` on a `None` value")
+    )]
+    #[cfg_attr(
+        overflow_checks,
+        should_panic(expected = "attempt to add with overflow")
+    )]
+    fn test_stv_droop_panic() {
+        let _ = stv_droop::<Integer64, FixedDecimal9>(
+            &mut Vec::new(),
+            &make_panicking_election(),
+            "package name",
+            6,
+            Parallel::Custom,
+            /* num_threads = */ Some(NonZeroUsize::new(2).unwrap()),
+            false,
+            false,
+        );
+    }
+
+    #[cfg(feature = "checked_i64")]
+    #[test]
+    fn test_stv_droop_panic_logs() {
+        let logger = ThreadLocalLogger::start();
+        let result = std::panic::catch_unwind(|| {
+            stv_droop::<Integer64, FixedDecimal9>(
+                &mut Vec::new(),
+                &make_panicking_election(),
+                "package name",
+                6,
+                Parallel::Custom,
+                /* num_threads = */ Some(NonZeroUsize::new(2).unwrap()),
+                false,
+                false,
+            )
+        });
+
+        // Unfortunately, Rust's test harness and/or the `catch_unwind()` function seem
+        // to interfere with panic propagation, so we cannot test all the details of the
+        // double-panic (worker thread + main thread) here in a unit test.
+        assert!(result.is_err());
+        assert_eq!(
+            result.as_ref().unwrap_err().type_id(),
+            std::any::TypeId::of::<&str>()
+        );
+
+        #[cfg(not(overflow_checks))]
+        assert_eq!(
+            *result.unwrap_err().downcast::<&str>().unwrap(),
+            "called `Option::unwrap()` on a `None` value"
+        );
+        #[cfg(overflow_checks)]
+        assert_eq!(
+            *result.unwrap_err().downcast::<&str>().unwrap(),
+            "attempt to add with overflow"
+        );
+
+        #[cfg(not(overflow_checks))]
+        logger.check_logs([
+            (
+                Info,
+                "stv_rs::meek",
+                "Parallel vote counting is enabled using custom threads",
+            ),
+            (Info, "stv_rs::meek", "Equalized vote counting is disabled"),
+            (Info, "stv_rs::meek", "Spawning 2 threads"),
+            (
+                Debug,
+                "stv_rs::parallelism::thread_pool",
+                "[main thread] Spawned threads",
+            ),
+            (
+                Debug,
+                "stv_rs::parallelism::thread_pool",
+                "[main thread] Notifying threads to finish...",
+            ),
+            (
+                Debug,
+                "stv_rs::parallelism::thread_pool",
+                "[main thread] Joining threads in the pool...",
+            ),
+            (
+                Debug,
+                "stv_rs::parallelism::thread_pool",
+                "[main thread] Thread 0 joined with result: Ok(())",
+            ),
+            (
+                Debug,
+                "stv_rs::parallelism::thread_pool",
+                "[main thread] Thread 1 joined with result: Ok(())",
+            ),
+            (
+                Debug,
+                "stv_rs::parallelism::thread_pool",
+                "[main thread] Joined threads.",
+            ),
+        ]);
+        #[cfg(overflow_checks)]
+        logger.check_logs([]);
     }
 
     #[test]
