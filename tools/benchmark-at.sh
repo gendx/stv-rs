@@ -20,7 +20,7 @@ if [ ! -e "${BINARY}" ]; then
     exit 42
 fi
 
-SLEEP_SECONDS=10
+SLEEP_SECONDS=15
 
 function benchmark() {
     ARITHMETIC=$1

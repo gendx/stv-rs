@@ -35,7 +35,7 @@ echo "[*] Building at all commits"
 ./tools/build-all-commits.sh ${COMMITS}
 sleep 15
 
-SLEEP_SECONDS=10
+SLEEP_SECONDS=15
 
 function benchmark() {
     ARITHMETIC=$1
