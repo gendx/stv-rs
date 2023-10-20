@@ -16,6 +16,7 @@
 
 #![forbid(missing_docs, unsafe_code)]
 
+use clap::{Parser, ValueEnum};
 use rand::distributions::{Distribution, Uniform};
 use rand::SeedableRng;
 use rand::{thread_rng, RngCore};
@@ -23,7 +24,7 @@ use rand_chacha::ChaChaRng;
 use rand_distr::{Geometric, Hypergeometric};
 use std::collections::BTreeMap;
 use std::fs::File;
-use std::io::{BufWriter, Result, Write};
+use std::io::{stdout, BufWriter, Result, Write};
 use stv_rs::blt::{write_blt, CandidateFormat, WriteTieOrder};
 use stv_rs::types::{Ballot, Candidate, Election, ElectionBuilder};
 
@@ -117,63 +118,76 @@ const MANY_CANDIDATES: [&str; 80] = [
 ];
 
 fn main() -> Result<()> {
-    let file = File::create("rand_2x10.blt")?;
-    write_blt_2x10(
-        &mut thread_rng(),
-        &mut BufWriter::new(file),
-        &VEGETABLES,
-        1000,
-    )?;
+    let cli = Cli::parse();
+    cli.dispatch_output()
+}
 
-    let file = File::create("rand_5x4.blt")?;
-    write_blt_5x4(
-        &mut thread_rng(),
-        &mut BufWriter::new(file),
-        &VEGETABLES,
-        1000,
-    )?;
+/// Script to create random ballots.
+#[derive(Parser, Debug, PartialEq, Eq)]
+#[command(version)]
+struct Cli {
+    /// Type of ballot file to create.
+    #[arg(long, value_enum)]
+    ballot_pattern: BallotPattern,
 
-    let file = File::create("rand_geometric.blt")?;
-    write_blt_geometric(
-        &mut thread_rng(),
-        &mut BufWriter::new(file),
-        &VEGETABLES,
-        1000,
-    )?;
+    /// Number of ballots to create.
+    #[arg(long, default_value_t = 1000)]
+    num_ballots: usize,
 
-    let file = File::create("rand_hypergeometric_many.blt")?;
-    write_blt_hypergeometric(
-        &mut thread_rng(),
-        &mut BufWriter::new(file),
-        &MANY_CANDIDATES,
-        200,
-    )?;
+    /// Random seed to use.
+    #[arg(long)]
+    seed: Option<u64>,
 
-    let file = File::create("rand_hypergeometric.blt")?;
-    write_blt_hypergeometric(
-        &mut thread_rng(),
-        &mut BufWriter::new(file),
-        &VEGETABLES,
-        1000,
-    )?;
+    /// Output file. If nothing is provided, use stdout.
+    #[arg(long)]
+    output: Option<String>,
+}
 
-    let file = File::create("rand_hypergeometric_10k.blt")?;
-    write_blt_hypergeometric(
-        &mut thread_rng(),
-        &mut BufWriter::new(file),
-        &VEGETABLES,
-        10000,
-    )?;
+/// Type of ballot file to create.
+#[derive(ValueEnum, Clone, Debug, PartialEq, Eq)]
+enum BallotPattern {
+    /// Each ballot contains 10 pairs of candidates.
+    Tuples2x10,
+    /// Each ballot contains 4 tuples of 5 candidates.
+    Tuples5x4,
+    /// 20 candidates following a geometric distribution.
+    Geometric20,
+    /// 20 candidates following a hypergeometric distribution.
+    Hypergeometric20,
+    /// 60 candidates following a hypergeometric distribution.
+    Hypergeometric60,
+}
 
-    let file = File::create("rand_hypergeometric_100k.blt")?;
-    write_blt_hypergeometric(
-        &mut ChaChaRng::seed_from_u64(42),
-        &mut BufWriter::new(file),
-        &VEGETABLES,
-        100000,
-    )?;
+impl Cli {
+    fn dispatch_output(&self) -> Result<()> {
+        match &self.output {
+            None => self.dispatch_rng(&mut stdout().lock()),
+            Some(file) => self.dispatch_rng(&mut BufWriter::new(File::create(file)?)),
+        }
+    }
 
-    Ok(())
+    fn dispatch_rng(&self, output: &mut impl Write) -> Result<()> {
+        match self.seed {
+            None => self.dispatch_pattern(output, &mut thread_rng()),
+            Some(seed) => self.dispatch_pattern(output, &mut ChaChaRng::seed_from_u64(seed)),
+        }
+    }
+
+    fn dispatch_pattern(&self, output: &mut impl Write, rng: &mut impl RngCore) -> Result<()> {
+        match self.ballot_pattern {
+            BallotPattern::Tuples2x10 => write_blt_2x10(rng, output, &VEGETABLES, self.num_ballots),
+            BallotPattern::Tuples5x4 => write_blt_5x4(rng, output, &VEGETABLES, self.num_ballots),
+            BallotPattern::Geometric20 => {
+                write_blt_geometric(rng, output, &VEGETABLES, self.num_ballots)
+            }
+            BallotPattern::Hypergeometric20 => {
+                write_blt_hypergeometric(rng, output, &VEGETABLES, self.num_ballots)
+            }
+            BallotPattern::Hypergeometric60 => {
+                write_blt_hypergeometric(rng, output, &MANY_CANDIDATES, self.num_ballots)
+            }
+        }
+    }
 }
 
 fn new_election_builder(nicknames: &[&str]) -> ElectionBuilder {

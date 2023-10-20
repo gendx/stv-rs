@@ -52,8 +52,7 @@ jobs:
 
       - name: Generate random ballots
         run: |
-          cargo run --release --example random_ballots
-          mv rand_hypergeometric_100k.blt testdata/ballots/random/
+          cargo run --release --example random_ballots -- --ballot-pattern hypergeometric20 --num-ballots 100000 --seed 42 --output testdata/ballots/random/rand_hypergeometric_100k.blt
       - uses: actions/upload-artifact@v3
         with:
           name: large-test-files
