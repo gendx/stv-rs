@@ -13,8 +13,32 @@
 // limitations under the License.
 
 mod test {
-    use crate::{big_numeric_tests, numeric_benchmarks, numeric_tests};
+    use crate::{
+        big_integer_tests, big_numeric_tests, integer_tests, numeric_benchmarks, numeric_tests,
+    };
     use num::rational::Ratio;
+
+    integer_tests!(
+        i64,
+        testi_values_are_positive,
+        testi_is_zero,
+        testi_zero_is_add_neutral,
+        testi_add_is_commutative,
+        testi_opposite,
+        testi_sub_self,
+        testi_add_sub,
+        testi_sub_add,
+        testi_one_is_mul_neutral,
+        testi_mul_is_commutative,
+    );
+
+    big_integer_tests!(
+        i64,
+        None,
+        testi_add_is_associative,
+        testi_mul_is_associative,
+        testi_mul_is_distributive,
+    );
 
     numeric_tests!(
         i64,
