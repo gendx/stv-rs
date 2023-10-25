@@ -20,17 +20,17 @@ ARGUMENTS="--arithmetic fixed9 --input testdata/ballots/random/rand_hypergeometr
 function build_pgo() {
     # See https://doc.rust-lang.org/rustc/profile-guided-optimization.html
     # STEP 0: Make sure there is no left-over profiling data from previous runs
-    rm -rf ${PGO_DATA_DIR}
+    rm -rf "${PGO_DATA_DIR}"
 
     # STEP 1: Build the instrumented binaries
     RUSTFLAGS="-Cprofile-generate=${PGO_DATA_DIR}" cargo +nightly build --release
 
     # STEP 2: Run the instrumented binaries with some typical data
-    sleep ${SLEEP_SECONDS}
-    ${HYPERFINE_PATH} "./target/release/stv-rs ${ARGUMENTS} > /dev/null"
+    sleep "${SLEEP_SECONDS}"
+    "${HYPERFINE_PATH}" "./target/release/stv-rs ${ARGUMENTS} > /dev/null"
 
     # STEP 3: Merge the `.profraw` files into a `.profdata` file
-    ${LLVM_PROFDATA} merge -o ${PGO_DATA_DIR}/merged.profdata ${PGO_DATA_DIR}
+    "${LLVM_PROFDATA}" merge -o "${PGO_DATA_DIR}/merged.profdata" "${PGO_DATA_DIR}"
 
     # STEP 4: Use the `.profdata` file for guiding optimizations
     RUSTFLAGS="-Cprofile-use=${PGO_DATA_DIR}/merged.profdata -Cllvm-args=-pgo-warn-missing-function" cargo +nightly build --release
@@ -44,7 +44,7 @@ cp target/release/stv-rs bin/stv-rs-nopgo
 build_pgo
 cp target/release/stv-rs bin/stv-rs-pgo
 
-sleep ${SLEEP_SECONDS}
-${HYPERFINE_PATH} \
+sleep "${SLEEP_SECONDS}"
+"${HYPERFINE_PATH}" \
     "./bin/stv-rs-nopgo ${ARGUMENTS} > /dev/null" \
     "./bin/stv-rs-pgo ${ARGUMENTS} > /dev/null"

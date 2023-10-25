@@ -18,7 +18,7 @@ INPUT=$4
 
 SLEEP_SECONDS=15
 
-${HYPERFINE_PATH} \
+"${HYPERFINE_PATH}" \
     --style color \
     --setup "sleep ${SLEEP_SECONDS}" \
     --warmup 1 \
@@ -27,7 +27,7 @@ ${HYPERFINE_PATH} \
 
 for NUM_THREADS in 2 4 8
 do
-    RAYON_NUM_THREADS=${NUM_THREADS} ${HYPERFINE_PATH} \
+    RAYON_NUM_THREADS=${NUM_THREADS} "${HYPERFINE_PATH}" \
         --style color \
         --setup "sleep ${SLEEP_SECONDS}" \
         --warmup 1 \

@@ -2,11 +2,7 @@
 
 set -eux
 
-if [ -e "${HOME}/.cargo/bin/hyperfine" ]; then
-    HYPERFINE_PATH=${HOME}/.cargo/bin/hyperfine
-elif [ -e "/usr/bin/hyperfine" ]; then
-    HYPERFINE_PATH=/usr/bin/hyperfine
-else
+if [ ! -e "${HOME}/.cargo/bin/hyperfine" ] && [ ! -e "/usr/bin/hyperfine" ]; then
     echo "Hyperfine is not installed. Please install it with 'apt install hyperfine' or 'cargo +nightly install hyperfine'."
     exit 42
 fi
@@ -16,22 +12,22 @@ function build_commits() {
     local END=$2
 
     echo "[*] Listing commits"
-    git log ${BEGIN}..${END} --reverse --format=oneline
-    COMMITS=$(git log ${BEGIN}..${END} --reverse --format=oneline | cut -d' ' -f1)
+    git log "${BEGIN}..${END}" --reverse --format=oneline
+    mapfile -t COMMITS < <(git log "${BEGIN}..${END}" --reverse --format=oneline | cut -d' ' -f1)
 
     echo "[*] Building at all commits"
-    ./tools/build-all-commits.sh ${COMMITS}
+    ./tools/build-all-commits.sh "${COMMITS[@]}"
 }
 
 function index_commits() {
-    local COMMITS=$1
+    local COMMITS=( "$@" )
 
     INDEX_COMMITS=
     local ITER=0
-    for COMMIT in ${COMMITS}
+    for COMMIT in "${COMMITS[@]}"
     do
-        ITER=$(expr ${ITER} + 1)
-        printf -v INDEX "%02d" ${ITER}
+        ITER=$((ITER + 1))
+        printf -v INDEX "%02d" "${ITER}"
         if [ "${INDEX_COMMITS}" != "" ]; then
             INDEX_COMMITS="${INDEX_COMMITS},"
         fi
@@ -47,12 +43,12 @@ function benchmark() {
     local EQUALIZE=$4
     local INPUT=$5
 
-    ./tools/benchmark-compare-commits.sh "${INDEX_COMMITS}" "${ARITHMETIC}" "${EQUALIZE}" "${INPUT}" 2>&1 | tee compare-commits.${TITLE}.log
+    ./tools/benchmark-compare-commits.sh "${INDEX_COMMITS}" "${ARITHMETIC}" "${EQUALIZE}" "${INPUT}" 2>&1 | tee "compare-commits.${TITLE}.log"
 }
 
 
 build_commits main HEAD
-index_commits "${COMMITS}"
+index_commits "${COMMITS[@]}"
 sleep 15
 
 echo "[*] Comparing commits for each scenario"

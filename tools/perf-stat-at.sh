@@ -22,7 +22,8 @@ SLEEP_SECONDS=5
 function sample() {
     local ARITHMETIC=$1
     local TITLE=$2
-    local PARAMS=$3
+    local PARAMS
+    read -r -a PARAMS <<< "$3"
 
     set +x
     echo "****************************************"
@@ -30,24 +31,24 @@ function sample() {
     echo "****************************************"
     set -x
 
-    sleep ${SLEEP_SECONDS}
-    perf stat -r ${REPETITIONS} ${PARAMS} \
-        ${BINARY} --arithmetic ${ARITHMETIC} --input ${BALLOT_FILE} meek --parallel=false > /dev/null
+    sleep "${SLEEP_SECONDS}"
+    perf stat -r "${REPETITIONS}" "${PARAMS[@]}" \
+        "${BINARY}" --arithmetic "${ARITHMETIC}" --input "${BALLOT_FILE}" meek --parallel=false > /dev/null
 
     for NUM_THREADS in 2 4 8
     do
-        sleep ${SLEEP_SECONDS}
-        RAYON_NUM_THREADS=${NUM_THREADS} perf stat -r ${REPETITIONS} ${PARAMS} \
-            ${BINARY} --arithmetic ${ARITHMETIC} --input ${BALLOT_FILE} meek --parallel=true > /dev/null
+        sleep "${SLEEP_SECONDS}"
+        RAYON_NUM_THREADS=${NUM_THREADS} perf stat -r "${REPETITIONS}" "${PARAMS[@]}" \
+            "${BINARY}" --arithmetic "${ARITHMETIC}" --input "${BALLOT_FILE}" meek --parallel=true > /dev/null
     done
 }
 
 function sample_default() {
-    sample $1 "STATS" "-d -d"
+    sample "$1" "STATS" "-d -d"
 }
 
 function sample_events() {
-    sample $1 $2 "-e $3"
+    sample "$1" "$2" "-e $3"
 }
 
 sample_default fixed9
