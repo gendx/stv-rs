@@ -23,9 +23,9 @@ fi
 SLEEP_SECONDS=15
 
 function benchmark() {
-    ARITHMETIC=$1
-    EQUALIZE=$2
-    INPUT=$3
+    local ARITHMETIC=$1
+    local EQUALIZE=$2
+    local INPUT=$3
 
     ${HYPERFINE_PATH} \
         --style color \

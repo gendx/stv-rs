@@ -20,9 +20,9 @@ fi
 SLEEP_SECONDS=5
 
 function sample() {
-    ARITHMETIC=$1
-    TITLE=$2
-    PARAMS=$3
+    local ARITHMETIC=$1
+    local TITLE=$2
+    local PARAMS=$3
 
     set +x
     echo "****************************************"

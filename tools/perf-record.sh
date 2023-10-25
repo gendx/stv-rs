@@ -10,10 +10,10 @@ BINARY=./target/release/stv-rs
 sleep 5
 
 function record() {
-    EVENT=$1
-    INTERVAL=$2
-    NUM_THREADS=4
-    TRACE_FILE=perf-record.${NUM_THREADS}-threads.${EVENT}
+    local EVENT=$1
+    local INTERVAL=$2
+    local NUM_THREADS=4
+    local TRACE_FILE=perf-record.${NUM_THREADS}-threads.${EVENT}
 
     sleep 1
     RAYON_NUM_THREADS=${NUM_THREADS} perf record -e ${EVENT} -c ${INTERVAL} -g --output=${TRACE_FILE}.perf \
