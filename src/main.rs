@@ -109,7 +109,19 @@ enum Arithmetic {
 
 impl Cli {
     /// Parses and runs an election based on the command-line parameters.
-    fn run(
+    fn run(self) -> Result<(), Box<dyn std::error::Error>> {
+        match self.input {
+            Some(ref filename) => {
+                let file = File::open(filename).expect("Couldn't open input file");
+                self.run_io(BufReader::new(file), stdout().lock())
+            }
+            None => self.run_io(stdin().lock(), stdout().lock()),
+        }
+    }
+
+    /// Parses and runs an election based on the command-line parameters, using
+    /// the given input/output.
+    fn run_io(
         self,
         input: impl BufRead,
         mut output: impl Write,
@@ -194,15 +206,7 @@ impl Cli {
 
 fn main() {
     env_logger::init();
-
-    let cli = Cli::parse();
-    match &cli.input {
-        Some(filename) => {
-            let file = File::open(filename).expect("Couldn't open input file");
-            cli.run(BufReader::new(file), stdout().lock()).unwrap();
-        }
-        None => cli.run(stdin().lock(), stdout().lock()).unwrap(),
-    };
+    Cli::parse().run().unwrap();
 }
 
 #[cfg(test)]
@@ -414,7 +418,7 @@ mod test {
 "#;
 
         let mut buf = Vec::new();
-        cli.run(Cursor::new(&input), &mut buf).unwrap();
+        cli.run_io(Cursor::new(&input), &mut buf).unwrap();
 
         assert_eq!(
             std::str::from_utf8(&buf).unwrap(),
