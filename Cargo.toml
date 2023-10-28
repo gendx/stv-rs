@@ -1,7 +1,7 @@
 [package]
 name = "stv-rs"
 description = "Single Transferable Vote implementation in Rust"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["Guillaume Endignoux <guillaumee@google.com>"]
 license = "Apache-2.0"
 repository = "https://github.com/gendx/stv-rs"
