@@ -45,6 +45,7 @@ pub mod log_tester {
             LOGS.take().into_iter()
         }
 
+        /// Checks that the recorded logs were exactly the expected ones.
         #[track_caller]
         pub fn check_logs<'a>(self, expected: impl IntoIterator<Item = (Level, &'a str, &'a str)>) {
             let report = self
@@ -60,6 +61,8 @@ pub mod log_tester {
             assert_eq!(report, expected_report);
         }
 
+        /// Checks that the recorded logs were all from the given target, and
+        /// exactly the expected ones.
         #[track_caller]
         pub fn check_target_logs<'a>(
             self,
@@ -73,6 +76,8 @@ pub mod log_tester {
             );
         }
 
+        /// Checks that the recorded logs were all from the given (target,
+        /// level) pair, and exactly the expected ones.
         #[track_caller]
         pub fn check_target_level_logs(self, target: &str, level: Level, expected: &str) {
             let mut report = String::new();
@@ -86,6 +91,8 @@ pub mod log_tester {
             assert_eq!(report, expected);
         }
 
+        /// Checks that the recorded logs at the given (target, level) pair were
+        /// exactly the expected ones.
         #[track_caller]
         pub fn check_logs_at_target_level(self, target: &str, level: Level, expected: &str) {
             let mut report = String::new();
