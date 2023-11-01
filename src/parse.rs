@@ -218,15 +218,14 @@ pub fn parse_election(
     let title = remove_quotes(&lines.next().unwrap().unwrap()).to_string();
     info!("Election title: {title}");
 
-    let election = Election {
-        title,
-        num_candidates,
-        num_seats,
-        num_ballots,
-        candidates,
-        ballots,
-        tie_order,
-    };
+    let election = Election::builder()
+        .title(title)
+        .num_seats(num_seats)
+        .candidates(candidates)
+        .ballots(ballots)
+        .tie_order_map(tie_order)
+        .build();
+
     election.debug_allocations();
     Ok(election)
 }

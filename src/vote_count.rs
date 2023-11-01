@@ -18,7 +18,7 @@
 use crate::arithmetic::{Integer, IntegerRef, Rational, RationalRef};
 use crate::cli::Parallel;
 use crate::parallelism::ThreadPool;
-use crate::types::{Ballot, Election};
+use crate::types::{BallotView, Election};
 use log::Level::{Trace, Warn};
 use log::{debug, log_enabled, trace, warn};
 use rayon::prelude::*;
@@ -143,13 +143,13 @@ where
         pascal: Option<&[Vec<I>]>,
     ) -> VoteAccumulator<I, R> {
         election
-            .ballots
-            .par_iter()
+            .ballots()
+            .into_par_iter()
             .enumerate()
             .fold_with(
                 VoteAccumulator::new(election.num_candidates),
                 |mut vote_accumulator, (i, ballot)| {
-                    Self::process_ballot(&mut vote_accumulator, keep_factors, pascal, i, ballot);
+                    Self::process_ballot(&mut vote_accumulator, keep_factors, pascal, i, &ballot);
                     vote_accumulator
                 },
             )
@@ -190,8 +190,8 @@ where
         pascal: Option<&[Vec<I>]>,
     ) -> VoteAccumulator<I, R> {
         let mut vote_accumulator = VoteAccumulator::new(election.num_candidates);
-        for (i, ballot) in election.ballots.iter().enumerate() {
-            Self::process_ballot(&mut vote_accumulator, keep_factors, pascal, i, ballot);
+        for (i, ballot) in election.ballots().enumerate() {
+            Self::process_ballot(&mut vote_accumulator, keep_factors, pascal, i, &ballot);
         }
         vote_accumulator
     }
@@ -202,13 +202,12 @@ where
         keep_factors: &[R],
         pascal: Option<&[Vec<I>]>,
         i: usize,
-        ballot: &Ballot,
+        ballot: &impl BallotView,
     ) {
         trace!("Processing ballot {i} = {:?}", ballot);
 
         let mut unused_power = R::from_usize(ballot.count());
         let counter = BallotCounter {
-            ballot,
             sum: &mut vote_accumulator.sum,
             unused_power: &mut unused_power,
             keep_factors,
@@ -219,9 +218,9 @@ where
 
         let equalize = pascal.is_some();
         if equalize {
-            counter.process_ballot_equalize()
+            counter.process_ballot_equalize(ballot)
         } else {
-            counter.process_ballot_rec()
+            counter.process_ballot_rec(ballot)
         };
 
         if log_enabled!(Trace) {
@@ -316,8 +315,6 @@ where
 }
 
 struct BallotCounter<'a, I, R> {
-    /// Ballot to count.
-    ballot: &'a Ballot,
     /// Candidates' attributed votes.
     sum: &'a mut [R],
     /// Voting power that was not used (due to rounding and/or voting power not
@@ -342,13 +339,13 @@ where
 {
     /// Processes a ballot, using a recursive method (consistent with Droop.py)
     /// to count ballots that contain candidates ranked equally.
-    fn process_ballot_rec(mut self) {
+    fn process_ballot_rec(mut self, ballot: &impl BallotView) {
         let voting_power = R::one();
-        let ballot_count = I::from_usize(self.ballot.count());
-        if !self.ballot.has_tie() {
-            self.process_ballot_rec_notie(voting_power, &ballot_count);
+        let ballot_count = I::from_usize(ballot.count());
+        if !ballot.has_tie() {
+            self.process_ballot_rec_notie(ballot, voting_power, &ballot_count);
         } else {
-            self.process_ballot_rec_impl(voting_power, &ballot_count, 0);
+            self.process_ballot_rec_impl(ballot, voting_power, &ballot_count, 0);
         }
     }
 
@@ -361,10 +358,15 @@ where
     /// voting power, and passes the rest to the next candidate, until no voting
     /// power is left (i.e. a candidate has a keep factor of 1), or the whole
     /// ballot was used.
-    fn process_ballot_rec_notie(&mut self, mut voting_power: R, ballot_count: &I) {
+    fn process_ballot_rec_notie(
+        &mut self,
+        ballot: &impl BallotView,
+        mut voting_power: R,
+        ballot_count: &I,
+    ) {
         *self.fn_calls += 1;
 
-        for ranking in self.ballot.order() {
+        for ranking in ballot.order() {
             // Only one candidate at this level. Easy case.
             let candidate = ranking[0].into();
             let (used_power, remaining_power) =
@@ -402,15 +404,21 @@ where
     /// `c` will receive `0.5 * (1 - k)`. This is contrary to what one would
     /// expect: `c` should only receive voting power from this ballot if
     /// both `a` and `b` are already elected.
-    fn process_ballot_rec_impl(&mut self, mut voting_power: R, ballot_count: &I, i: usize) {
+    fn process_ballot_rec_impl(
+        &mut self,
+        ballot: &impl BallotView,
+        mut voting_power: R,
+        ballot_count: &I,
+        i: usize,
+    ) {
         *self.fn_calls += 1;
-        if i == self.ballot.order_len() {
+        if i == ballot.order_len() {
             return;
         }
 
         // Fetch the i-th ranking in the ballot, which may contain multiple tied
         // candidates.
-        let ranking = self.ballot.order_at(i);
+        let ranking = ballot.order_at(i);
 
         // TODO: skip defeated candidates according to their status.
         // Number of eligible candidates (with a positive keep factor) in the current
@@ -444,7 +452,7 @@ where
                 self.split_power_one_candidate(&voting_power, candidate);
             self.increment_candidate(candidate, used_power, ballot_count);
             if !remaining_power.is_zero() {
-                self.process_ballot_rec_impl(remaining_power, ballot_count, i + 1)
+                self.process_ballot_rec_impl(ballot, remaining_power, ballot_count, i + 1)
             }
         }
     }
@@ -461,17 +469,17 @@ where
     /// b=c=d` is counted as a superposition of 6 ballots, each with weight
     /// 1/6: `a b c d`, `a b d c`, `a c b d`, `a c d b`, `a d b c`, `a d c
     /// b`.
-    fn process_ballot_equalize(mut self) {
+    fn process_ballot_equalize(mut self, ballot: &impl BallotView) {
         // Note: we separate the voting power and the number of occurrences of each
         // ballot, and multiply by the ballot count only at the end, so that in
         // order to ensure fairness a repeated ballot is really counted as the sum
         // of `b.count` identical ballots.
         let mut voting_power = R::one();
-        let ballot_count = I::from_usize(self.ballot.count());
+        let ballot_count = I::from_usize(ballot.count());
 
         let pascal: &[Vec<I>] = self.pascal.unwrap();
 
-        for ranking in self.ballot.order() {
+        for ranking in ballot.order() {
             if ranking.len() == 1 {
                 // Only one candidate at this level. Easy case.
                 let candidate = ranking[0].into();
@@ -691,7 +699,7 @@ mod test {
     use super::*;
     use crate::arithmetic::{ApproxRational, BigFixedDecimal9, FixedDecimal9, Integer64};
     use crate::parallelism::RangeStrategy;
-    use crate::types::Candidate;
+    use crate::types::{Ballot, Candidate};
     use ::test::Bencher;
     use num::rational::Ratio;
     use num::{BigInt, BigRational};
@@ -1140,7 +1148,6 @@ mod test {
             let mut fn_calls = 0;
 
             let counter = BallotCounter {
-                ballot: ballot.borrow(),
                 sum: &mut sum,
                 unused_power: &mut unused_power,
                 keep_factors,
@@ -1148,7 +1155,7 @@ mod test {
                 pascal: None,
                 _phantom: PhantomData,
             };
-            counter.process_ballot_rec();
+            counter.process_ballot_rec(&ballot.borrow());
 
             (sum, unused_power, fn_calls)
         }
@@ -1163,7 +1170,6 @@ mod test {
             let mut unused_power = R::one();
 
             let counter = BallotCounter {
-                ballot: ballot.borrow(),
                 sum: &mut sum,
                 unused_power: &mut unused_power,
                 keep_factors,
@@ -1171,7 +1177,7 @@ mod test {
                 pascal: Some(pascal),
                 _phantom: PhantomData,
             };
-            counter.process_ballot_equalize();
+            counter.process_ballot_equalize(&ballot.borrow());
 
             (sum, unused_power)
         }
@@ -1339,7 +1345,7 @@ mod test {
                                 keep_factors,
                                 None,
                                 0,
-                                &ballot,
+                                &&ballot,
                             );
                             vote_accumulator.into_vote_count()
                         };
@@ -1354,7 +1360,7 @@ mod test {
                                     keep_factors,
                                     None,
                                     0,
-                                    &ballot,
+                                    &&ballot,
                                 );
                             }
                             vote_accumulator.into_vote_count()
@@ -1369,7 +1375,6 @@ mod test {
         }
 
         fn test_increment_candidate_ballot_multiplier() {
-            let empty_ballot = Ballot::empty();
             let empty_keep_factors = vec![];
 
             for used_power in R::get_positive_test_values() {
@@ -1379,7 +1384,6 @@ mod test {
                         let mut sum = vec![R::zero()];
                         let mut unused_power = R::zero();
                         let mut ballot_counter = BallotCounter {
-                            ballot: &empty_ballot,
                             sum: &mut sum,
                             unused_power: &mut unused_power,
                             keep_factors: &empty_keep_factors,
@@ -1401,7 +1405,6 @@ mod test {
                         let mut sum = vec![R::zero()];
                         let mut unused_power = R::zero();
                         let mut ballot_counter = BallotCounter {
-                            ballot: &empty_ballot,
                             sum: &mut sum,
                             unused_power: &mut unused_power,
                             keep_factors: &empty_keep_factors,
