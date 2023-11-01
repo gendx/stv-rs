@@ -18,7 +18,7 @@ use crate::arithmetic::{Integer, IntegerRef, Rational, RationalRef};
 use crate::parallelism::range::{
     FixedRangeFactory, Range, RangeFactory, RangeOrchestrator, WorkStealingRangeFactory,
 };
-use crate::types::Election;
+use crate::types::{BallotCursor, Election};
 use crate::vote_count::{VoteAccumulator, VoteCount};
 use log::{debug, error, warn};
 // Platforms that support `libc::sched_setaffinity()`.
@@ -183,7 +183,7 @@ where
         pascal: Option<&'e [Vec<I>]>,
     ) -> Self {
         let num_threads: usize = num_threads.into();
-        let num_ballots = election.ballots.len();
+        let num_ballots = election.num_ballots();
         match range_strategy {
             RangeStrategy::Fixed => Self::new_with_factory(
                 thread_scope,
@@ -453,14 +453,15 @@ where
             .insert(VoteAccumulator::new(self.election.num_candidates));
         let keep_factors = self.keep_factors.read().unwrap();
 
+        let ballots = self.election.ballots();
         for i in self.range.iter() {
-            let ballot = &self.election.ballots[i];
+            let ballot = ballots.at(i).unwrap();
             VoteCount::<I, R>::process_ballot(
                 vote_accumulator,
                 &keep_factors,
                 self.pascal,
                 i,
-                ballot,
+                &ballot,
             );
         }
     }

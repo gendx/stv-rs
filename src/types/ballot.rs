@@ -15,7 +15,100 @@
 //! Types to represent ballots in an election.
 
 use super::util::{address_of_slice, count_slice_allocations};
+use rayon::iter::{IndexedParallelIterator, IntoParallelIterator};
 use std::collections::BTreeMap;
+use std::fmt::Debug;
+
+/// A cursor over a sequence of ballots, allowing serial and parallel iteration.
+pub trait BallotCursor:
+    Iterator<Item = Self::B> + IntoParallelIterator<Item = Self::B, Iter = Self::I>
+{
+    /// View over one ballot.
+    type B: BallotView;
+    /// Rayon's indexed parallel iterator over the ballots.
+    type I: IndexedParallelIterator<Item = Self::B>;
+
+    /// Returns the ballot at the given index.
+    fn at(&self, index: usize) -> Option<Self::B>;
+}
+
+/// View over one ballot.
+pub trait BallotView: Debug {
+    /// Number of electors that have cast this ballot.
+    fn count(&self) -> usize;
+
+    /// Whether this ballot contains candidates ranked equally.
+    fn has_tie(&self) -> bool;
+
+    /// Returns the order of candidates in the ballot. The iterator yields
+    /// candidates from most preferred to least preferred. Each item
+    /// contains a set of candidates ranked equally.
+    fn order(&self) -> impl Iterator<Item = &[impl Into<usize> + Copy + '_]> + '_;
+
+    /// Returns the number of successive ranks in the ballot order.
+    fn order_len(&self) -> usize;
+
+    /// Returns the rank at the given index in the ballot order.
+    fn order_at(&self, i: usize) -> &[impl Into<usize> + Copy + '_];
+}
+
+/// A cursor over a slice of ballots.
+pub struct BallotSliceCursor<'a> {
+    /// Underlying slice of ballots.
+    pub slice: &'a [Ballot],
+    /// Index of the current ballot.
+    pub index: usize,
+}
+
+impl<'a> IntoParallelIterator for BallotSliceCursor<'a> {
+    type Item = &'a Ballot;
+    type Iter = <&'a [Ballot] as IntoParallelIterator>::Iter;
+
+    fn into_par_iter(self) -> Self::Iter {
+        self.slice.into_par_iter()
+    }
+}
+
+impl<'a> Iterator for BallotSliceCursor<'a> {
+    type Item = &'a Ballot;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let result = self.slice.get(self.index);
+        self.index += 1;
+        result
+    }
+}
+
+impl<'a> BallotCursor for BallotSliceCursor<'a> {
+    type B = &'a Ballot;
+    type I = <&'a [Ballot] as IntoParallelIterator>::Iter;
+
+    fn at(&self, index: usize) -> Option<Self::B> {
+        self.slice.get(index)
+    }
+}
+
+impl BallotView for &Ballot {
+    fn count(&self) -> usize {
+        (*self).count()
+    }
+
+    fn has_tie(&self) -> bool {
+        (*self).has_tie()
+    }
+
+    fn order(&self) -> impl Iterator<Item = &[impl Into<usize> + Copy + '_]> + '_ {
+        (*self).order()
+    }
+
+    fn order_len(&self) -> usize {
+        (*self).order_len()
+    }
+
+    fn order_at(&self, i: usize) -> &[impl Into<usize> + Copy + '_] {
+        (*self).order_at(i)
+    }
+}
 
 /// Ballot cast in the election.
 pub type Ballot = BallotImpl<BoxedFlatOrder>;
@@ -31,6 +124,15 @@ pub struct BallotImpl<O: Order + Clone> {
     order: O,
 }
 
+impl<O: Order + Clone, B: BallotView> From<B> for BallotImpl<O> {
+    fn from(ballot: B) -> Self {
+        Self::new(
+            ballot.count(),
+            ballot.order().map(|rank| rank.iter().map(|&x| x.into())),
+        )
+    }
+}
+
 impl<O: Order + Clone> BallotImpl<O> {
     /// Constructs a new ballot.
     #[inline(always)]
@@ -44,16 +146,6 @@ impl<O: Order + Clone> BallotImpl<O> {
             count,
             has_tie,
             order,
-        }
-    }
-
-    /// Returns an empty ballot with a count of zero.
-    #[cfg(test)]
-    pub(crate) fn empty() -> Self {
-        Self {
-            count: 0,
-            has_tie: false,
-            order: O::empty(),
         }
     }
 

@@ -24,7 +24,7 @@ use std::io::{stdin, stdout, BufWriter, Write};
 use stv_rs::{
     blt::{write_blt, CandidateFormat, WriteTieOrder},
     parse::{parse_election, ParsingOptions},
-    types::Election,
+    types::{BallotView, Election},
 };
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -85,9 +85,10 @@ impl Cli {
             election.title = title;
         }
 
+        let mut ballots = election.ballots().collect::<Vec<_>>();
         match self.strategy {
             Strategy::Alphabetic => {
-                election.ballots.sort_by(|a, b| {
+                ballots.sort_by(|a, b| {
                     let ita = a
                         .order()
                         .map(|rank| rank.iter().map(|&x| x.into()).collect::<Vec<_>>());
@@ -98,19 +99,17 @@ impl Cli {
                 });
             }
             Strategy::Product => {
-                election
-                    .ballots
-                    .sort_by_cached_key(|b| b.order().map(|rank| rank.len()).product::<usize>());
+                ballots.sort_by_cached_key(|b| b.order().map(|rank| rank.len()).product::<usize>());
             }
             Strategy::Lexicographic => {
-                election.ballots.sort_by(|a, b| {
+                ballots.sort_by(|a, b| {
                     let ita = a.order().map(|rank| rank.len());
                     let itb = b.order().map(|rank| rank.len());
                     ita.cmp(itb)
                 });
             }
             Strategy::LexicoProduct => {
-                election.ballots.sort_by(|a, b| {
+                ballots.sort_by(|a, b| {
                     let proda = a.order().map(|rank| rank.len()).product::<usize>();
                     let prodb = b.order().map(|rank| rank.len()).product::<usize>();
                     let ita = a.order().map(|rank| rank.len());
@@ -120,13 +119,15 @@ impl Cli {
             }
         }
 
-        for (i, ballot) in election.ballots.iter().enumerate() {
+        for (i, ballot) in ballots.iter().enumerate() {
             debug!(
                 "Ballot #{i}: product = {}, lexicographic = {:?}",
                 ballot.order().map(|rank| rank.len()).product::<usize>(),
                 ballot.order().map(|rank| rank.len()).collect::<Vec<_>>()
             );
         }
+
+        election.set_ballots(ballots.into_iter().map(|x| x.into()).collect::<Vec<_>>());
 
         write_blt(
             &mut output,

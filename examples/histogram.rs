@@ -22,7 +22,7 @@ use num::{BigInt, BigRational, ToPrimitive, Zero};
 use std::io::{stdin, stdout, BufWriter, Write};
 use stv_rs::{
     parse::{parse_election, ParsingOptions},
-    types::Election,
+    types::{BallotView, Election},
 };
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -45,7 +45,7 @@ fn write_histograms(
     let mut histograms =
         vec![vec![BigRational::zero(); election.num_candidates]; election.num_candidates];
 
-    for ballot in &election.ballots {
+    for ballot in election.ballots() {
         let mut index = 0;
         for ranking in ballot.order() {
             let ranking_len = ranking.len();

@@ -14,7 +14,7 @@
 
 //! Utilities to write elections into the BLT format.
 
-use crate::types::{Candidate, Election};
+use crate::types::{BallotView, Candidate, Election};
 use std::io::{self, Write};
 
 /// Policy to write the tie order.
@@ -105,7 +105,7 @@ pub fn write_blt(
         writeln!(output, "]")?;
     }
 
-    for ballot in &election.ballots {
+    for ballot in election.ballots() {
         write!(output, "{}", ballot.count())?;
         for ranking in ballot.order() {
             write!(output, " ")?;

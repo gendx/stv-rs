@@ -17,7 +17,8 @@
 mod ballot;
 mod util;
 
-pub use ballot::Ballot;
+use ballot::BallotSliceCursor;
+pub use ballot::{Ballot, BallotCursor, BallotView};
 use log::Level::{Debug, Trace};
 use log::{debug, log_enabled, trace};
 use std::borrow::Borrow;
@@ -38,7 +39,7 @@ pub struct Election {
     /// Candidates in this election.
     pub candidates: Vec<Candidate>,
     /// Ballots that were cast in this election.
-    pub ballots: Vec<Ballot>,
+    ballots: Vec<Ballot>,
     /// Tie-break order of candidates, mapping each candidate ID to its order
     /// in the tie break.
     pub tie_order: HashMap<usize, usize>,
@@ -48,6 +49,24 @@ impl Election {
     /// Returns a new builder.
     pub fn builder() -> ElectionBuilder {
         ElectionBuilder::default()
+    }
+
+    /// Returns an iterator over the ballots.
+    pub fn ballots(&self) -> impl BallotCursor + '_ {
+        BallotSliceCursor {
+            slice: &self.ballots,
+            index: 0,
+        }
+    }
+
+    /// Returns the number of ballots.
+    pub fn num_ballots(&self) -> usize {
+        self.ballots.len()
+    }
+
+    /// Sets the ballots.
+    pub fn set_ballots(&mut self, ballots: impl Into<Vec<Ballot>>) {
+        self.ballots = ballots.into();
     }
 
     pub(crate) fn debug_allocations(&self) {
@@ -151,8 +170,8 @@ impl ElectionBuilder {
     }
 
     /// Sets the name of the election.
-    pub fn title(mut self, title: &str) -> Self {
-        self.title = Some(title.to_owned());
+    pub fn title(mut self, title: impl Into<String>) -> Self {
+        self.title = Some(title.into());
         self
     }
 
@@ -196,6 +215,12 @@ impl ElectionBuilder {
             assert!(c < self.candidates.len());
             assert!(tie_order.insert(c, i).is_none());
         }
+        self.tie_order = Some(tie_order);
+        self
+    }
+
+    /// Sets the tie-break order of candidates in the election.
+    pub fn tie_order_map(mut self, tie_order: HashMap<usize, usize>) -> Self {
         self.tie_order = Some(tie_order);
         self
     }

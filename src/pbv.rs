@@ -15,7 +15,7 @@
 //! A simulation of plurality block voting based on ranked ballots.
 
 use crate::arithmetic::{Integer, IntegerRef, Rational, RationalRef};
-use crate::types::{Election, ElectionResult};
+use crate::types::{BallotView, Election, ElectionResult};
 use log::{debug, info, trace};
 use std::io;
 
@@ -70,7 +70,7 @@ Election: {}
     )?;
 
     let mut sum = vec![R::zero(); election.num_candidates];
-    for (i, ballot) in election.ballots.iter().enumerate() {
+    for (i, ballot) in election.ballots().enumerate() {
         trace!("Processing ballot {i} = {:?}", ballot);
 
         let mut votes_distributed = 0;
