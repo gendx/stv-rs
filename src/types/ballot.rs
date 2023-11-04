@@ -52,42 +52,7 @@ pub trait BallotView: Debug {
     fn order_at(&self, i: usize) -> &[impl Into<usize> + Copy + '_];
 }
 
-/// A cursor over a slice of ballots.
-pub struct BallotSliceCursor<'a> {
-    /// Underlying slice of ballots.
-    pub slice: &'a [Ballot],
-    /// Index of the current ballot.
-    pub index: usize,
-}
-
-impl<'a> IntoParallelIterator for BallotSliceCursor<'a> {
-    type Item = &'a Ballot;
-    type Iter = <&'a [Ballot] as IntoParallelIterator>::Iter;
-
-    fn into_par_iter(self) -> Self::Iter {
-        self.slice.into_par_iter()
-    }
-}
-
-impl<'a> Iterator for BallotSliceCursor<'a> {
-    type Item = &'a Ballot;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        let result = self.slice.get(self.index);
-        self.index += 1;
-        result
-    }
-}
-
-impl<'a> BallotCursor for BallotSliceCursor<'a> {
-    type B = &'a Ballot;
-    type I = <&'a [Ballot] as IntoParallelIterator>::Iter;
-
-    fn at(&self, index: usize) -> Option<Self::B> {
-        self.slice.get(index)
-    }
-}
-
+#[cfg(test)]
 impl BallotView for &Ballot {
     fn count(&self) -> usize {
         (*self).count()
@@ -180,12 +145,14 @@ impl<O: Order + Clone> BallotImpl<O> {
     }
 
     /// Returns the number of successive ranks in the ballot order.
+    #[cfg(test)]
     #[inline(always)]
     pub(crate) fn order_len(&self) -> usize {
         self.order.len()
     }
 
     /// Returns the rank at the given index in the ballot order.
+    #[cfg(test)]
     #[inline(always)]
     pub(crate) fn order_at(&self, i: usize) -> &[impl Into<usize> + Copy + '_] {
         self.order.at(i)
@@ -212,16 +179,6 @@ impl<O: Order + Clone> BallotImpl<O> {
     #[inline(always)]
     fn candidates(&self) -> impl Iterator<Item = &(impl Into<usize> + Copy + '_)> + '_ {
         self.order.candidates()
-    }
-
-    #[inline(always)]
-    pub(super) fn count_allocations(&self, allocations: &mut BTreeMap<usize, usize>) {
-        self.order.count_allocations(allocations)
-    }
-
-    #[inline(always)]
-    pub(super) fn allocated_addresses(&self) -> impl Iterator<Item = usize> + '_ {
-        self.order.allocated_addresses()
     }
 }
 

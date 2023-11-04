@@ -338,10 +338,10 @@ mod test {
             (Info, "Candidates (by nickname): [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
             (Info, "Number of ballots: 171"),
             (Info, "Election title: Vegetable contest"),
-            (Debug, "Allocations of 32 bytes: 8 => 256 bytes"),
-            (Debug, "Allocations of 192 bytes: 1 => 192 bytes"),
-            (Debug, "Ballots use 448 bytes in 9 allocations"),
-            (Debug, "Each ballot uses 112 bytes in 2.25 allocations"),
+            (Debug, "Allocations of 16 bytes: 1 => 16 bytes"),
+            (Debug, "Allocations of 32 bytes: 1 => 32 bytes"),
+            (Debug, "Ballots use 48 bytes in 2 allocations"),
+            (Debug, "Each ballot uses 12 bytes in 0.5 allocations"),
         ]);
     }
 
@@ -403,10 +403,10 @@ mod test {
             (Info, "Candidates (by nickname): [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
             (Info, "Number of ballots: 171"),
             (Info, "Election title: Vegetable contest"),
-            (Debug, "Allocations of 32 bytes: 8 => 256 bytes"),
-            (Debug, "Allocations of 192 bytes: 1 => 192 bytes"),
-            (Debug, "Ballots use 448 bytes in 9 allocations"),
-            (Debug, "Each ballot uses 112 bytes in 2.25 allocations"),
+            (Debug, "Allocations of 16 bytes: 1 => 16 bytes"),
+            (Debug, "Allocations of 32 bytes: 1 => 32 bytes"),
+            (Debug, "Ballots use 48 bytes in 2 allocations"),
+            (Debug, "Each ballot uses 12 bytes in 0.5 allocations"),
         ]);
     }
 
@@ -461,10 +461,10 @@ mod test {
             ),
             (Info, "Number of ballots: 1"),
             (Info, "Election title: Vegetable contest"),
-            (Debug, "Allocations of 32 bytes: 2 => 64 bytes"),
-            (Debug, "Allocations of 192 bytes: 1 => 192 bytes"),
-            (Debug, "Ballots use 256 bytes in 3 allocations"),
-            (Debug, "Each ballot uses 256 bytes in 3 allocations"),
+            (Debug, "Allocations of 8 bytes: 1 => 8 bytes"),
+            (Debug, "Allocations of 32 bytes: 1 => 32 bytes"),
+            (Debug, "Ballots use 40 bytes in 2 allocations"),
+            (Debug, "Each ballot uses 40 bytes in 2 allocations"),
         ]);
     }
 
@@ -527,11 +527,10 @@ mod test {
             (Info, "Candidates (by nickname): [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
             (Info, "Number of ballots: 188"),
             (Info, "Election title: Vegetable contest"),
-            (Debug, "Allocations of 0 bytes: 2 => 0 bytes"),
-            (Debug, "Allocations of 32 bytes: 8 => 256 bytes"),
-            (Debug, "Allocations of 384 bytes: 1 => 384 bytes"),
-            (Debug, "Ballots use 640 bytes in 11 allocations"),
-            (Debug, "Each ballot uses 128 bytes in 2.2 allocations"),
+            (Debug, "Allocations of 16 bytes: 1 => 16 bytes"),
+            (Debug, "Allocations of 64 bytes: 1 => 64 bytes"),
+            (Debug, "Ballots use 80 bytes in 2 allocations"),
+            (Debug, "Each ballot uses 16 bytes in 0.4 allocations"),
         ]);
     }
 
@@ -594,11 +593,10 @@ mod test {
             (Info, "Candidates (by nickname): [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
             (Info, "Number of ballots: 188"),
             (Info, "Election title: Vegetable contest"),
-            (Debug, "Allocations of 0 bytes: 4 => 0 bytes"),
-            (Debug, "Allocations of 32 bytes: 6 => 192 bytes"),
-            (Debug, "Allocations of 384 bytes: 1 => 384 bytes"),
-            (Debug, "Ballots use 576 bytes in 11 allocations"),
-            (Debug, "Each ballot uses 115.2 bytes in 2.2 allocations"),
+            (Debug, "Allocations of 16 bytes: 1 => 16 bytes"),
+            (Debug, "Allocations of 64 bytes: 1 => 64 bytes"),
+            (Debug, "Ballots use 80 bytes in 2 allocations"),
+            (Debug, "Each ballot uses 16 bytes in 0.4 allocations"),
         ]);
     }
 
@@ -661,10 +659,10 @@ mod test {
             (Warn, "Removing ballot that is empty or contains only withdrawn candidates: 17 0"),
             (Info, "Number of ballots: 171"),
             (Info, "Election title: Vegetable contest"),
-            (Debug, "Allocations of 32 bytes: 8 => 256 bytes"),
-            (Debug, "Allocations of 192 bytes: 1 => 192 bytes"),
-            (Debug, "Ballots use 448 bytes in 9 allocations"),
-            (Debug, "Each ballot uses 112 bytes in 2.25 allocations"),
+            (Debug, "Allocations of 16 bytes: 1 => 16 bytes"),
+            (Debug, "Allocations of 32 bytes: 1 => 32 bytes"),
+            (Debug, "Ballots use 48 bytes in 2 allocations"),
+            (Debug, "Each ballot uses 12 bytes in 0.5 allocations"),
         ]);
     }
 
@@ -727,10 +725,10 @@ mod test {
             (Warn, "Removing ballot that is empty or contains only withdrawn candidates: 17 0"),
             (Info, "Number of ballots: 129"),
             (Info, "Election title: Vegetable contest"),
-            (Debug, "Allocations of 32 bytes: 6 => 192 bytes"),
-            (Debug, "Allocations of 192 bytes: 1 => 192 bytes"),
-            (Debug, "Ballots use 384 bytes in 7 allocations"),
-            (Debug, "Each ballot uses 128 bytes in 2.3333333333333335 allocations"),
+            (Debug, "Allocations of 16 bytes: 1 => 16 bytes"),
+            (Debug, "Allocations of 32 bytes: 1 => 32 bytes"),
+            (Debug, "Ballots use 48 bytes in 2 allocations"),
+            (Debug, "Each ballot uses 16 bytes in 0.6666666666666666 allocations"),
         ]);
     }
 
@@ -772,10 +770,10 @@ mod test {
             (Info, "Candidates (by nickname): [\"apple\", \"banana\"]"),
             (Info, "Number of ballots: 1"),
             (Info, "Election title: Vegetable contest"),
-            (Debug, "Allocations of 32 bytes: 2 => 64 bytes"),
-            (Debug, "Allocations of 192 bytes: 1 => 192 bytes"),
-            (Debug, "Ballots use 256 bytes in 3 allocations"),
-            (Debug, "Each ballot uses 256 bytes in 3 allocations"),
+            (Debug, "Allocations of 8 bytes: 1 => 8 bytes"),
+            (Debug, "Allocations of 32 bytes: 1 => 32 bytes"),
+            (Debug, "Ballots use 40 bytes in 2 allocations"),
+            (Debug, "Each ballot uses 40 bytes in 2 allocations"),
         ]);
     }
 
