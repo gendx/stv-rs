@@ -15,12 +15,13 @@
 //! Types to represent an election.
 
 mod ballot;
+mod bit_packing;
 mod util;
 
-use ballot::BallotSliceCursor;
 pub use ballot::{Ballot, BallotCursor, BallotView};
-use log::Level::{Debug, Trace};
-use log::{debug, log_enabled, trace};
+use bit_packing::{BitPackedBallots, BitPackedBallotsCursor};
+use log::Level::Debug;
+use log::{debug, log_enabled};
 use std::borrow::Borrow;
 use std::collections::{BTreeMap, HashMap};
 use util::count_vec_allocations;
@@ -39,7 +40,7 @@ pub struct Election {
     /// Candidates in this election.
     pub candidates: Vec<Candidate>,
     /// Ballots that were cast in this election.
-    ballots: Vec<Ballot>,
+    ballots: BitPackedBallots,
     /// Tie-break order of candidates, mapping each candidate ID to its order
     /// in the tie break.
     pub tie_order: HashMap<usize, usize>,
@@ -53,10 +54,7 @@ impl Election {
 
     /// Returns an iterator over the ballots.
     pub fn ballots(&self) -> impl BallotCursor + '_ {
-        BallotSliceCursor {
-            slice: &self.ballots,
-            index: 0,
-        }
+        BitPackedBallotsCursor::new(&self.ballots)
     }
 
     /// Returns the number of ballots.
@@ -66,7 +64,10 @@ impl Election {
 
     /// Sets the ballots.
     pub fn set_ballots(&mut self, ballots: impl Into<Vec<Ballot>>) {
-        self.ballots = ballots.into();
+        self.ballots = BitPackedBallots::new(self.num_candidates);
+        for ballot in ballots.into() {
+            self.ballots.push(ballot);
+        }
     }
 
     pub(crate) fn debug_allocations(&self) {
@@ -75,10 +76,7 @@ impl Election {
         }
 
         let mut allocations = BTreeMap::new();
-        count_vec_allocations(&mut allocations, &self.ballots);
-        for b in &self.ballots {
-            b.count_allocations(&mut allocations);
-        }
+        self.ballots.count_allocations(&mut allocations);
         let mut total_count = 0;
         let mut total_size = 0;
         for (size, count) in allocations.iter() {
@@ -96,45 +94,6 @@ impl Election {
             total_size as f64 / ballots_len,
             total_count as f64 / ballots_len
         );
-
-        if !log_enabled!(Trace) {
-            return;
-        }
-
-        trace!("Allocated addresses:");
-        let mut diffs = BTreeMap::new();
-        let mut prev = None;
-        for b in &self.ballots {
-            for address in b.allocated_addresses() {
-                match prev {
-                    None => trace!("- {address:#x?}"),
-                    Some(prev) => {
-                        let diff = if address >= prev {
-                            trace!("- {address:#x?} (+{:#x?})", address - prev);
-                            address - prev
-                        } else {
-                            trace!("- {address:#x?} (-{:#x?})", prev - address);
-                            prev - address
-                        };
-                        *diffs.entry(diff.checked_ilog2().unwrap_or(0)).or_insert(0) += 1;
-                    }
-                }
-                prev = Some(address);
-            }
-        }
-
-        trace!("Histogram of sequential jumps between allocated addresses:");
-        let max_count = diffs.values().max().unwrap();
-        for (&diff_log2, count) in diffs.iter() {
-            let start = if diff_log2 == 0 { 0 } else { 1u64 << diff_log2 };
-            let end = (1u64 << (diff_log2 + 1)) - 1;
-
-            let count_stars = count * 40 / max_count;
-            let count_spaces = 40 - count_stars;
-            let stars = &"****************************************"[..count_stars];
-            let spaces = &"                                        "[..count_spaces];
-            trace!("{stars}{spaces} {start}..={end}: {count}");
-        }
     }
 }
 
@@ -156,13 +115,19 @@ impl ElectionBuilder {
             .num_ballots
             .unwrap_or_else(|| self.ballots.iter().map(|b| b.count()).sum());
         let num_candidates = self.candidates.len();
+
+        let mut ballots = BitPackedBallots::new(num_candidates);
+        for ballot in self.ballots {
+            ballots.push(ballot);
+        }
+
         Election {
             title: self.title.unwrap(),
             num_candidates,
             num_seats: self.num_seats.unwrap(),
             num_ballots,
             candidates: self.candidates,
-            ballots: self.ballots,
+            ballots,
             tie_order: self
                 .tie_order
                 .unwrap_or_else(|| (0..num_candidates).map(|i| (i, i)).collect()),

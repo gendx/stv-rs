@@ -17,6 +17,7 @@
 
 #![forbid(missing_docs, unsafe_code)]
 #![cfg_attr(test, feature(test, cfg_overflow_checks, iter_array_chunks))]
+#![feature(array_windows)]
 
 #[cfg(test)]
 extern crate test;
