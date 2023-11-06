@@ -79,6 +79,24 @@ pub mod log_tester {
         /// Checks that the recorded logs were all from the given (target,
         /// level) pair, and exactly the expected ones.
         #[track_caller]
+        pub fn check_any_target_logs<'a>(
+            self,
+            expected: impl IntoIterator<Item = (Level, &'a str)>,
+        ) {
+            let report = self
+                .into_iter()
+                .map(|record| (record.level, record.message))
+                .collect::<Vec<_>>();
+
+            let expected_report = expected
+                .into_iter()
+                .map(|(level, msg)| (level, msg.to_owned()))
+                .collect::<Vec<_>>();
+
+            assert_eq!(report, expected_report);
+        }
+
+        #[track_caller]
         pub fn check_target_level_logs(self, target: &str, level: Level, expected: &str) {
             let mut report = String::new();
             for record in self.into_iter() {

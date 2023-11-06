@@ -86,7 +86,15 @@ impl Cli {
 
         match self.strategy {
             Strategy::Alphabetic => {
-                election.ballots.sort_by(|a, b| a.order().cmp(b.order()));
+                election.ballots.sort_by(|a, b| {
+                    let ita = a
+                        .order()
+                        .map(|rank| rank.iter().map(|&x| x.into()).collect::<Vec<_>>());
+                    let itb = b
+                        .order()
+                        .map(|rank| rank.iter().map(|&x| x.into()).collect::<Vec<_>>());
+                    ita.cmp(itb)
+                });
             }
             Strategy::Product => {
                 election
