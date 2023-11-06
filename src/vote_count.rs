@@ -198,9 +198,9 @@ where
         i: usize,
         ballot: &Ballot,
     ) {
-        trace!("Processing ballot {i} = {:?}", ballot.order);
+        trace!("Processing ballot {i} = {:?}", ballot);
 
-        let mut unused_power = R::from_usize(ballot.count);
+        let mut unused_power = R::from_usize(ballot.count());
         let counter = BallotCounter {
             ballot,
             sum: &mut vote_accumulator.sum,
@@ -219,7 +219,7 @@ where
         };
 
         if !unused_power.is_zero() {
-            let pwr = &unused_power / &I::from_usize(ballot.count);
+            let pwr = &unused_power / &I::from_usize(ballot.count());
             trace!("  Exhausted voting_power = {pwr} ~ {}", pwr.to_f64());
         } else {
             trace!("  Exhausted voting_power is zero :)");
@@ -336,8 +336,8 @@ where
     /// to count ballots that contain candidates ranked equally.
     fn process_ballot_rec(mut self) {
         let voting_power = R::one();
-        let ballot_count = I::from_usize(self.ballot.count);
-        if self.ballot.order.iter().all(|ranking| ranking.len() == 1) {
+        let ballot_count = I::from_usize(self.ballot.count());
+        if !self.ballot.has_tie() {
             self.process_ballot_rec_notie(voting_power, &ballot_count);
         } else {
             self.process_ballot_rec_impl(voting_power, &ballot_count, 0);
@@ -356,7 +356,7 @@ where
     fn process_ballot_rec_notie(&mut self, mut voting_power: R, ballot_count: &I) {
         *self.fn_calls += 1;
 
-        for ranking in &self.ballot.order {
+        for ranking in self.ballot.order() {
             // Only one candidate at this level. Easy case.
             let candidate = ranking[0];
             let (used_power, remaining_power) =
@@ -396,13 +396,13 @@ where
     /// both `a` and `b` are already elected.
     fn process_ballot_rec_impl(&mut self, mut voting_power: R, ballot_count: &I, i: usize) {
         *self.fn_calls += 1;
-        if i == self.ballot.order.len() {
+        if i == self.ballot.order_len() {
             return;
         }
 
         // Fetch the i-th ranking in the ballot, which may contain multiple tied
         // candidates.
-        let ranking = &self.ballot.order[i];
+        let ranking = self.ballot.order_at(i);
 
         // TODO: skip defeated candidates according to their status.
         // Number of eligible candidates (with a positive keep factor) in the current
@@ -455,11 +455,11 @@ where
         // order to ensure fairness a repeated ballot is really counted as the sum
         // of `b.count` identical ballots.
         let mut voting_power = R::one();
-        let ballot_count = I::from_usize(self.ballot.count);
+        let ballot_count = I::from_usize(self.ballot.count());
 
         let pascal: &[Vec<I>] = self.pascal.unwrap();
 
-        for ranking in &self.ballot.order {
+        for ranking in self.ballot.order() {
             if ranking.len() == 1 {
                 // Only one candidate at this level. Easy case.
                 let candidate = ranking[0];
@@ -1282,7 +1282,7 @@ mod test {
         }
 
         fn test_increment_candidate_ballot_multiplier() {
-            let empty_ballot = Ballot::new(0, []);
+            let empty_ballot = Ballot::empty();
             let empty_keep_factors = vec![];
 
             for used_power in R::get_positive_test_values() {
@@ -1579,10 +1579,7 @@ mod test {
         }
 
         fn bench_process_ballot_rec_chain(bencher: &mut Bencher) {
-            let ballot = Ballot {
-                count: 1,
-                order: (0..10).map(|i| vec![i]).collect(),
-            };
+            let ballot = Ballot::new(1, (0..10).map(|i| vec![i]));
             let keep_factors = Self::fake_keep_factors(10);
             bencher.iter(|| Self::process_ballot_rec(black_box(&ballot), black_box(&keep_factors)))
         }
@@ -1629,14 +1626,7 @@ mod test {
 
         fn bench_process_ballot_rec_pairs(bencher: &mut Bencher, layers: usize) {
             let n = layers * 2;
-            let ballot = Ballot {
-                count: 1,
-                order: (0..n)
-                    .collect::<Vec<_>>()
-                    .chunks(2)
-                    .map(|chunk| chunk.to_vec())
-                    .collect(),
-            };
+            let ballot = Ballot::new(1, (0..n).array_chunks::<2>());
             let keep_factors = Self::fake_keep_factors(n);
             bencher.iter(|| Self::process_ballot_rec(black_box(&ballot), black_box(&keep_factors)))
         }
@@ -1659,24 +1649,14 @@ mod test {
 
         fn bench_process_ballot_rec_tens(bencher: &mut Bencher, layers: usize) {
             let n = layers * 10;
-            let ballot = Ballot {
-                count: 1,
-                order: (0..n)
-                    .collect::<Vec<_>>()
-                    .chunks(10)
-                    .map(|chunk| chunk.to_vec())
-                    .collect(),
-            };
+            let ballot = Ballot::new(1, (0..n).array_chunks::<10>());
             let keep_factors = Self::fake_keep_factors(n);
             bencher.iter(|| Self::process_ballot_rec(black_box(&ballot), black_box(&keep_factors)))
         }
 
         fn bench_process_ballot_equalize_chain(bencher: &mut Bencher) {
             let pascal = pascal::<I>(10);
-            let ballot = Ballot {
-                count: 1,
-                order: (0..10).map(|i| vec![i]).collect(),
-            };
+            let ballot = Ballot::new(1, (0..10).map(|i| vec![i]));
             let keep_factors = Self::fake_keep_factors(10);
             bencher.iter(|| {
                 Self::process_ballot_equalize(black_box(&ballot), black_box(&keep_factors), &pascal)
@@ -1730,14 +1710,7 @@ mod test {
         fn bench_process_ballot_equalize_pairs(bencher: &mut Bencher, layers: usize) {
             let n = layers * 2;
             let pascal = pascal::<I>(n);
-            let ballot = Ballot {
-                count: 1,
-                order: (0..n)
-                    .collect::<Vec<_>>()
-                    .chunks(2)
-                    .map(|chunk| chunk.to_vec())
-                    .collect(),
-            };
+            let ballot = Ballot::new(1, (0..n).array_chunks::<2>());
             let keep_factors = Self::fake_keep_factors(n);
             bencher.iter(|| {
                 Self::process_ballot_equalize(black_box(&ballot), black_box(&keep_factors), &pascal)
@@ -1763,14 +1736,7 @@ mod test {
         fn bench_process_ballot_equalize_tens(bencher: &mut Bencher, layers: usize) {
             let n = layers * 10;
             let pascal = pascal::<I>(n);
-            let ballot = Ballot {
-                count: 1,
-                order: (0..n)
-                    .collect::<Vec<_>>()
-                    .chunks(10)
-                    .map(|chunk| chunk.to_vec())
-                    .collect(),
-            };
+            let ballot = Ballot::new(1, (0..n).array_chunks::<10>());
             let keep_factors = Self::fake_keep_factors(n);
             bencher.iter(|| {
                 Self::process_ballot_equalize(black_box(&ballot), black_box(&keep_factors), &pascal)

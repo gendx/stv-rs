@@ -71,10 +71,10 @@ Election: {}
 
     let mut sum = vec![R::zero(); election.num_candidates];
     for (i, ballot) in election.ballots.iter().enumerate() {
-        trace!("Processing ballot {i} = {:?}", ballot.order);
+        trace!("Processing ballot {i} = {:?}", ballot);
 
         let mut votes_distributed = 0;
-        for ranking in &ballot.order {
+        for ranking in ballot.order() {
             let rank_len = ranking.len();
             let weight = if votes_distributed + rank_len <= votes_per_ballot {
                 // Ballot still has enough power for all candidates at this rank.
@@ -85,7 +85,7 @@ Election: {}
             };
             trace!("  - {weight} * {:?}", ranking);
 
-            let ballot_count = R::from_usize(ballot.count);
+            let ballot_count = R::from_usize(ballot.count());
             for &candidate in ranking {
                 sum[candidate] += &weight * &ballot_count;
             }

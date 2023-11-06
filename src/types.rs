@@ -60,7 +60,7 @@ impl ElectionBuilder {
     pub fn build(self) -> Election {
         let num_ballots = self
             .num_ballots
-            .unwrap_or_else(|| self.ballots.iter().map(|b| b.count).sum());
+            .unwrap_or_else(|| self.ballots.iter().map(|b| b.count()).sum());
         let num_candidates = self.candidates.len();
         Election {
             title: self.title.unwrap(),
@@ -96,7 +96,7 @@ impl ElectionBuilder {
     /// Checks that the given number of ballots is consistent with the actual
     /// number of ballots previously set with [`Self::ballots()`].
     pub fn check_num_ballots(mut self, num_ballots: usize) -> Self {
-        assert_eq!(num_ballots, self.ballots.iter().map(|b| b.count).sum());
+        assert_eq!(num_ballots, self.ballots.iter().map(|b| b.count()).sum());
         self.num_ballots = Some(num_ballots);
         self
     }
@@ -158,24 +158,78 @@ impl Candidate {
 #[derive(Debug, PartialEq, Eq)]
 pub struct Ballot {
     /// Number of electors that have cast this ballot.
-    pub count: usize,
+    count: usize,
     /// Ordering of candidates in this ballot. The outer [`Vec`] represents the
     /// ranking of candidates, from most preferred to least preferred. The inner
     /// [`Vec`] represents candidates ranked equally at a given order.
-    pub order: Vec<Vec<usize>>,
+    order: Vec<Vec<usize>>,
 }
 
 impl Ballot {
     /// Constructs a new [`Ballot`].
-    pub fn new(count: usize, order: impl Into<Vec<Vec<usize>>>) -> Self {
+    pub fn new(
+        count: usize,
+        order: impl IntoIterator<Item = impl IntoIterator<Item = usize>>,
+    ) -> Self {
         Ballot {
             count,
-            order: order.into(),
+            order: order
+                .into_iter()
+                .map(|rank| rank.into_iter().collect())
+                .collect(),
         }
     }
-}
 
-impl Ballot {
+    /// Returns an empty ballot with a count of zero.
+    #[cfg(test)]
+    pub(crate) fn empty() -> Self {
+        Self {
+            count: 0,
+            order: Vec::new(),
+        }
+    }
+
+    /// Returns an empty ballot with the given count.
+    #[cfg(test)]
+    pub(crate) fn empties(count: usize) -> Self {
+        Self {
+            count,
+            order: Vec::new(),
+        }
+    }
+
+    /// Returns the number of times this ballot was cast.
+    #[inline(always)]
+    pub fn count(&self) -> usize {
+        self.count
+    }
+
+    /// Returns the order of candidates in the ballot. The iterator yields
+    /// candidates from most preferred to least preferred. Each item
+    /// contains a set of candidates ranked equally.
+    #[inline(always)]
+    pub fn order(&self) -> impl Iterator<Item = &[usize]> + '_ {
+        self.order.iter().map(|rank| rank.as_slice())
+    }
+
+    /// Returns the number of successive ranks in the ballot order.
+    #[inline(always)]
+    pub(crate) fn order_len(&self) -> usize {
+        self.order.len()
+    }
+
+    /// Returns the rank at the given index in the ballot order.
+    #[inline(always)]
+    pub(crate) fn order_at(&self, i: usize) -> &[usize] {
+        &self.order[i]
+    }
+
+    /// Returns whether this ballot contains candidates ranked equally.
+    #[inline(always)]
+    pub fn has_tie(&self) -> bool {
+        self.order().any(|ranking| ranking.len() != 1)
+    }
+
     /// Checks that a ballot is valid, i.e. that no candidate appears twice in
     /// the ballot.
     pub fn validate(&self) {
@@ -189,7 +243,7 @@ impl Ballot {
 
     /// Returns the set of candidates present in this ballot.
     fn candidates(&self) -> impl Iterator<Item = usize> + '_ {
-        self.order.iter().flatten().cloned()
+        self.order().flatten().cloned()
     }
 }
 

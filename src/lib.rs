@@ -16,7 +16,7 @@
 //! implemented in the corresponding module.
 
 #![forbid(missing_docs, unsafe_code)]
-#![cfg_attr(test, feature(test))]
+#![cfg_attr(test, feature(test, iter_array_chunks))]
 
 #[cfg(test)]
 extern crate test;

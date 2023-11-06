@@ -106,8 +106,8 @@ pub fn write_blt(
     }
 
     for ballot in &election.ballots {
-        write!(output, "{}", ballot.count)?;
-        for ranking in &ballot.order {
+        write!(output, "{}", ballot.count())?;
+        for ranking in ballot.order() {
             write!(output, " ")?;
             for (i, &candidate) in ranking.iter().enumerate() {
                 if i != 0 {

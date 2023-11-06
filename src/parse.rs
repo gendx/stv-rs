@@ -131,38 +131,38 @@ pub fn parse_election(
                     .parse::<usize>()
                     .unwrap();
                 let order_str = cap_ballots.get(2).unwrap().as_str();
-                let order: Vec<Vec<usize>> = order_str
-                    .split(' ')
-                    .filter_map(|level| {
-                        if level.is_empty() {
+                let order = order_str.split(' ').filter_map(|level| {
+                    if level.is_empty() {
+                        None
+                    } else {
+                        let mut level_candidates = level
+                            .split('=')
+                            .filter_map(|candidate| {
+                                if options.remove_withdrawn_candidates
+                                    && withdrawn.contains(candidate)
+                                {
+                                    None
+                                } else {
+                                    Some(*hash_nicknames.get(candidate).unwrap())
+                                }
+                            })
+                            .peekable();
+                        if level_candidates.peek().is_none() {
                             None
                         } else {
-                            let level_candidates: Vec<usize> = level
-                                .split('=')
-                                .filter_map(|candidate| {
-                                    if options.remove_withdrawn_candidates
-                                        && withdrawn.contains(candidate)
-                                    {
-                                        None
-                                    } else {
-                                        Some(*hash_nicknames.get(candidate).unwrap())
-                                    }
-                                })
-                                .collect();
-                            if level_candidates.is_empty() {
-                                None
-                            } else {
-                                Some(level_candidates)
-                            }
+                            Some(level_candidates)
                         }
-                    })
-                    .collect();
+                    }
+                });
 
-                trace!("Parsed ballot: count {count} for {order:?}");
-                if options.remove_empty_ballots && order.is_empty() {
+                let ballot = Ballot::new(count, order);
+                trace!(
+                    "Parsed ballot: count {count} for {:?}",
+                    ballot.order().collect::<Vec<_>>()
+                );
+                if options.remove_empty_ballots && ballot.order_len() == 0 {
                     warn!("Removing ballot that is empty or contains only withdrawn candidates: {line}");
                 } else {
-                    let ballot = Ballot { count, order };
                     ballot.validate();
                     ballots.push(ballot);
                 }
@@ -173,7 +173,7 @@ pub fn parse_election(
         }
     }
 
-    let num_ballots = ballots.iter().map(|b| b.count).sum::<usize>();
+    let num_ballots = ballots.iter().map(|b| b.count()).sum::<usize>();
     info!("Number of ballots: {num_ballots}");
 
     let candidates: Vec<Candidate> = nicknames
@@ -416,7 +416,7 @@ mod test {
                     Ballot::new(3, [vec![3, 4], vec![1, 2, 0]]),
                     Ballot::new(42, [vec![2]]),
                     Ballot::new(123, [vec![1], vec![3]]),
-                    Ballot::new(17, []),
+                    Ballot::empties(17),
                 ])
                 .check_num_ballots(188)
                 .build()
@@ -482,9 +482,9 @@ mod test {
                 .ballots(vec![
                     Ballot::new(3, [vec![0], vec![3], vec![1]]),
                     Ballot::new(3, [vec![3], vec![1, 0]]),
-                    Ballot::new(42, []),
+                    Ballot::empties(42),
                     Ballot::new(123, [vec![1], vec![3]]),
-                    Ballot::new(17, []),
+                    Ballot::empties(17),
                 ])
                 .check_num_ballots(188)
                 .build()

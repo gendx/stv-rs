@@ -84,23 +84,23 @@ impl Cli {
 
         match self.strategy {
             Strategy::Product => {
-                election.ballots.sort_by_cached_key(|b| {
-                    b.order.iter().map(|rank| rank.len()).product::<usize>()
-                });
+                election
+                    .ballots
+                    .sort_by_cached_key(|b| b.order().map(|rank| rank.len()).product::<usize>());
             }
             Strategy::Lexicographic => {
                 election.ballots.sort_by(|a, b| {
-                    let ita = a.order.iter().map(|rank| rank.len());
-                    let itb = b.order.iter().map(|rank| rank.len());
+                    let ita = a.order().map(|rank| rank.len());
+                    let itb = b.order().map(|rank| rank.len());
                     ita.cmp(itb)
                 });
             }
             Strategy::LexicoProduct => {
                 election.ballots.sort_by(|a, b| {
-                    let proda = a.order.iter().map(|rank| rank.len()).product::<usize>();
-                    let prodb = b.order.iter().map(|rank| rank.len()).product::<usize>();
-                    let ita = a.order.iter().map(|rank| rank.len());
-                    let itb = b.order.iter().map(|rank| rank.len());
+                    let proda = a.order().map(|rank| rank.len()).product::<usize>();
+                    let prodb = b.order().map(|rank| rank.len()).product::<usize>();
+                    let ita = a.order().map(|rank| rank.len());
+                    let itb = b.order().map(|rank| rank.len());
                     proda.cmp(&prodb).then(ita.cmp(itb))
                 });
             }
@@ -109,16 +109,8 @@ impl Cli {
         for (i, ballot) in election.ballots.iter().enumerate() {
             debug!(
                 "Ballot #{i}: product = {}, lexicographic = {:?}",
-                ballot
-                    .order
-                    .iter()
-                    .map(|rank| rank.len())
-                    .product::<usize>(),
-                ballot
-                    .order
-                    .iter()
-                    .map(|rank| rank.len())
-                    .collect::<Vec<_>>()
+                ballot.order().map(|rank| rank.len()).product::<usize>(),
+                ballot.order().map(|rank| rank.len()).collect::<Vec<_>>()
             );
         }
 
