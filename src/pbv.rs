@@ -83,11 +83,14 @@ Election: {}
                 // Split the remaining power equally among candidates at this rank.
                 R::from_usize(votes_per_ballot - votes_distributed) / I::from_usize(rank_len)
             };
-            trace!("  - {weight} * {:?}", ranking);
+            trace!(
+                "  - {weight} * {:?}",
+                ranking.iter().map(|&x| x.into()).collect::<Vec<_>>()
+            );
 
             let ballot_count = R::from_usize(ballot.count());
             for &candidate in ranking {
-                sum[candidate] += &weight * &ballot_count;
+                sum[candidate.into()] += &weight * &ballot_count;
             }
 
             votes_distributed += rank_len;

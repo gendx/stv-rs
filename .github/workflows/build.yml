@@ -11,7 +11,7 @@ jobs:
           - stable
           - beta
           - nightly
-          - 1.73.0  # MSRV
+          - 1.75.0  # MSRV
         include:
           - os_cache: ""
           - os: macos-latest

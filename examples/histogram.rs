@@ -51,7 +51,7 @@ fn write_histograms(
             let weight = BigRational::new(BigInt::from(ballot.count()), BigInt::from(ranking_len));
             for &candidate in ranking {
                 for i in 0..ranking_len {
-                    histograms[candidate][index + i] += &weight;
+                    histograms[candidate.into()][index + i] += &weight;
                 }
             }
             index += ranking_len;
