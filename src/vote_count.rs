@@ -366,7 +366,7 @@ where
 
         for ranking in self.ballot.order() {
             // Only one candidate at this level. Easy case.
-            let candidate = ranking[0];
+            let candidate = ranking[0].into();
             let (used_power, remaining_power) =
                 self.split_power_one_candidate(&voting_power, candidate);
             self.increment_candidate(candidate, used_power, ballot_count);
@@ -417,7 +417,7 @@ where
         // ranking.
         let filtered_ranking_len = ranking
             .iter()
-            .filter(|&&candidate| !self.keep_factors[candidate].is_zero())
+            .filter(|&&candidate| !self.keep_factors[candidate.into()].is_zero())
             .count();
         // If all the candidates are defeated in the current ranking, the original
         // implementation (from Droop.py) doesn't distribute votes any further!
@@ -432,10 +432,14 @@ where
         // recursion to the next ranking in the ballot, rather than being distributed
         // back to any other candidate in the same ranking.
         voting_power /= &I::from_usize(filtered_ranking_len);
-        for &candidate in ranking
-            .iter()
-            .filter(|&&candidate| !self.keep_factors[candidate].is_zero())
-        {
+        for candidate in ranking.iter().filter_map(|&candidate| {
+            let candidate: usize = candidate.into();
+            if self.keep_factors[candidate].is_zero() {
+                None
+            } else {
+                Some(candidate)
+            }
+        }) {
             let (used_power, remaining_power) =
                 self.split_power_one_candidate(&voting_power, candidate);
             self.increment_candidate(candidate, used_power, ballot_count);
@@ -470,24 +474,27 @@ where
         for ranking in self.ballot.order() {
             if ranking.len() == 1 {
                 // Only one candidate at this level. Easy case.
-                let candidate = ranking[0];
+                let candidate = ranking[0].into();
                 let (used_power, remaining_power) =
                     self.split_power_one_candidate(&voting_power, candidate);
                 self.increment_candidate(candidate, used_power, &ballot_count);
                 voting_power = remaining_power;
             } else {
                 // Multiple candidates ranked equally. Finer computation.
-                trace!("  Ranking = {ranking:?}");
+                trace!(
+                    "  Ranking = {:?}",
+                    ranking.iter().map(|&x| x.into()).collect::<Vec<_>>()
+                );
                 let ranking_keep_factors: Vec<R> = ranking
                     .iter()
-                    .map(|&candidate| self.keep_factors[candidate].clone())
+                    .map(|&candidate| self.keep_factors[candidate.into()].clone())
                     .collect();
                 // For each candidate, the unused factor is one minus the keep factor (whatever
                 // is not kept).
                 let ranking_unused_factors: Vec<R> =
                     ranking_keep_factors.iter().map(|k| R::one() - k).collect();
                 trace!("    Ranking keep_factors = {ranking_keep_factors:?}");
-                for (i, &candidate) in ranking.iter().enumerate() {
+                for (i, candidate) in ranking.iter().map(|&x| x.into()).enumerate() {
                     let w =
                         Self::polyweights(&ranking_unused_factors, i, &pascal[ranking.len() - 1])
                             * &ranking_keep_factors[i]
@@ -1411,6 +1418,10 @@ mod test {
                         }
                         (sum, unused_power)
                     };
+
+                    // Check that something was incremented.
+                    assert_ne!(left_sum[0], R::zero());
+                    assert_ne!(left_unused_power, R::zero());
 
                     // Check that both match.
                     assert_eq!(left_sum, right_sum);

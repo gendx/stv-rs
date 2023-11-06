@@ -10,7 +10,7 @@ categories = ["voting"]
 keywords = ["voting", "election", "stv", "meek"]
 exclude = ["man/*", "testdata/*", "tools/*", ".github/*"]
 edition = "2021"
-rust-version = "1.73.0"
+rust-version = "1.75.0"
 
 [dependencies]
 clap = { version = "=4.4", features = ["derive"] }

@@ -158,9 +158,12 @@ pub fn parse_election(
                 let ballot = Ballot::new(count, order);
                 trace!(
                     "Parsed ballot: count {count} for {:?}",
-                    ballot.order().collect::<Vec<_>>()
+                    ballot
+                        .order()
+                        .map(|rank| rank.iter().map(|&x| x.into()).collect::<Vec<_>>())
+                        .collect::<Vec<_>>()
                 );
-                if options.remove_empty_ballots && ballot.order_len() == 0 {
+                if options.remove_empty_ballots && ballot.is_empty() {
                     warn!("Removing ballot that is empty or contains only withdrawn candidates: {line}");
                 } else {
                     ballot.validate();
@@ -191,7 +194,7 @@ pub fn parse_election(
     let title = remove_quotes(&lines.next().unwrap().unwrap()).to_string();
     info!("Election title: {title}");
 
-    Ok(Election {
+    let election = Election {
         title,
         num_candidates,
         num_seats,
@@ -199,7 +202,9 @@ pub fn parse_election(
         candidates,
         ballots,
         tie_order,
-    })
+    };
+    election.debug_allocations();
+    Ok(election)
 }
 
 /// Removes the leading and trailing quotes. The input string must start with a
@@ -217,7 +222,7 @@ fn remove_quotes(x: &str) -> &str {
 mod test {
     use super::*;
     use crate::util::log_tester::ThreadLocalLogger;
-    use log::Level::{Info, Warn};
+    use log::Level::{Debug, Info, Warn};
     use std::io::Cursor;
 
     #[test]
@@ -300,17 +305,20 @@ mod test {
                 .tie_order([2, 0, 4, 1, 3])
                 .build()
         );
-        logger.check_target_logs(
-            "stv_rs::parse",
-            [
-                (Info, "2 seats / 5 candidates"),
-                (Info, "Nicknames: [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
-                (Info, "Tie-break order: [\"cherry\", \"apple\", \"eggplant\", \"banana\", \"date\"]"),
-                (Info, "Candidates (by nickname): [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
-                (Info, "Number of ballots: 171"),
-                (Info, "Election title: Vegetable contest"),
-            ],
-        );
+        logger.check_any_target_logs([
+            (Info, "2 seats / 5 candidates"),
+            (Info, "Nicknames: [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
+            (Info, "Tie-break order: [\"cherry\", \"apple\", \"eggplant\", \"banana\", \"date\"]"),
+            (Info, "Candidates (by nickname): [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
+            (Info, "Number of ballots: 171"),
+            (Info, "Election title: Vegetable contest"),
+            (Debug, "Allocations of 32 bytes: 10 => 320 bytes"),
+            (Debug, "Allocations of 96 bytes: 3 => 288 bytes"),
+            (Debug, "Allocations of 128 bytes: 1 => 128 bytes"),
+            (Debug, "Allocations of 192 bytes: 1 => 192 bytes"),
+            (Debug, "Ballots use 928 bytes in 15 allocations"),
+            (Debug, "Each ballot uses 232 bytes in 3.75 allocations"),
+        ]);
     }
 
     #[test]
@@ -347,23 +355,25 @@ mod test {
                 .tie_order([2, 0, 1])
                 .build()
         );
-        logger.check_target_logs(
-            "stv_rs::parse",
-            [
-                (Info, "2 seats / 3 candidates"),
-                (Info, "Nicknames: [\"apple\", \"ba2nana34\", \"cherry\"]"),
-                (
-                    Info,
-                    "Tie-break order: [\"cherry\", \"apple\", \"ba2nana34\"]",
-                ),
-                (
-                    Info,
-                    "Candidates (by nickname): [\"apple\", \"ba2nana34\", \"cherry\"]",
-                ),
-                (Info, "Number of ballots: 1"),
-                (Info, "Election title: Vegetable contest"),
-            ],
-        );
+        logger.check_any_target_logs([
+            (Info, "2 seats / 3 candidates"),
+            (Info, "Nicknames: [\"apple\", \"ba2nana34\", \"cherry\"]"),
+            (
+                Info,
+                "Tie-break order: [\"cherry\", \"apple\", \"ba2nana34\"]",
+            ),
+            (
+                Info,
+                "Candidates (by nickname): [\"apple\", \"ba2nana34\", \"cherry\"]",
+            ),
+            (Info, "Number of ballots: 1"),
+            (Info, "Election title: Vegetable contest"),
+            (Debug, "Allocations of 32 bytes: 2 => 64 bytes"),
+            (Debug, "Allocations of 96 bytes: 1 => 96 bytes"),
+            (Debug, "Allocations of 128 bytes: 1 => 128 bytes"),
+            (Debug, "Ballots use 288 bytes in 4 allocations"),
+            (Debug, "Each ballot uses 288 bytes in 4 allocations"),
+        ]);
     }
 
     #[test]
@@ -416,17 +426,21 @@ mod test {
                 .check_num_ballots(188)
                 .build()
         );
-        logger.check_target_logs(
-            "stv_rs::parse",
-            [
-                (Info, "2 seats / 5 candidates"),
-                (Info, "Nicknames: [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
-                (Info, "Withdrawn: [\"cherry\", \"eggplant\"]"),
-                (Info, "Candidates (by nickname): [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
-                (Info, "Number of ballots: 188"),
-                (Info, "Election title: Vegetable contest"),
-            ],
-        );
+        logger.check_any_target_logs([
+            (Info, "2 seats / 5 candidates"),
+            (Info, "Nicknames: [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
+            (Info, "Withdrawn: [\"cherry\", \"eggplant\"]"),
+            (Info, "Candidates (by nickname): [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
+            (Info, "Number of ballots: 188"),
+            (Info, "Election title: Vegetable contest"),
+            (Debug, "Allocations of 0 bytes: 1 => 0 bytes"),
+            (Debug, "Allocations of 32 bytes: 10 => 320 bytes"),
+            (Debug, "Allocations of 96 bytes: 3 => 288 bytes"),
+            (Debug, "Allocations of 192 bytes: 1 => 192 bytes"),
+            (Debug, "Allocations of 256 bytes: 1 => 256 bytes"),
+            (Debug, "Ballots use 1056 bytes in 16 allocations"),
+            (Debug, "Each ballot uses 211.2 bytes in 3.2 allocations"),
+        ]);
     }
 
     #[test]
@@ -479,17 +493,20 @@ mod test {
                 .check_num_ballots(188)
                 .build()
         );
-        logger.check_target_logs(
-            "stv_rs::parse",
-            [
-                (Info, "2 seats / 5 candidates"),
-                (Info, "Nicknames: [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
-                (Info, "Withdrawn: [\"cherry\", \"eggplant\"]"),
-                (Info, "Candidates (by nickname): [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
-                (Info, "Number of ballots: 188"),
-                (Info, "Election title: Vegetable contest"),
-            ],
-        );
+        logger.check_any_target_logs([
+            (Info, "2 seats / 5 candidates"),
+            (Info, "Nicknames: [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
+            (Info, "Withdrawn: [\"cherry\", \"eggplant\"]"),
+            (Info, "Candidates (by nickname): [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
+            (Info, "Number of ballots: 188"),
+            (Info, "Election title: Vegetable contest"),
+            (Debug, "Allocations of 0 bytes: 2 => 0 bytes"),
+            (Debug, "Allocations of 32 bytes: 7 => 224 bytes"),
+            (Debug, "Allocations of 96 bytes: 3 => 288 bytes"),
+            (Debug, "Allocations of 256 bytes: 1 => 256 bytes"),
+            (Debug, "Ballots use 768 bytes in 13 allocations"),
+            (Debug, "Each ballot uses 153.6 bytes in 2.6 allocations"),
+        ]);
     }
 
     #[test]
@@ -541,18 +558,21 @@ mod test {
                 .check_num_ballots(171)
                 .build()
         );
-        logger.check_target_logs(
-            "stv_rs::parse",
-            [
-                (Info, "2 seats / 5 candidates"),
-                (Info, "Nicknames: [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
-                (Info, "Withdrawn: [\"cherry\", \"eggplant\"]"),
-                (Info, "Candidates (by nickname): [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
-                (Warn, "Removing ballot that is empty or contains only withdrawn candidates: 17 0"),
-                (Info, "Number of ballots: 171"),
-                (Info, "Election title: Vegetable contest"),
-            ],
-        );
+        logger.check_any_target_logs([
+            (Info, "2 seats / 5 candidates"),
+            (Info, "Nicknames: [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
+            (Info, "Withdrawn: [\"cherry\", \"eggplant\"]"),
+            (Info, "Candidates (by nickname): [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
+            (Warn, "Removing ballot that is empty or contains only withdrawn candidates: 17 0"),
+            (Info, "Number of ballots: 171"),
+            (Info, "Election title: Vegetable contest"),
+            (Debug, "Allocations of 32 bytes: 10 => 320 bytes"),
+            (Debug, "Allocations of 96 bytes: 3 => 288 bytes"),
+            (Debug, "Allocations of 128 bytes: 1 => 128 bytes"),
+            (Debug, "Allocations of 192 bytes: 1 => 192 bytes"),
+            (Debug, "Ballots use 928 bytes in 15 allocations"),
+            (Debug, "Each ballot uses 232 bytes in 3.75 allocations"),
+        ]);
     }
 
     #[test]
@@ -603,19 +623,21 @@ mod test {
                 .check_num_ballots(129)
                 .build()
         );
-        logger.check_target_logs(
-            "stv_rs::parse",
-            [
-                (Info, "2 seats / 5 candidates"),
-                (Info, "Nicknames: [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
-                (Info, "Withdrawn: [\"cherry\", \"eggplant\"]"),
-                (Info, "Candidates (by nickname): [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
-                (Warn, "Removing ballot that is empty or contains only withdrawn candidates: 42 cherry 0"),
-                (Warn, "Removing ballot that is empty or contains only withdrawn candidates: 17 0"),
-                (Info, "Number of ballots: 129"),
-                (Info, "Election title: Vegetable contest"),
-            ],
-        );
+        logger.check_any_target_logs([
+            (Info, "2 seats / 5 candidates"),
+            (Info, "Nicknames: [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
+            (Info, "Withdrawn: [\"cherry\", \"eggplant\"]"),
+            (Info, "Candidates (by nickname): [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
+            (Warn, "Removing ballot that is empty or contains only withdrawn candidates: 42 cherry 0"),
+            (Warn, "Removing ballot that is empty or contains only withdrawn candidates: 17 0"),
+            (Info, "Number of ballots: 129"),
+            (Info, "Election title: Vegetable contest"),
+            (Debug, "Allocations of 32 bytes: 7 => 224 bytes"),
+            (Debug, "Allocations of 96 bytes: 3 => 288 bytes"),
+            (Debug, "Allocations of 128 bytes: 1 => 128 bytes"),
+            (Debug, "Ballots use 640 bytes in 11 allocations"),
+            (Debug, "Each ballot uses 213.33333333333334 bytes in 3.6666666666666665 allocations"),
+        ]);
     }
 
     #[test]
@@ -645,17 +667,19 @@ mod test {
                 .check_num_ballots(1)
                 .build()
         );
-        logger.check_target_logs(
-            "stv_rs::parse",
-            [
-                (Info, "1 seats / 2 candidates"),
-                (Info, "Nicknames: [\"apple\", \"banana\"]"),
-                (Warn, "Unknown option: unknown"),
-                (Info, "Candidates (by nickname): [\"apple\", \"banana\"]"),
-                (Info, "Number of ballots: 1"),
-                (Info, "Election title: Vegetable contest"),
-            ],
-        );
+        logger.check_any_target_logs([
+            (Info, "1 seats / 2 candidates"),
+            (Info, "Nicknames: [\"apple\", \"banana\"]"),
+            (Warn, "Unknown option: unknown"),
+            (Info, "Candidates (by nickname): [\"apple\", \"banana\"]"),
+            (Info, "Number of ballots: 1"),
+            (Info, "Election title: Vegetable contest"),
+            (Debug, "Allocations of 32 bytes: 1 => 32 bytes"),
+            (Debug, "Allocations of 96 bytes: 1 => 96 bytes"),
+            (Debug, "Allocations of 128 bytes: 1 => 128 bytes"),
+            (Debug, "Ballots use 256 bytes in 3 allocations"),
+            (Debug, "Each ballot uses 256 bytes in 3 allocations"),
+        ]);
     }
 
     #[test]
