@@ -82,12 +82,6 @@ impl Mul<BigInt> for BigFixedDecimal9 {
         BigFixedDecimal9(self.0 * rhs)
     }
 }
-impl Div for BigFixedDecimal9 {
-    type Output = Self;
-    fn div(self, rhs: Self) -> Self {
-        BigFixedDecimal9((self.0 * Self::FACTOR) / rhs.0)
-    }
-}
 impl Div<BigInt> for BigFixedDecimal9 {
     type Output = Self;
     fn div(self, rhs: BigInt) -> Self {
@@ -113,12 +107,6 @@ impl Mul<&'_ Self> for BigFixedDecimal9 {
         BigFixedDecimal9((self.0 * &rhs.0) / Self::FACTOR)
     }
 }
-impl Div<&'_ Self> for BigFixedDecimal9 {
-    type Output = Self;
-    fn div(self, rhs: &'_ Self) -> Self {
-        BigFixedDecimal9((self.0 * Self::FACTOR) / &rhs.0)
-    }
-}
 
 impl Add<&'_ BigFixedDecimal9> for &'_ BigFixedDecimal9 {
     type Output = BigFixedDecimal9;
@@ -142,12 +130,6 @@ impl Mul<&'_ BigInt> for &'_ BigFixedDecimal9 {
     type Output = BigFixedDecimal9;
     fn mul(self, rhs: &'_ BigInt) -> BigFixedDecimal9 {
         BigFixedDecimal9(&self.0 * rhs)
-    }
-}
-impl Div<&'_ BigFixedDecimal9> for &'_ BigFixedDecimal9 {
-    type Output = BigFixedDecimal9;
-    fn div(self, rhs: &'_ BigFixedDecimal9) -> BigFixedDecimal9 {
-        BigFixedDecimal9((&self.0 * BigFixedDecimal9::FACTOR) / &rhs.0)
     }
 }
 impl Div<&'_ BigInt> for &'_ BigFixedDecimal9 {
@@ -257,7 +239,7 @@ impl Rational<BigInt> for BigFixedDecimal9 {
         BigFixedDecimal9((&self.0 * &rhs.0 + Self::FACTOR - 1) / Self::FACTOR)
     }
 
-    fn div_up(&self, rhs: &Self) -> Self {
+    fn div_up_as_keep_factor(&self, rhs: &Self) -> Self {
         BigFixedDecimal9((&self.0 * Self::FACTOR + &rhs.0 - 1) / &rhs.0)
     }
 
@@ -286,7 +268,6 @@ mod test {
         BigFixedDecimal9,
         test_values_are_positive,
         test_is_exact,
-        test_ceil_precision,
         test_ratio,
         test_ratio_invert => fail(r"assertion `left == right` failed: R::ratio(1, a) * a != 1 for 3
   left: BigFixedDecimal9(999999999)
@@ -303,20 +284,13 @@ mod test {
         test_mul_up_is_commutative,
         test_mul_up_integers,
         test_mul_up_wrt_mul,
-        test_invert => fail(r"assertion `left == right` failed: 1/(1/a) != a for 2.147483648
-  left: BigFixedDecimal9(2147483649)
- right: BigFixedDecimal9(2147483648)"),
-        test_div_self,
+        test_one_is_div_up_neutral,
         test_div_up_self,
-        test_div_up_wrt_div,
-        test_mul_div => fail(r"assertion `left == right` failed: (a * b) / b != a for 0.000000001, 0.000000001
-  left: BigFixedDecimal9(0)
- right: BigFixedDecimal9(1)"),
-        test_div_mul => fail(r"assertion `left == right` failed: (a / b) * b != a for 0.000000001, 0.000001024
+        test_mul_div_up => fail(r"assertion `left == right` failed: div_up(a * b, b) != a for 0.000000001, 0.000000001
   left: BigFixedDecimal9(0)
  right: BigFixedDecimal9(1)"),
         test_mul_by_int,
-        test_div_by_int,
+        test_mul_div_by_int,
         test_references,
         test_assign,
     );
@@ -348,7 +322,7 @@ mod test {
         bench_add,
         bench_sub,
         bench_mul,
-        bench_div,
+        bench_div_up,
     );
 
     #[test]

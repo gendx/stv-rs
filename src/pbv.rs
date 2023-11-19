@@ -81,7 +81,7 @@ Election: {}
                 R::one()
             } else {
                 // Split the remaining power equally among candidates at this rank.
-                R::from_usize(votes_per_ballot - votes_distributed) / R::from_usize(rank_len)
+                R::from_usize(votes_per_ballot - votes_distributed) / I::from_usize(rank_len)
             };
             trace!("  - {weight} * {:?}", ranking);
 

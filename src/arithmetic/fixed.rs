@@ -113,6 +113,16 @@ impl Mul<&'_ Integer64> for &'_ Integer64 {
     }
 }
 
+impl Product for Integer64 {
+    #[inline(always)]
+    fn product<I>(iter: I) -> Self
+    where
+        I: Iterator<Item = Self>,
+    {
+        iter.fold(Self::one(), |acc, x| acc * x)
+    }
+}
+
 impl Integer for Integer64 {
     #[inline(always)]
     fn from_usize(i: usize) -> Self {
@@ -230,13 +240,6 @@ impl Mul<Integer64> for FixedDecimal9 {
         return FixedDecimal9(self.0 * rhs.0);
     }
 }
-impl Div for FixedDecimal9 {
-    type Output = Self;
-    #[inline(always)]
-    fn div(self, rhs: Self) -> Self {
-        FixedDecimal9::ratio_i(Integer64(self.0), Integer64(rhs.0))
-    }
-}
 impl Div<Integer64> for FixedDecimal9 {
     type Output = Self;
     #[inline(always)]
@@ -269,13 +272,6 @@ impl Mul<&'_ Self> for FixedDecimal9 {
         self * *rhs
     }
 }
-impl Div<&'_ Self> for FixedDecimal9 {
-    type Output = Self;
-    #[inline(always)]
-    fn div(self, rhs: &'_ Self) -> Self {
-        self / *rhs
-    }
-}
 
 impl Add<&'_ FixedDecimal9> for &'_ FixedDecimal9 {
     type Output = FixedDecimal9;
@@ -303,13 +299,6 @@ impl Mul<&'_ Integer64> for &'_ FixedDecimal9 {
     #[inline(always)]
     fn mul(self, rhs: &'_ Integer64) -> FixedDecimal9 {
         *self * *rhs
-    }
-}
-impl Div<&'_ FixedDecimal9> for &'_ FixedDecimal9 {
-    type Output = FixedDecimal9;
-    #[inline(always)]
-    fn div(self, rhs: &'_ FixedDecimal9) -> FixedDecimal9 {
-        *self / *rhs
     }
 }
 impl Div<&'_ Integer64> for &'_ FixedDecimal9 {
@@ -476,7 +465,7 @@ impl Rational<Integer64> for FixedDecimal9 {
     }
 
     #[inline(always)]
-    fn div_up(&self, rhs: &Self) -> Self {
+    fn div_up_as_keep_factor(&self, rhs: &Self) -> Self {
         FixedDecimal9(
             match self
                 .0
@@ -555,6 +544,7 @@ mod test {
         testi_add_is_associative,
         testi_mul_is_associative => fail(r"called `Option::unwrap()` on a `None` value"),
         testi_mul_is_distributive,
+        testi_product => fail(r"called `Option::unwrap()` on a `None` value"),
     );
     #[cfg(all(not(feature = "checked_i64"), overflow_checks))]
     big_integer_tests!(
@@ -563,6 +553,7 @@ mod test {
         testi_add_is_associative,
         testi_mul_is_associative => fail(r"attempt to multiply with overflow"),
         testi_mul_is_distributive,
+        testi_product => fail(r"attempt to multiply with overflow"),
     );
 
     numeric_tests!(
@@ -570,7 +561,6 @@ mod test {
         FixedDecimal9,
         test_values_are_positive,
         test_is_exact,
-        test_ceil_precision,
         test_ratio,
         test_ratio_invert => fail(r"assertion `left == right` failed: R::ratio(1, a) * a != 1 for 3
   left: FixedDecimal9(999999999)
@@ -587,20 +577,13 @@ mod test {
         test_mul_up_is_commutative,
         test_mul_up_integers,
         test_mul_up_wrt_mul,
-        test_invert => fail(r"assertion `left == right` failed: 1/(1/a) != a for 2.147483646
-  left: FixedDecimal9(2147483649)
- right: FixedDecimal9(2147483646)"),
-        test_div_self,
+        test_one_is_div_up_neutral,
         test_div_up_self,
-        test_div_up_wrt_div,
-        test_mul_div => fail(r"assertion `left == right` failed: (a * b) / b != a for 0.000000001, 0.000000001
-  left: FixedDecimal9(0)
- right: FixedDecimal9(1)"),
-        test_div_mul => fail(r"assertion `left == right` failed: (a / b) * b != a for 0.000000001, 0.000001024
+        test_mul_div_up => fail(r"assertion `left == right` failed: div_up(a * b, b) != a for 0.000000001, 0.000000001
   left: FixedDecimal9(0)
  right: FixedDecimal9(1)"),
         test_mul_by_int,
-        test_div_by_int,
+        test_mul_div_by_int,
         test_references,
         test_assign,
     );
@@ -632,7 +615,7 @@ mod test {
         bench_add,
         bench_sub,
         bench_mul,
-        bench_div,
+        bench_div_up,
     );
 
     #[test]
@@ -685,8 +668,8 @@ mod test {
 
     #[test]
     fn test_intermediate_overflow() {
-        // Even though the intermediate multiplication overflows a i64, the result
-        // doesn't and is correct.
+        // Even though the intermediate product overflows a i64, the result doesn't and
+        // is correct.
         assert_eq!(
             FixedDecimal9::from_i64(1_000) * FixedDecimal9::from_i64(1_000),
             FixedDecimal9::from_i64(1_000_000)
@@ -697,9 +680,10 @@ mod test {
             FixedDecimal9::from_i64(5) * FixedDecimal9::from_i64(2),
             FixedDecimal9::from_i64(10)
         );
+        // The intermediate product of 10^19 overflows a i64.
         assert_eq!(
-            FixedDecimal9::from_i64(9_000_000_000) / FixedDecimal9::from_i64(3),
-            FixedDecimal9::from_i64(3_000_000_000)
+            FixedDecimal9::ratio(10_000_000_000, 2),
+            FixedDecimal9::from_i64(5_000_000_000)
         );
 
         // Same check for MulAssign.
