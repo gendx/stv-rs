@@ -161,7 +161,7 @@ jobs:
           python3 droop/Droop.py meek fixed precision=9 omega=6 defeat_batch=none testdata/ballots/${{ matrix.file }}.blt 2> droop.err | diff -s testdata/meek/${{ matrix.file }}.fixed9.log -
           echo -n "" | diff -s - droop.err
 
-  meek_approx_tests:
+  arithmetic_tests:
     needs: build
     strategy:
       matrix:
@@ -171,9 +171,20 @@ jobs:
           - random/rand_5x4
           - random/rand_hypergeometric
           - vegetables
+        arithmetic:
+          - bigfixed9
+          - approx
         parallel:
           - false
           - true
+        exclude:
+          - file: crashes/elect_too_many
+            arithmetic: bigfixed9
+        include:
+          - arithmetic: bigfixed9
+            suffix: fixed9
+          - arithmetic: approx
+            suffix: approx
       fail-fast: false
     runs-on: ubuntu-latest
     steps:
@@ -187,10 +198,10 @@ jobs:
 
       - name: Check STV-rs output
         run: |
-          target/release/stv-rs --arithmetic approx --input testdata/ballots/${{ matrix.file }}.blt meek --parallel=${{ matrix.parallel }} | diff -s testdata/meek/${{ matrix.file }}.approx.log -
+          target/release/stv-rs --arithmetic ${{ matrix.arithmetic }} --input testdata/ballots/${{ matrix.file }}.blt meek --parallel=${{ matrix.parallel }} | diff -s testdata/meek/${{ matrix.file }}.${{ matrix.suffix }}.log -
       - name: Check STV-rs output (equalized counting)
         run: |
-          target/release/stv-rs --arithmetic approx --input testdata/ballots/${{ matrix.file }}.blt meek --parallel=${{ matrix.parallel }} --equalize | diff -s testdata/meek/${{ matrix.file }}.equalize.approx.log -
+          target/release/stv-rs --arithmetic ${{ matrix.arithmetic }} --input testdata/ballots/${{ matrix.file }}.blt meek --parallel=${{ matrix.parallel }} --equalize | diff -s testdata/meek/${{ matrix.file }}.equalize.${{ matrix.suffix }}.log -
 
   plurality_tests:
     needs: build
