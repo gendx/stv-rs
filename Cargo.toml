@@ -19,6 +19,7 @@ log = "0.4"
 num = "0.4"
 rayon = "1"
 regex = "1.10"
+seq-macro = "0.3.5"
 
 [dev-dependencies]
 rand = "0.8"
