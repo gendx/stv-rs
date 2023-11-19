@@ -296,13 +296,13 @@ where
     /// seats plus one.
     pub fn threshold_exhausted(election: &Election, exhausted: &R) -> R {
         let numerator = R::from_usize(election.num_ballots) - exhausted;
-        let denominator = R::from_usize(election.num_seats + 1);
+        let denominator = I::from_usize(election.num_seats + 1);
         let result = &numerator / &denominator + R::epsilon();
         debug!(
-            "threshold_exhausted = {numerator} / {denominator} + {} ~ {} / {} + {}",
+            "threshold_exhausted = {numerator} / {denominator:?} + {} ~ {} / {:?} + {}",
             R::epsilon(),
             numerator.to_f64(),
-            denominator.to_f64(),
+            R::from_int(denominator.clone()).to_f64(),
             R::epsilon().to_f64(),
         );
         debug!("\t= {result} ~ {}", result.to_f64());
