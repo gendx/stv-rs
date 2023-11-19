@@ -20,6 +20,7 @@ SLEEP_SECONDS=15
 
 "${HYPERFINE_PATH}" \
     --style color \
+    --sort command \
     --setup "sleep ${SLEEP_SECONDS}" \
     --warmup 1 \
     --parameter-list INDEX_COMMIT "${INDEX_COMMITS}" \
@@ -29,6 +30,7 @@ for NUM_THREADS in 2 4 8
 do
     RAYON_NUM_THREADS=${NUM_THREADS} "${HYPERFINE_PATH}" \
         --style color \
+        --sort command \
         --setup "sleep ${SLEEP_SECONDS}" \
         --warmup 1 \
         --parameter-list INDEX_COMMIT "${INDEX_COMMITS}" \
