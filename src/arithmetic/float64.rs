@@ -75,6 +75,10 @@ impl Rational<f64> for f64 {
         "64-bit floating-point arithmetic"
     }
 
+    fn div_up_as_keep_factor(&self, rhs: &Self) -> Self {
+        self / rhs
+    }
+
     #[cfg(test)]
     fn get_positive_test_values() -> Vec<Self> {
         let mut result = Vec::new();
@@ -127,6 +131,7 @@ mod test {
         testi_mul_is_distributive => fail(r"assertion `left == right` failed: a * (b + c) != (a * b) + (a * c) for 2147483646, 1, 2147483519
   left: 4.6116857392545137e18
  right: 4.611685739254514e18"),
+        testi_product,
     );
 
     numeric_tests!(
@@ -134,7 +139,6 @@ mod test {
         f64,
         test_values_are_positive,
         test_is_exact,
-        test_ceil_precision,
         test_ratio,
         test_ratio_invert => fail(r"assertion `left == right` failed: R::ratio(1, a) * a != 1 for 49
   left: 0.9999999999999999
@@ -155,20 +159,15 @@ mod test {
         test_mul_up_is_commutative,
         test_mul_up_integers,
         test_mul_up_wrt_mul,
-        test_invert => fail(r"assertion `left == right` failed: 1/(1/a) != a for 2147483631
-  left: 2147483631.0000002
- right: 2147483631.0"),
-        test_div_self,
+        test_one_is_div_up_neutral,
         test_div_up_self,
-        test_div_up_wrt_div,
-        test_mul_div => fail(r"assertion `left == right` failed: (a * b) / b != a for 2147483646, 0.000000000465661315280157
+        test_mul_div_up => fail(r"assertion `left == right` failed: div_up(a * b, b) != a for 2147483646, 0.000000000465661315280157
   left: 2147483646.0000002
  right: 2147483646.0"),
-        test_div_mul => fail(r"assertion `left == right` failed: (a / b) * b != a for 1, 2147483631
-  left: 0.9999999999999999
- right: 1.0"),
         test_mul_by_int,
-        test_div_by_int,
+        test_mul_div_by_int => fail(r"assertion `left == right` failed: a * int(b) / int(b) != a for 0.0000000005321843286349222, 7
+  left: 5.321843286349223e-10
+ right: 5.321843286349222e-10"),
         test_references,
         test_assign,
     );
@@ -202,7 +201,7 @@ mod test {
         test_product,
     );
 
-    numeric_benchmarks!(f64, f64, bench_add, bench_sub, bench_mul, bench_div,);
+    numeric_benchmarks!(f64, f64, bench_add, bench_sub, bench_mul, bench_div_up,);
 
     #[test]
     fn test_description() {

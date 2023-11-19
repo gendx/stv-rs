@@ -38,6 +38,7 @@ mod test {
         testi_add_is_associative,
         testi_mul_is_associative,
         testi_mul_is_distributive,
+        testi_product,
     );
 
     numeric_tests!(
@@ -45,7 +46,6 @@ mod test {
         Ratio<i64>,
         test_values_are_positive,
         test_is_exact,
-        test_ceil_precision,
         test_ratio,
         test_ratio_invert,
         test_is_zero,
@@ -60,14 +60,11 @@ mod test {
         test_mul_up_is_commutative,
         test_mul_up_integers,
         test_mul_up_wrt_mul,
-        test_invert,
-        test_div_self,
+        test_one_is_div_up_neutral,
         test_div_up_self,
-        test_div_up_wrt_div,
-        test_mul_div,
-        test_div_mul,
+        test_mul_div_up,
         test_mul_by_int,
-        test_div_by_int,
+        test_mul_div_by_int,
         test_references,
         test_assign,
     );
@@ -93,5 +90,12 @@ mod test {
         test_product => fail(r"denominator == 0"),
     );
 
-    numeric_benchmarks!(i64, Ratio<i64>, bench_add, bench_sub, bench_mul, bench_div,);
+    numeric_benchmarks!(
+        i64,
+        Ratio<i64>,
+        bench_add,
+        bench_sub,
+        bench_mul,
+        bench_div_up,
+    );
 }

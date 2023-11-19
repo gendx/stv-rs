@@ -95,6 +95,10 @@ where
         "exact rational arithmetic"
     }
 
+    fn div_up_as_keep_factor(&self, rhs: &Self) -> Self {
+        self / rhs
+    }
+
     #[cfg(test)]
     fn get_positive_test_values() -> Vec<Self> {
         let mut result = Vec::new();
@@ -147,6 +151,7 @@ mod test {
         testi_add_is_associative,
         testi_mul_is_associative,
         testi_mul_is_distributive,
+        testi_product,
     );
 
     numeric_tests!(
@@ -154,7 +159,6 @@ mod test {
         BigRational,
         test_values_are_positive,
         test_is_exact,
-        test_ceil_precision,
         test_ratio,
         test_ratio_invert,
         test_is_zero,
@@ -169,14 +173,11 @@ mod test {
         test_mul_up_is_commutative,
         test_mul_up_integers,
         test_mul_up_wrt_mul,
-        test_invert,
-        test_div_self,
+        test_one_is_div_up_neutral,
         test_div_up_self,
-        test_div_up_wrt_div,
-        test_mul_div,
-        test_div_mul,
+        test_mul_div_up,
         test_mul_by_int,
-        test_div_by_int,
+        test_mul_div_by_int,
         test_references,
         test_assign,
     );
@@ -202,7 +203,7 @@ mod test {
         bench_add,
         bench_sub,
         bench_mul,
-        bench_div,
+        bench_div_up,
     );
 
     #[test]

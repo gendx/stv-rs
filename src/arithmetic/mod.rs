@@ -42,6 +42,7 @@ pub trait Integer:
     + PartialOrd
     + Zero
     + One
+    + Product
     + Add<Output = Self>
     + Sub<Output = Self>
     + Mul<Output = Self>
@@ -74,7 +75,6 @@ pub trait Rational<I>:
     + Sub<Output = Self>
     + Mul<Output = Self>
     + Mul<I, Output = Self>
-    + Div<Output = Self>
     + Div<I, Output = Self>
     + for<'a> AddAssign<&'a Self>
     + for<'a> SubAssign<&'a Self>
@@ -84,7 +84,6 @@ pub trait Rational<I>:
     + for<'a> Add<&'a Self, Output = Self>
     + for<'a> Sub<&'a Self, Output = Self>
     + for<'a> Mul<&'a Self, Output = Self>
-    + for<'a> Div<&'a Self, Output = Self>
 where
     I: Integer,
     for<'a> &'a I: IntegerRef<I>,
@@ -129,23 +128,17 @@ where
     /// arithmetic".
     fn description() -> &'static str;
 
-    /// Optionally round up the current number, based on the implementation's
-    /// precision. This can be useful with exact arithmetic, to avoid complexity
-    /// explosion of rational numbers. The default implementation does not
-    /// perform any rounding.
-    fn ceil_precision(&mut self) {}
-
     /// Multiplication, rounding up for types that perform a rounding on this
     /// operation.
     fn mul_up(&self, rhs: &Self) -> Self {
         self * rhs
     }
 
-    /// Division, rounding up for types that perform a rounding on this
-    /// operation.
-    fn div_up(&self, rhs: &Self) -> Self {
-        self / rhs
-    }
+    /// Performs a division to obtain a keep factor. The division is rounded up
+    /// for types that cannot compute the result precisely. Additionally,
+    /// types may further round the result, which can be useful with exact
+    /// arithmetic, to avoid complexity explosion of rational numbers.
+    fn div_up_as_keep_factor(&self, rhs: &Self) -> Self;
 
     #[cfg(test)]
     fn get_positive_test_values() -> Vec<Self>;
@@ -164,7 +157,6 @@ pub trait RationalRef<RefI, Output>:
     + Sub<Self, Output = Output>
     + Mul<Self, Output = Output>
     + Mul<RefI, Output = Output>
-    + Div<Self, Output = Output>
     + Div<RefI, Output = Output>
 {
 }
@@ -403,6 +395,17 @@ pub(crate) mod test {
             })
         }
 
+        pub fn testi_product(num_samples: Option<usize>) {
+            let test_values = I::get_positive_test_values();
+            Self::loopi_check3(&test_values, num_samples, |a, b, c| {
+                assert_eq!(
+                    [a.clone(), b.clone(), c.clone()].into_iter().product::<I>(),
+                    &(a * b) * c,
+                    "[a, b, c].product() != a * b * c for {a}, {b}, {c}"
+                );
+            });
+        }
+
         fn loopi_check1(test_values: &[I], f: impl Fn(&I)) {
             for a in test_values {
                 f(a);
@@ -471,15 +474,6 @@ pub(crate) mod test {
                 R::epsilon(),
                 R::is_exact()
             );
-        }
-
-        pub fn test_ceil_precision() {
-            let test_values = R::get_positive_test_values();
-            Self::loop_check1(&test_values, |a| {
-                let mut b = a.clone();
-                b.ceil_precision();
-                assert!(b >= *a, "b := ceil_precision(a) < a for {a}, {b}");
-            });
         }
 
         pub fn test_ratio() {
@@ -575,7 +569,6 @@ pub(crate) mod test {
             Self::loop_check1(&test_values, |a| {
                 assert_eq!(a * &R::one(), *a, "a * 1 != a for {a}");
                 assert_eq!(&R::one() * a, *a, "1 * a != a for {a}");
-                assert_eq!(a / &R::one(), *a, "a / 1 != a for {a}");
             })
         }
 
@@ -642,52 +635,36 @@ pub(crate) mod test {
             })
         }
 
-        pub fn test_invert() {
+        pub fn test_one_is_div_up_neutral() {
             let test_values = R::get_positive_test_values();
             Self::loop_check1(&test_values, |a| {
-                assert_eq!(R::one() / (R::one() / a), *a, "1/(1/a) != a for {a}");
-            });
-        }
-
-        #[allow(clippy::eq_op)]
-        pub fn test_div_self() {
-            let test_values = R::get_positive_test_values();
-            Self::loop_check1(&test_values, |a| {
-                assert_eq!(a / a, R::one(), "a / a != 1 for {a}");
-            });
+                assert_eq!(
+                    R::div_up_as_keep_factor(a, &R::one()),
+                    *a,
+                    "div_up(a, 1) != a for {a}"
+                );
+            })
         }
 
         pub fn test_div_up_self() {
             let test_values = R::get_positive_test_values();
             Self::loop_check1(&test_values, |a| {
-                assert_eq!(R::div_up(a, a), R::one(), "div_up(a, a) != 1 for {a}");
-            });
-        }
-
-        pub fn test_div_up_wrt_div() {
-            let test_values = R::get_positive_test_values();
-            Self::loop_check2(&test_values, |a, b| {
-                let mul = a / b;
-                let div_up = R::div_up(a, b);
-                assert!(div_up >= mul, "div_up(a, b) < a / b for {a}, {b}");
-                assert!(
-                    div_up <= mul + R::epsilon(),
-                    "div_up(a, b) > a / b + epsilon for {a}, {b}"
+                assert_eq!(
+                    R::div_up_as_keep_factor(a, a),
+                    R::one(),
+                    "div_up(a, a) != 1 for {a}"
                 );
-            })
-        }
-
-        pub fn test_mul_div() {
-            let test_values = R::get_positive_test_values();
-            Self::loop_check2(&test_values, |a, b| {
-                assert_eq!(&(a * b) / b, *a, "(a * b) / b != a for {a}, {b}");
             });
         }
 
-        pub fn test_div_mul() {
+        pub fn test_mul_div_up() {
             let test_values = R::get_positive_test_values();
             Self::loop_check2(&test_values, |a, b| {
-                assert_eq!(&(a / b) * b, *a, "(a / b) * b != a for {a}, {b}");
+                assert_eq!(
+                    R::div_up_as_keep_factor(&(a * b), b),
+                    *a,
+                    "div_up(a * b, b) != a for {a}, {b}"
+                );
             });
         }
 
@@ -702,15 +679,11 @@ pub(crate) mod test {
             })
         }
 
-        pub fn test_div_by_int() {
+        pub fn test_mul_div_by_int() {
             let test_values = R::get_positive_test_values();
             Self::loop_check1_i1(&test_values, |a, b| {
                 if !b.is_zero() {
-                    assert_eq!(
-                        a / &b,
-                        a / &R::from_int(b.clone()),
-                        "a / int(b) != a / b for {a}, {b}"
-                    );
+                    assert_eq!(&(a * &b) / &b, *a, "a * int(b) / int(b) != a for {a}, {b}");
                 }
             })
         }
@@ -782,15 +755,9 @@ pub(crate) mod test {
                     a.clone() * b.clone(),
                     "&a * &b != a * b for {a}, {b}"
                 );
-                assert_eq!(
-                    a / b,
-                    a.clone() / b.clone(),
-                    "&a / &b != a / b for {a}, {b}"
-                );
                 assert_eq!(a + b, a.clone() + b, "&a + &b != a + &b for {a}, {b}");
                 assert_eq!(a - b, a.clone() - b, "&a - &b != a - &b for {a}, {b}");
                 assert_eq!(a * b, a.clone() * b, "&a * &b != a * &b for {a}, {b}");
-                assert_eq!(a / b, a.clone() / b, "&a / &b != a / &b for {a}, {b}");
             });
 
             Self::loop_check1_i1(&test_values, |a, b| {
@@ -888,10 +855,10 @@ pub(crate) mod test {
             bencher.iter(|| black_box(&a) * black_box(&b));
         }
 
-        pub fn bench_div(bencher: &mut Bencher) {
+        pub fn bench_div_up(bencher: &mut Bencher) {
             let a = R::zero();
             let b = R::one();
-            bencher.iter(|| black_box(&a) / black_box(&b));
+            bencher.iter(|| R::div_up_as_keep_factor(black_box(&a), black_box(&b)));
         }
 
         fn loop_check1(test_values: &[R], f: impl Fn(&R)) {

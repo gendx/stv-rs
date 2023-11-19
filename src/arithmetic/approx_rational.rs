@@ -20,8 +20,8 @@ use std::iter::{Product, Sum};
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
 /// A [`BigRational`] that approximates to some precision in
-/// [`Rational::ceil_precision()`]. The other operations behave exactly as
-/// [`BigRational`].
+/// [`Rational::div_up_as_keep_factor()`]. The other operations behave exactly
+/// as [`BigRational`].
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd)]
 pub struct ApproxRational(BigRational);
 
@@ -69,12 +69,6 @@ impl Mul<BigInt> for ApproxRational {
         ApproxRational(self.0.mul(rhs))
     }
 }
-impl Div for ApproxRational {
-    type Output = Self;
-    fn div(self, rhs: Self) -> Self {
-        ApproxRational(self.0.div(rhs.0))
-    }
-}
 impl Div<BigInt> for ApproxRational {
     type Output = Self;
     fn div(self, rhs: BigInt) -> Self {
@@ -100,12 +94,6 @@ impl Mul<&'_ Self> for ApproxRational {
         ApproxRational(self.0.mul(&rhs.0))
     }
 }
-impl Div<&'_ Self> for ApproxRational {
-    type Output = Self;
-    fn div(self, rhs: &'_ Self) -> Self {
-        ApproxRational(self.0.div(&rhs.0))
-    }
-}
 
 impl Add<&'_ ApproxRational> for &'_ ApproxRational {
     type Output = ApproxRational;
@@ -129,12 +117,6 @@ impl Mul<&'_ BigInt> for &'_ ApproxRational {
     type Output = ApproxRational;
     fn mul(self, rhs: &'_ BigInt) -> ApproxRational {
         ApproxRational((&self.0).mul(rhs))
-    }
-}
-impl Div<&'_ ApproxRational> for &'_ ApproxRational {
-    type Output = ApproxRational;
-    fn div(self, rhs: &'_ ApproxRational) -> ApproxRational {
-        ApproxRational((&self.0).div(&rhs.0))
     }
 }
 impl Div<&'_ BigInt> for &'_ ApproxRational {
@@ -235,12 +217,12 @@ impl Rational<BigInt> for ApproxRational {
         "exact rational arithmetic with rounding of keep factors (6 decimal places)"
     }
 
-    fn ceil_precision(&mut self) {
+    fn div_up_as_keep_factor(&self, rhs: &Self) -> Self {
         let precision = BigInt::from(1_000_000);
 
-        self.0 *= &precision;
-        let numer = self.0.ceil().numer().clone();
-        self.0 = BigRational::new(numer, precision);
+        let result = &self.0 * &precision / &rhs.0;
+        let numer = result.ceil().numer().clone();
+        Self(BigRational::new(numer, precision))
     }
 
     #[cfg(test)]
@@ -276,7 +258,6 @@ mod test {
         ApproxRational,
         test_values_are_positive,
         test_is_exact,
-        test_ceil_precision,
         test_ratio,
         test_ratio_invert,
         test_is_zero,
@@ -291,14 +272,15 @@ mod test {
         test_mul_up_is_commutative,
         test_mul_up_integers,
         test_mul_up_wrt_mul,
-        test_invert,
-        test_div_self,
+        test_one_is_div_up_neutral => fail(r"assertion `left == right` failed: div_up(a, 1) != a for 1/128
+  left: ApproxRational(Ratio { numer: 7813, denom: 1000000 })
+ right: ApproxRational(Ratio { numer: 1, denom: 128 })"),
         test_div_up_self,
-        test_div_up_wrt_div,
-        test_mul_div,
-        test_div_mul,
+        test_mul_div_up => fail(r"assertion `left == right` failed: div_up(a * b, b) != a for 1/128, 1
+  left: ApproxRational(Ratio { numer: 7813, denom: 1000000 })
+ right: ApproxRational(Ratio { numer: 1, denom: 128 })"),
         test_mul_by_int,
-        test_div_by_int,
+        test_mul_div_by_int,
         test_references,
         test_assign,
     );
@@ -324,7 +306,7 @@ mod test {
         bench_add,
         bench_sub,
         bench_mul,
-        bench_div,
+        bench_div_up,
     );
 
     #[test]

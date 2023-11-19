@@ -234,7 +234,7 @@ where
             keep_factors: vec![R::one(); election.candidates.len()],
             threshold: VoteCount::<I, R>::threshold_exhausted(election, &R::zero()),
             surplus: R::zero(),
-            omega: R::one() / &(0..omega_exponent).map(|_| R::from_usize(10)).product(),
+            omega: R::one() / (0..omega_exponent).map(|_| I::from_usize(10)).product(),
             parallel,
             force_positive_surplus,
             pascal,
@@ -503,10 +503,9 @@ Election: {}
                     None
                 }
             }) {
-                let mut new_factor = self.keep_factors[i]
+                let new_factor = self.keep_factors[i]
                     .mul_up(&self.threshold)
-                    .div_up(&count.sum[i]);
-                new_factor.ceil_precision();
+                    .div_up_as_keep_factor(&count.sum[i]);
                 debug!(
                     "\t{}: {} ~ {} -> {new_factor} ~ {}",
                     self.election.candidates[i].nickname,
