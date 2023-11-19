@@ -52,4 +52,4 @@ jobs:
             cargo-target-bench-${{ matrix.cpu }}-${{ hashFiles('cpuinfo.txt') }}-${{ hashFiles('cargo.version.txt') }}
 
       - name: Run benchmarks
-        run: cargo bench --verbose
+        run: cargo bench --verbose --all-targets --no-run
