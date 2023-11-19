@@ -19,7 +19,8 @@ use crate::arithmetic::{Integer, IntegerRef, Rational, RationalRef};
 use crate::cli::Parallel;
 use crate::parallelism::ThreadPool;
 use crate::types::{Ballot, Election};
-use log::{debug, trace, warn};
+use log::Level::{Trace, Warn};
+use log::{debug, log_enabled, trace, warn};
 use rayon::prelude::*;
 use std::io;
 use std::marker::PhantomData;
@@ -116,9 +117,11 @@ where
             Parallel::Custom => thread_pool.unwrap().accumulate_votes(keep_factors),
         };
 
-        trace!("Finished counting ballots:");
-        for (i, x) in vote_accumulator.sum.iter().enumerate() {
-            trace!("  Sum[{i}] = {x} ~ {}", x.to_f64());
+        if log_enabled!(Trace) {
+            trace!("Finished counting ballots:");
+            for (i, x) in vote_accumulator.sum.iter().enumerate() {
+                trace!("  Sum[{i}] = {x} ~ {}", x.to_f64());
+            }
         }
 
         let equalize = pascal.is_some();
@@ -221,11 +224,13 @@ where
             counter.process_ballot_rec()
         };
 
-        if !unused_power.is_zero() {
-            let pwr = &unused_power / &I::from_usize(ballot.count());
-            trace!("  Exhausted voting_power = {pwr} ~ {}", pwr.to_f64());
-        } else {
-            trace!("  Exhausted voting_power is zero :)");
+        if log_enabled!(Trace) {
+            if !unused_power.is_zero() {
+                let pwr = &unused_power / &I::from_usize(ballot.count());
+                trace!("  Exhausted voting_power = {pwr} ~ {}", pwr.to_f64());
+            } else {
+                trace!("  Exhausted voting_power is zero :)");
+            }
         }
 
         vote_accumulator.exhausted += unused_power;
@@ -251,13 +256,13 @@ where
         elected
             .iter()
             .map(|&i| {
-                let x = &self.sum[i];
-                if x < threshold {
+                let result = &self.sum[i] - threshold;
+                if log_enabled!(Warn) && result < R::zero() {
                     warn!(
                         "Candidate #{i} was elected but received fewer votes than the threshold."
                     );
                 }
-                x - threshold
+                result
             })
             .sum()
     }
@@ -543,16 +548,18 @@ where
             remaining_power.to_f64(),
         );
 
-        let total = &used_power + &remaining_power;
-        // Note: This assertion can fail when using f64.
-        if &total > voting_power {
-            trace!(
-                "used + remaining > voting | {} + {} = {} > {}",
-                used_power.to_f64(),
-                remaining_power.to_f64(),
-                total.to_f64(),
-                voting_power.to_f64()
-            );
+        if log_enabled!(Trace) {
+            let total = &used_power + &remaining_power;
+            // Note: This assertion can fail when using f64.
+            if &total > voting_power {
+                trace!(
+                    "used + remaining > voting | {} + {} = {} > {}",
+                    used_power.to_f64(),
+                    remaining_power.to_f64(),
+                    total.to_f64(),
+                    voting_power.to_f64()
+                );
+            }
         }
 
         (used_power, remaining_power)
