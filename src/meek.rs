@@ -20,7 +20,7 @@ use crate::cli::Parallel;
 use crate::parallelism::{RangeStrategy, ThreadPool};
 use crate::types::{Election, ElectionResult};
 use crate::vote_count::{self, VoteCount};
-use log::{debug, info, warn};
+use log::{debug, info, log_enabled, warn, Level};
 use std::fmt::{self, Debug, Display};
 use std::io;
 use std::marker::PhantomData;
@@ -273,21 +273,25 @@ where
 
             self.election_round(stdout, &mut count)?;
 
-            let now = Instant::now();
-            debug!(
-                "Elapsed time to compute this round: {:?} / total: {:?}",
-                now.duration_since(timestamp),
-                now.duration_since(beginning)
-            );
-            timestamp = now;
+            if log_enabled!(Level::Debug) {
+                let now = Instant::now();
+                debug!(
+                    "Elapsed time to compute this round: {:?} / total: {:?}",
+                    now.duration_since(timestamp),
+                    now.duration_since(beginning)
+                );
+                timestamp = now;
+            }
         }
 
         self.handle_remaining_candidates(stdout, &mut count)?;
 
         self.write_action(stdout, "Count Complete", &count, true)?;
 
-        let now = Instant::now();
-        info!("Total elapsed time: {:?}", now.duration_since(beginning));
+        if log_enabled!(Level::Info) {
+            let now = Instant::now();
+            info!("Total elapsed time: {:?}", now.duration_since(beginning));
+        }
 
         let result = ElectionResult {
             elected: self.elected,
@@ -404,14 +408,16 @@ Election: {}
         }
         writeln!(stdout, "Round {round}:")?;
 
-        debug!("Weights:");
-        for (i, candidate) in self.election.candidates.iter().enumerate() {
-            debug!(
-                "    [{i}] {} ({:?}) ~ {}",
-                candidate.nickname,
-                self.statuses[i],
-                self.keep_factors[i].to_f64()
-            );
+        if log_enabled!(Level::Debug) {
+            debug!("Weights:");
+            for (i, candidate) in self.election.candidates.iter().enumerate() {
+                debug!(
+                    "    [{i}] {} ({:?}) ~ {}",
+                    candidate.nickname,
+                    self.statuses[i],
+                    self.keep_factors[i].to_f64()
+                );
+            }
         }
 
         if self
@@ -543,7 +549,7 @@ Election: {}
                 // Otherwise their keep factor was too low, i.e. too much of
                 // their ballots were unduly transfered to other candidates.
                 Status::Elected => {
-                    if count.sum[i] < self.threshold {
+                    if log_enabled!(Level::Warn) && count.sum[i] < self.threshold {
                         warn!(
                             "Count for elected candidate #{i} ({}) is lower than the quota: {} < {} ~ {} < {}",
                             candidate.nickname,
@@ -757,6 +763,10 @@ Election: {}
 
     /// Displays a debug output of the current vote counts.
     fn debug_count(&self, count: &VoteCount<I, R>) {
+        if !log_enabled!(Level::Debug) {
+            return;
+        }
+
         let mut sorted_candidates: Vec<usize> = (0..self.num_candidates()).collect();
         sorted_candidates.sort_by(|&i, &j| count.sum[i].partial_cmp(&count.sum[j]).unwrap());
 
