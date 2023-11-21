@@ -21,7 +21,7 @@ jobs:
             cargo-registry
 
       - name: Check Cargo version
-        run: cargo -V > cargo.version.txt
+        run: cargo -V | tee cargo.version.txt
       - name: Cache Cargo target
         uses: actions/cache@v3
         with:
@@ -32,7 +32,7 @@ jobs:
             cargo-target-coverage-${{ hashFiles('cargo.version.txt') }}
 
       - name: Generate code coverage
-        run: cargo llvm-cov --release --all-features --workspace --lcov --output-path lcov.info
+        run: cargo llvm-cov --verbose --release --all-features --workspace --lcov --output-path lcov.info
       - name: Upload to Codecov
         uses: codecov/codecov-action@v3.1.0
         with:

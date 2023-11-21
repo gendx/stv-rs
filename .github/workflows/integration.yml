@@ -22,7 +22,7 @@ jobs:
             cargo-registry
 
       - name: Check Cargo version
-        run: cargo -V > cargo.version.txt
+        run: cargo -V | tee cargo.version.txt
       - name: Cache Cargo target
         uses: actions/cache@v3
         with:
@@ -33,13 +33,13 @@ jobs:
             cargo-target-release-${{ hashFiles('cargo.version.txt') }}
 
       - name: Build STV-rs
-        run: cargo build --release
+        run: cargo build --verbose --release
       - name: Build histogram
-        run: cargo build --release --example histogram
+        run: cargo build --verbose --release --example histogram
       - name: Build remove_nicknames
-        run: cargo build --release --example remove_nicknames
+        run: cargo build --verbose --release --example remove_nicknames
       - name: Build shuffle_ballots
-        run: cargo build --release --example shuffle_ballots
+        run: cargo build --verbose --release --example shuffle_ballots
       - uses: actions/upload-artifact@v3
         with:
           name: build-artifacts
@@ -52,7 +52,7 @@ jobs:
 
       - name: Generate random ballots
         run: |
-          cargo run --release --example random_ballots -- --ballot-pattern hypergeometric20 --num-ballots 100000 --seed 42 --output testdata/ballots/random/rand_hypergeometric_100k.blt
+          cargo run --verbose --release --example random_ballots -- --ballot-pattern hypergeometric20 --num-ballots 100000 --seed 42 --output testdata/ballots/random/rand_hypergeometric_100k.blt
       - uses: actions/upload-artifact@v3
         with:
           name: large-test-files

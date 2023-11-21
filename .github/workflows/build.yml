@@ -32,7 +32,7 @@ jobs:
             cargo-registry
 
       - name: Check Cargo version
-        run: cargo -V > cargo.version.txt
+        run: cargo -V | tee cargo.version.txt
       - name: Cache Cargo target
         uses: actions/cache@v3
         with:
@@ -43,10 +43,10 @@ jobs:
             cargo-target-debug-${{ hashFiles('cargo.version.txt') }}
 
       - name: Build without features
-        run: cargo build --all --no-default-features --verbose
+        run: cargo build --verbose --all --no-default-features
       - name: Build examples without features
-        run: cargo build --examples --no-default-features --verbose
+        run: cargo build --verbose --examples --no-default-features
       - name: Build with default features
-        run: cargo build --all --verbose
+        run: cargo build --verbose --all
       - name: Build examples with default features
-        run: cargo build --examples --verbose
+        run: cargo build --verbose --examples
