@@ -17,13 +17,16 @@
 
 use crate::arithmetic::{Integer, IntegerRef, Rational, RationalRef};
 use crate::cli::Parallel;
-use crate::parallelism::ThreadPool;
+use crate::parallelism::{RangeStrategy, ThreadAccumulator, ThreadPool};
 use crate::types::{Ballot, Election};
 use log::Level::{Trace, Warn};
 use log::{debug, log_enabled, trace, warn};
 use rayon::prelude::*;
 use std::io;
 use std::marker::PhantomData;
+use std::num::NonZeroUsize;
+use std::sync::{Arc, RwLock, RwLockReadGuard};
+use std::thread::Scope;
 
 /// Result of a vote count.
 #[cfg_attr(test, derive(Debug, PartialEq))]
@@ -96,6 +99,116 @@ where
     }
 }
 
+/// A thread pool tied to a scope, that can perform vote counting rounds.
+pub struct VoteCountingThreadPool<'scope, I, R> {
+    /// Inner thread pool.
+    pool: ThreadPool<'scope, VoteAccumulator<I, R>>,
+    /// Storage for the keep factors, used as input of the current round by the
+    /// worker threads.
+    keep_factors: Arc<RwLock<Vec<R>>>,
+}
+
+impl<'scope, I, R> VoteCountingThreadPool<'scope, I, R>
+where
+    I: Integer + Send + Sync + 'scope,
+    for<'a> &'a I: IntegerRef<I>,
+    R: Rational<I> + Send + Sync + 'scope,
+    for<'a> &'a R: RationalRef<&'a I, R>,
+{
+    /// Creates a new pool tied to the given scope, with the given number of
+    /// threads and references to the necessary election inputs.
+    pub fn new<'env>(
+        thread_scope: &'scope Scope<'scope, 'env>,
+        num_threads: NonZeroUsize,
+        range_strategy: RangeStrategy,
+        election: &'env Election,
+        pascal: Option<&'env [Vec<I>]>,
+    ) -> Self {
+        let keep_factors = Arc::new(RwLock::new(Vec::new()));
+        Self {
+            pool: ThreadPool::new(
+                thread_scope,
+                num_threads,
+                range_strategy,
+                &election.ballots,
+                || ThreadVoteCounter {
+                    num_candidates: election.num_candidates,
+                    pascal,
+                    keep_factors: keep_factors.clone(),
+                },
+            ),
+            keep_factors,
+        }
+    }
+
+    /// Accumulates votes from the election ballots based on the given keep
+    /// factors.
+    pub fn accumulate_votes(&self, keep_factors: &[R]) -> VoteAccumulator<I, R> {
+        {
+            let mut keep_factors_guard = self.keep_factors.write().unwrap();
+            keep_factors_guard.clear();
+            keep_factors_guard.extend_from_slice(keep_factors);
+        }
+
+        self.pool
+            .process_inputs()
+            .reduce(|a, b| a.reduce(b))
+            .unwrap()
+    }
+}
+
+/// Helper state to accumulate votes in a worker thread.
+struct ThreadVoteCounter<'env, I, R> {
+    /// Number of candidates in the election.
+    num_candidates: usize,
+    /// Pre-computed Pascal triangle.
+    pascal: Option<&'env [Vec<I>]>,
+    /// Keep factors used in the current round.
+    keep_factors: Arc<RwLock<Vec<R>>>,
+}
+
+impl<I, R> ThreadAccumulator<Ballot, VoteAccumulator<I, R>> for ThreadVoteCounter<'_, I, R>
+where
+    I: Integer,
+    for<'a> &'a I: IntegerRef<I>,
+    R: Rational<I>,
+    for<'a> &'a R: RationalRef<&'a I, R>,
+{
+    type Accumulator<'a>
+        = (VoteAccumulator<I, R>, RwLockReadGuard<'a, Vec<R>>)
+    where
+        Self: 'a,
+        I: 'a,
+        R: 'a;
+
+    fn init(&self) -> Self::Accumulator<'_> {
+        (
+            VoteAccumulator::new(self.num_candidates),
+            self.keep_factors.read().unwrap(),
+        )
+    }
+
+    fn process_item<'a>(
+        &'a self,
+        accumulator: &mut Self::Accumulator<'a>,
+        index: usize,
+        ballot: &Ballot,
+    ) {
+        let (vote_accumulator, keep_factors) = accumulator;
+        VoteCount::<I, R>::process_ballot(
+            vote_accumulator,
+            keep_factors,
+            self.pascal,
+            index,
+            ballot,
+        );
+    }
+
+    fn finalize<'a>(&'a self, accumulator: Self::Accumulator<'a>) -> VoteAccumulator<I, R> {
+        accumulator.0
+    }
+}
+
 impl<I, R> VoteCount<I, R>
 where
     I: Integer + Send + Sync,
@@ -108,7 +221,7 @@ where
         election: &Election,
         keep_factors: &[R],
         parallel: Parallel,
-        thread_pool: Option<&ThreadPool<'_, I, R>>,
+        thread_pool: Option<&VoteCountingThreadPool<'_, I, R>>,
         pascal: Option<&[Vec<I>]>,
     ) -> Self {
         let vote_accumulator = match parallel {
@@ -690,7 +803,6 @@ where
 mod test {
     use super::*;
     use crate::arithmetic::{ApproxRational, BigFixedDecimal9, FixedDecimal9, Integer64};
-    use crate::parallelism::RangeStrategy;
     use crate::types::Candidate;
     use ::test::Bencher;
     use num::rational::Ratio;
@@ -698,7 +810,6 @@ mod test {
     use std::borrow::Borrow;
     use std::fmt::{Debug, Display};
     use std::hint::black_box;
-    use std::num::NonZeroUsize;
 
     macro_rules! numeric_tests {
         ( $typei:ty, $typer:ty, ) => {};
@@ -1107,7 +1218,7 @@ mod test {
 
                 for num_threads in 1..=10 {
                     std::thread::scope(|thread_scope| {
-                        let thread_pool = ThreadPool::new(
+                        let thread_pool = VoteCountingThreadPool::new(
                             thread_scope,
                             NonZeroUsize::new(num_threads).unwrap(),
                             RangeStrategy::WorkStealing,

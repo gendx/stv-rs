@@ -14,12 +14,9 @@
 
 //! A hand-rolled thread pool, customized for the vote counting problem.
 
-use crate::arithmetic::{Integer, IntegerRef, Rational, RationalRef};
-use crate::parallelism::range::{
+use super::range::{
     FixedRangeFactory, Range, RangeFactory, RangeOrchestrator, WorkStealingRangeFactory,
 };
-use crate::types::Election;
-use crate::vote_count::{VoteAccumulator, VoteCount};
 use log::{debug, error, warn};
 // Platforms that support `libc::sched_setaffinity()`.
 #[cfg(any(
@@ -34,9 +31,8 @@ use nix::{
 };
 use std::cell::Cell;
 use std::num::NonZeroUsize;
-use std::ops::DerefMut;
 use std::sync::atomic::{AtomicUsize, Ordering};
-use std::sync::{Arc, Condvar, Mutex, MutexGuard, PoisonError, RwLock};
+use std::sync::{Arc, Condvar, Mutex, MutexGuard, PoisonError};
 use std::thread::{Scope, ScopedJoinHandle};
 
 /// Status of the main thread.
@@ -129,10 +125,11 @@ impl<T> Status<T> {
     }
 }
 
-/// A thread pool tied to a scope, that can perform vote counting rounds.
-pub struct ThreadPool<'scope, I, R> {
-    /// Handles to all the threads in the pool.
-    threads: Vec<Thread<'scope, I, R>>,
+/// A thread pool tied to a scope, that can process inputs into the given output
+/// type.
+pub struct ThreadPool<'scope, Output> {
+    /// Handles to all the worker threads in the pool.
+    threads: Vec<WorkerThreadHandle<'scope, Output>>,
     /// Number of worker threads active in the current round.
     num_active_threads: Arc<AtomicUsize>,
     /// Color of the current round.
@@ -141,21 +138,18 @@ pub struct ThreadPool<'scope, I, R> {
     worker_status: Arc<Status<WorkerStatus>>,
     /// Status of the main thread.
     main_status: Arc<Status<MainStatus>>,
-    /// Storage for the keep factors, used as input of the current round by the
-    /// worker threads.
-    keep_factors: Arc<RwLock<Vec<R>>>,
     /// Orchestrator for the work ranges distributed to the threads. This is a
     /// dynamic object to avoid making the range type a parameter of
     /// everything.
     range_orchestrator: Box<dyn RangeOrchestrator>,
 }
 
-/// Handle to a thread in the pool.
-struct Thread<'scope, I, R> {
+/// Handle to a worker thread in the pool.
+struct WorkerThreadHandle<'scope, Output> {
     /// Thread handle object.
     handle: ScopedJoinHandle<'scope, ()>,
     /// Storage for this thread's computation output.
-    output: Arc<Mutex<Option<VoteAccumulator<I, R>>>>,
+    output: Arc<Mutex<Option<Output>>>,
 }
 
 /// Strategy to distribute ranges of work items among threads.
@@ -166,48 +160,47 @@ pub enum RangeStrategy {
     WorkStealing,
 }
 
-impl<'scope, I, R> ThreadPool<'scope, I, R>
-where
-    I: Integer + Send + Sync + 'scope,
-    for<'a> &'a I: IntegerRef<I>,
-    R: Rational<I> + Send + Sync + 'scope,
-    for<'a> &'a R: RationalRef<&'a I, R>,
-{
-    /// Creates a new pool tied to the given scope, with the given number of
-    /// threads and references to the necessary election inputs.
-    pub fn new<'e>(
-        thread_scope: &'scope Scope<'scope, 'e>,
+impl<'scope, Output: Send + 'scope> ThreadPool<'scope, Output> {
+    /// Creates a new pool tied to the given scope, spawning the given number of
+    /// threads and using the given input slice.
+    pub fn new<'env, Input: Sync, Accum: ThreadAccumulator<Input, Output> + Send + 'scope>(
+        thread_scope: &'scope Scope<'scope, 'env>,
         num_threads: NonZeroUsize,
         range_strategy: RangeStrategy,
-        election: &'e Election,
-        pascal: Option<&'e [Vec<I>]>,
+        input: &'env [Input],
+        new_accumulator: impl Fn() -> Accum,
     ) -> Self {
         let num_threads: usize = num_threads.into();
-        let num_ballots = election.ballots.len();
+        let input_len = input.len();
         match range_strategy {
             RangeStrategy::Fixed => Self::new_with_factory(
                 thread_scope,
                 num_threads,
-                FixedRangeFactory::new(num_ballots, num_threads),
-                election,
-                pascal,
+                FixedRangeFactory::new(input_len, num_threads),
+                input,
+                new_accumulator,
             ),
             RangeStrategy::WorkStealing => Self::new_with_factory(
                 thread_scope,
                 num_threads,
-                WorkStealingRangeFactory::new(num_ballots, num_threads),
-                election,
-                pascal,
+                WorkStealingRangeFactory::new(input_len, num_threads),
+                input,
+                new_accumulator,
             ),
         }
     }
 
-    fn new_with_factory<'e, RnFactory: RangeFactory>(
-        thread_scope: &'scope Scope<'scope, 'e>,
+    fn new_with_factory<
+        'env,
+        RnFactory: RangeFactory,
+        Input: Sync,
+        Accum: ThreadAccumulator<Input, Output> + Send + 'scope,
+    >(
+        thread_scope: &'scope Scope<'scope, 'env>,
         num_threads: usize,
         range_factory: RnFactory,
-        election: &'e Election,
-        pascal: Option<&'e [Vec<I>]>,
+        input: &'env [Input],
+        new_accumulator: impl Fn() -> Accum,
     ) -> Self
     where
         RnFactory::Rn: 'scope + Send,
@@ -217,7 +210,6 @@ where
         let num_active_threads = Arc::new(AtomicUsize::new(0));
         let worker_status = Arc::new(Status::new(WorkerStatus::Round(color)));
         let main_status = Arc::new(Status::new(MainStatus::Waiting));
-        let keep_factors = Arc::new(RwLock::new(Vec::new()));
 
         #[cfg(not(any(
             target_os = "android",
@@ -234,13 +226,12 @@ where
                     num_active_threads: num_active_threads.clone(),
                     worker_status: worker_status.clone(),
                     main_status: main_status.clone(),
-                    election,
-                    pascal,
-                    keep_factors: keep_factors.clone(),
                     range: range_factory.range(id),
+                    input,
                     output: output.clone(),
+                    accumulator: new_accumulator(),
                 };
-                Thread {
+                WorkerThreadHandle {
                     handle: thread_scope.spawn(move || {
                         #[cfg(any(
                             target_os = "android",
@@ -266,25 +257,19 @@ where
             .collect();
         debug!("[main thread] Spawned threads");
 
-        ThreadPool {
+        Self {
             threads,
             num_active_threads,
             round: Cell::new(color),
             worker_status,
             main_status,
-            keep_factors,
             range_orchestrator: Box::new(range_factory.orchestrator()),
         }
     }
 
-    /// Accumulates votes from the election ballots based on the given keep
-    /// factors.
-    pub fn accumulate_votes(&self, keep_factors: &[R]) -> VoteAccumulator<I, R> {
-        {
-            let mut keep_factors_guard = self.keep_factors.write().unwrap();
-            keep_factors_guard.clear();
-            keep_factors_guard.extend_from_slice(keep_factors);
-        }
+    /// Performs a computation round, processing the input slice in parallel and
+    /// returning an iterator over the threads' outputs.
+    pub fn process_inputs(&self) -> impl Iterator<Item = Output> + '_ {
         self.range_orchestrator.reset_ranges();
 
         let num_threads = self.threads.len();
@@ -316,13 +301,11 @@ where
 
         self.threads
             .iter()
-            .map(|t| -> VoteAccumulator<I, R> { t.output.lock().unwrap().take().unwrap() })
-            .reduce(|a, b| a.reduce(b))
-            .unwrap()
+            .map(move |t| t.output.lock().unwrap().take().unwrap())
     }
 }
 
-impl<I, R> Drop for ThreadPool<'_, I, R> {
+impl<Output> Drop for ThreadPool<'_, Output> {
     /// Joins all the threads in the pool.
     fn drop(&mut self) {
         debug!("[main thread] Notifying threads to finish...");
@@ -343,8 +326,30 @@ impl<I, R> Drop for ThreadPool<'_, I, R> {
     }
 }
 
+/// Trait representing a function to map and reduce inputs into an output.
+pub trait ThreadAccumulator<Input, Output> {
+    /// Type to accumulate inputs into.
+    type Accumulator<'a>
+    where
+        Self: 'a;
+
+    /// Creates a new accumulator to process inputs.
+    fn init(&self) -> Self::Accumulator<'_>;
+
+    /// Accumulates the given input item.
+    fn process_item<'a>(
+        &'a self,
+        accumulator: &mut Self::Accumulator<'a>,
+        index: usize,
+        item: &Input,
+    );
+
+    /// Converts the given accumulator into an output.
+    fn finalize<'a>(&'a self, accumulator: Self::Accumulator<'a>) -> Output;
+}
+
 /// Context object owned by a worker thread.
-struct ThreadContext<'e, I, R, Rn: Range> {
+struct ThreadContext<'env, Rn: Range, Input, Output, Accum: ThreadAccumulator<Input, Output>> {
     /// Thread index.
     id: usize,
     /// Number of worker threads active in the current round.
@@ -353,24 +358,18 @@ struct ThreadContext<'e, I, R, Rn: Range> {
     worker_status: Arc<Status<WorkerStatus>>,
     /// Status of the main thread.
     main_status: Arc<Status<MainStatus>>,
-    /// Election input.
-    election: &'e Election,
-    /// Pre-computed Pascal triangle.
-    pascal: Option<&'e [Vec<I>]>,
-    /// Keep factors used in the current round.
-    keep_factors: Arc<RwLock<Vec<R>>>,
-    /// Range of ballots that this worker thread needs to count.
+    /// Range of items that this worker thread needs to process.
     range: Rn,
-    /// Storage for the votes accumulated by this thread.
-    output: Arc<Mutex<Option<VoteAccumulator<I, R>>>>,
+    /// Reference to the inputs to process.
+    input: &'env [Input],
+    /// Output that this thread writes to.
+    output: Arc<Mutex<Option<Output>>>,
+    /// Function to map and reduce inputs into the output.
+    accumulator: Accum,
 }
 
-impl<I, R, Rn: Range> ThreadContext<'_, I, R, Rn>
-where
-    I: Integer,
-    for<'a> &'a I: IntegerRef<I>,
-    R: Rational<I>,
-    for<'a> &'a R: RationalRef<&'a I, R>,
+impl<Rn: Range, Input, Output, Accum: ThreadAccumulator<Input, Output>>
+    ThreadContext<'_, Rn, Input, Output, Accum>
 {
     /// Main function run by this thread.
     fn run(&self) {
@@ -408,7 +407,14 @@ where
                         id: self.id,
                         main_status: &self.main_status,
                     };
-                    self.count_votes();
+                    {
+                        let mut accumulator = self.accumulator.init();
+                        for i in self.range.iter() {
+                            self.accumulator
+                                .process_item(&mut accumulator, i, &self.input[i]);
+                        }
+                        *self.output.lock().unwrap() = Some(self.accumulator.finalize(accumulator));
+                    }
                     std::mem::forget(panic_notifier);
 
                     let thread_count = self.num_active_threads.fetch_sub(1, Ordering::SeqCst);
@@ -442,26 +448,6 @@ where
                     }
                 }
             }
-        }
-    }
-
-    /// Computes a vote counting round.
-    fn count_votes(&self) {
-        let mut guard = self.output.lock().unwrap();
-        let vote_accumulator: &mut VoteAccumulator<I, R> = guard
-            .deref_mut()
-            .insert(VoteAccumulator::new(self.election.num_candidates));
-        let keep_factors = self.keep_factors.read().unwrap();
-
-        for i in self.range.iter() {
-            let ballot = &self.election.ballots[i];
-            VoteCount::<I, R>::process_ballot(
-                vote_accumulator,
-                &keep_factors,
-                self.pascal,
-                i,
-                ballot,
-            );
         }
     }
 }

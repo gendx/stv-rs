@@ -17,9 +17,9 @@
 
 use crate::arithmetic::{Integer, IntegerRef, Rational, RationalRef};
 use crate::cli::Parallel;
-use crate::parallelism::{RangeStrategy, ThreadPool};
+use crate::parallelism::RangeStrategy;
 use crate::types::{Election, ElectionResult};
-use crate::vote_count::{self, VoteCount};
+use crate::vote_count::{self, VoteCount, VoteCountingThreadPool};
 use log::{debug, info, log_enabled, warn, Level};
 use std::fmt::{self, Debug, Display};
 use std::io;
@@ -111,7 +111,7 @@ where
                     .expect("A positive number of threads must be spawned, but the available parallelism is zero threads")
             });
             info!("Spawning {num_threads} threads");
-            let thread_pool = ThreadPool::new(
+            let thread_pool = VoteCountingThreadPool::new(
                 thread_scope,
                 num_threads,
                 if disable_work_stealing {
@@ -200,7 +200,9 @@ pub struct State<'scope, 'e, I, R> {
     /// Pre-computed Pascal triangle. Set only if the "equalized counting" is
     /// enabled.
     pascal: Option<&'e [Vec<I>]>,
-    thread_pool: Option<ThreadPool<'scope, I, R>>,
+    /// Thread pool where to schedule vote counting. Set only if the parallel
+    /// mode is set to "custom".
+    thread_pool: Option<VoteCountingThreadPool<'scope, I, R>>,
     _phantom: PhantomData<I>,
 }
 
@@ -224,7 +226,7 @@ where
         parallel: Parallel,
         force_positive_surplus: bool,
         pascal: Option<&'a [Vec<I>]>,
-        thread_pool: Option<ThreadPool<'scope, I, R>>,
+        thread_pool: Option<VoteCountingThreadPool<'scope, I, R>>,
     ) -> State<'scope, 'a, I, R> {
         State {
             election,
