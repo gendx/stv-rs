@@ -15,13 +15,14 @@
 //! Script to generate random ballot files.
 
 #![forbid(missing_docs, unsafe_code)]
+#![feature(array_windows)]
 
 use clap::{Parser, ValueEnum};
 use rand::distributions::{Distribution, Uniform};
-use rand::SeedableRng;
-use rand::{thread_rng, RngCore};
+use rand::seq::SliceRandom;
+use rand::{thread_rng, RngCore, SeedableRng};
 use rand_chacha::ChaChaRng;
-use rand_distr::{Geometric, Hypergeometric};
+use rand_distr::{Bernoulli, Beta, Binomial, Geometric, Hypergeometric};
 use std::collections::BTreeMap;
 use std::fs::File;
 use std::io::{stdout, BufWriter, Result, Write};
@@ -156,6 +157,9 @@ enum BallotPattern {
     Hypergeometric20,
     /// 60 candidates following a hypergeometric distribution.
     Hypergeometric60,
+    /// 20 candidates following a mixed distribution aiming to model real
+    /// elections.
+    Mixed20,
 }
 
 impl Cli {
@@ -186,6 +190,7 @@ impl Cli {
             BallotPattern::Hypergeometric60 => {
                 write_blt_hypergeometric(rng, output, &MANY_CANDIDATES, self.num_ballots)
             }
+            BallotPattern::Mixed20 => write_blt_mixed(rng, output, &VEGETABLES, self.num_ballots),
         }
     }
 }
@@ -274,6 +279,24 @@ fn write_blt_hypergeometric(
     Ok(())
 }
 
+fn write_blt_mixed(
+    rng: &mut impl RngCore,
+    output: &mut impl Write,
+    nicknames: &[&str],
+    ballot_count: usize,
+) -> Result<()> {
+    let election = new_election_builder(nicknames)
+        .ballots(generate_mixed(rng, nicknames.len(), ballot_count))
+        .build();
+    write_blt(
+        output,
+        &election,
+        WriteTieOrder::Never,
+        CandidateFormat::Nicknames,
+    )?;
+    Ok(())
+}
+
 fn generate_geometric(
     rng: &mut impl RngCore,
     candidate_count: usize,
@@ -330,14 +353,90 @@ fn generate_distributions<D: Distribution<u64>>(
     let mut ballots = Vec::new();
     for _ in 0..ballot_count {
         let count = count_dist.sample(rng);
+        let order = order_from_distributions(rng, distributions);
+        ballots.push(Ballot::new(count, order));
+    }
 
-        let mut order: BTreeMap<u64, Vec<usize>> = BTreeMap::new();
-        for (i, d) in distributions.iter().enumerate() {
-            let value = d.sample(rng);
-            order.entry(value).or_default().push(i);
+    ballots
+}
+
+fn order_from_distributions<D: Distribution<u64>>(
+    rng: &mut impl RngCore,
+    distributions: &[D],
+) -> Vec<Vec<usize>> {
+    let mut order: BTreeMap<u64, Vec<usize>> = BTreeMap::new();
+    for (i, d) in distributions.iter().enumerate() {
+        let value = d.sample(rng);
+        order.entry(value).or_default().push(i);
+    }
+    order.into_values().collect::<Vec<_>>()
+}
+
+fn generate_mixed(
+    rng: &mut impl RngCore,
+    candidate_count: usize,
+    ballot_count: usize,
+) -> Vec<Ballot> {
+    // Each ballot has a 15% chance of ranking all the candidates.
+    let all_ranked = Bernoulli::new(0.15).unwrap();
+    // Distribution for the number of candidates ranked in a ballot.
+    let rank_beta = Beta::new(/* alpha = */ 1.2, /* beta = */ 2.8).unwrap();
+    // Distribution for the number of ranks that a ballot is split into.
+    let cuts_beta = Beta::new(/* alpha = */ 0.6, /* beta = */ 0.4).unwrap();
+    // Distributions to order candidates within the ballot.
+    let hypergeometrics = (0..candidate_count)
+        .map(|i| Hypergeometric::new(100, 50, 20 + i as u64).unwrap())
+        .collect::<Vec<_>>();
+
+    let mut ballots = Vec::new();
+    for _ in 0..ballot_count {
+        // Step 1: sample the number of candidates ranked in this ballot.
+        let ranked_candidates: usize = if all_ranked.sample(rng) {
+            candidate_count
+        } else {
+            let p = rank_beta.sample(rng);
+            1 + Binomial::new((candidate_count - 2) as u64, p)
+                .unwrap()
+                .sample(rng) as usize
+        };
+        assert!(ranked_candidates != 0 && ranked_candidates <= candidate_count);
+
+        // Step 2: sample the number of cuts within this ballot.
+        let num_cuts: usize = {
+            let p = cuts_beta.sample(rng);
+            Binomial::new((ranked_candidates - 1) as u64, p)
+                .unwrap()
+                .sample(rng) as usize
+        };
+
+        // Step 3: sample the ordering of candidates in the ballot.
+        let mut order = order_from_distributions(rng, &hypergeometrics);
+        for rank in order.iter_mut() {
+            rank.shuffle(rng);
         }
+        let order: Vec<usize> = order.into_iter().flatten().collect();
 
-        ballots.push(Ballot::new(count, order.into_values().collect::<Vec<_>>()));
+        // Step 4: sample the cuts.
+        let mut cuts: Vec<usize> = rand::seq::index::sample(rng, ranked_candidates - 1, num_cuts)
+            .iter()
+            .map(|x| x + 1)
+            .collect();
+        cuts.push(0);
+        cuts.push(ranked_candidates);
+        cuts.sort_unstable();
+        assert_eq!(*cuts.first().unwrap(), 0);
+        assert_eq!(*cuts.last().unwrap(), ranked_candidates);
+
+        // Step 5: create the ballot.
+        ballots.push(Ballot::new(
+            1,
+            cuts.array_windows::<2>().map(|&[start, end]| {
+                assert!(start != end);
+                let mut rank = order[start..end].to_vec();
+                rank.sort_unstable();
+                rank
+            }),
+        ));
     }
 
     ballots
@@ -493,6 +592,68 @@ mod test {
 2 banana cherry=eggplant apple=hazelnut=jalapeno date nut=radish grape=orange fig=pear kiwi=litchi=tomato quinoa=soy vanilla mushroom 0
 20 apple banana=litchi cherry=nut fig=grape=hazelnut=kiwi date=eggplant jalapeno radish pear=tomato mushroom quinoa orange=soy vanilla 0
 44 banana apple cherry=grape date=nut eggplant=fig hazelnut=jalapeno pear kiwi=orange radish litchi=mushroom vanilla tomato quinoa=soy 0
+0
+"Apple"
+"Banana"
+"Cherry"
+"Date"
+"Eggplant"
+"Fig"
+"Grape"
+"Hazelnut"
+"Jalapeno"
+"Kiwi"
+"Litchi"
+"Mushroom"
+"Nut"
+"Orange"
+"Pear"
+"Quinoa"
+"Radish"
+"Soy"
+"Tomato"
+"Vanilla"
+"Vegetable contest"
+"#
+        );
+    }
+
+    #[test]
+    fn test_blt_mixed() {
+        let mut buf = Vec::new();
+        let mut rng = ChaChaRng::seed_from_u64(42);
+        write_blt_mixed(
+            &mut rng,
+            &mut buf,
+            &VEGETABLES,
+            /* ballot_count = */ 20,
+        )
+        .unwrap();
+
+        assert_eq!(
+            std::str::from_utf8(&buf).unwrap(),
+            r#"20 10
+[nick apple banana cherry date eggplant fig grape hazelnut jalapeno kiwi litchi mushroom nut orange pear quinoa radish soy tomato vanilla]
+1 apple=banana=cherry=date 0
+1 banana=date=eggplant hazelnut fig=jalapeno=kiwi 0
+1 apple=banana=cherry=date=eggplant=fig=grape=hazelnut=kiwi=litchi=mushroom=nut=orange=pear=vanilla radish 0
+1 eggplant 0
+1 date 0
+1 cherry banana date apple jalapeno hazelnut kiwi eggplant grape fig=mushroom pear litchi=orange quinoa=soy tomato 0
+1 apple banana fig litchi cherry eggplant kiwi date grape jalapeno nut 0
+1 date apple banana eggplant=hazelnut=kiwi=litchi fig 0
+1 cherry apple 0
+1 fig apple=date cherry=eggplant hazelnut=mushroom litchi banana nut=pear vanilla soy grape=kiwi=orange=tomato jalapeno=quinoa=radish 0
+1 apple=banana=cherry date=eggplant=fig=jalapeno=kiwi=mushroom litchi grape=hazelnut=nut=pear=radish=tomato orange=quinoa=soy=vanilla 0
+1 apple eggplant banana grape 0
+1 banana=date=eggplant 0
+1 banana=date apple=cherry=eggplant=fig=hazelnut=litchi grape=nut jalapeno=kiwi=mushroom=orange=pear=quinoa=radish=soy=tomato=vanilla 0
+1 apple fig 0
+1 apple banana=date fig cherry=grape=hazelnut mushroom eggplant litchi=orange kiwi=vanilla jalapeno quinoa pear 0
+1 banana=cherry 0
+1 banana apple date 0
+1 apple cherry=eggplant=fig banana 0
+1 apple=jalapeno=kiwi date grape 0
 0
 "Apple"
 "Banana"

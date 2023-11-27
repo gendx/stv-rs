@@ -61,6 +61,8 @@ struct Cli {
 /// Sorting strategy of ballots.
 #[derive(ValueEnum, Clone, Debug, PartialEq, Eq)]
 enum Strategy {
+    /// Sort ballots in lexicographical order of candidates.
+    Alphabetic,
     /// Sort ballots in increasing order of weight, where each ballot's weight
     /// is the product of the rank lengths.
     Product,
@@ -83,6 +85,9 @@ impl Cli {
         }
 
         match self.strategy {
+            Strategy::Alphabetic => {
+                election.ballots.sort_by(|a, b| a.order().cmp(b.order()));
+            }
             Strategy::Product => {
                 election
                     .ballots

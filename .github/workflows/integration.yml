@@ -36,6 +36,8 @@ jobs:
         run: cargo build --verbose --release
       - name: Build histogram
         run: cargo build --verbose --release --example histogram
+      - name: Build random_ballots
+        run: cargo build --verbose --release --example random_ballots
       - name: Build remove_nicknames
         run: cargo build --verbose --release --example remove_nicknames
       - name: Build shuffle_ballots
@@ -46,13 +48,14 @@ jobs:
           path: |
             target/release/stv-rs
             target/release/examples/histogram
+            target/release/examples/random_ballots
             target/release/examples/remove_nicknames
             target/release/examples/shuffle_ballots
           if-no-files-found: error
 
       - name: Generate random ballots
         run: |
-          cargo run --verbose --release --example random_ballots -- --ballot-pattern hypergeometric20 --num-ballots 100000 --seed 42 --output testdata/ballots/random/rand_hypergeometric_100k.blt
+          target/release/examples/random_ballots --ballot-pattern hypergeometric20 --num-ballots 100000 --seed 42 --output testdata/ballots/random/rand_hypergeometric_100k.blt
       - uses: actions/upload-artifact@v3
         with:
           name: large-test-files
@@ -96,6 +99,30 @@ jobs:
         run: |
           target/release/stv-rs ${{ matrix.flags }} | diff -s man/${{ matrix.file }}.txt -
 
+  random_ballots_tests:
+    needs: build
+    strategy:
+      matrix:
+        file:
+          - random/rand_mixed_5k
+        include:
+          - file: random/rand_mixed_5k
+            pattern: mixed20
+            num_ballots: 5000
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+          path: target/release/
+      - name: Prepare random_ballots binary
+        run: chmod +x target/release/examples/random_ballots
+
+      - name: Check generated ballot
+        run: |
+          target/release/examples/random_ballots --seed=42 --ballot-pattern=${{ matrix.pattern }} --num-ballots=${{ matrix.num_ballots }} | diff -s testdata/ballots/${{ matrix.file }}.blt -
+
   meek_tests:
     needs: build
     strategy:
@@ -110,6 +137,7 @@ jobs:
           - random/rand_hypergeometric
           - random/rand_hypergeometric_10k
           - random/rand_hypergeometric_100k
+          - random/rand_mixed_5k
           - recursive_descent/transfer
           - recursive_descent/transfer_is_blocked
           - ties/tie_break_explicit
@@ -170,6 +198,7 @@ jobs:
           - random/rand_2x10
           - random/rand_5x4
           - random/rand_hypergeometric
+          - random/rand_mixed_5k
           - vegetables
         arithmetic:
           - bigfixed9
@@ -247,6 +276,7 @@ jobs:
           - random/rand_hypergeometric
           - random/rand_hypergeometric_10k
           - random/rand_hypergeometric_100k
+          - random/rand_mixed_5k
           - vegetables
       fail-fast: false
     runs-on: ubuntu-latest
@@ -344,6 +374,7 @@ jobs:
           - rand_sorted_by_product
           - rand_sorted_lexicographically
           - rand_sorted_by_lexico_product
+          - rand_mixed_5k_sorted_alphabetically
           - rand_10k_sorted_by_product
           - rand_10k_sorted_lexicographically
           - rand_10k_sorted_by_lexico_product
@@ -357,6 +388,9 @@ jobs:
           - file: rand_sorted_by_lexico_product
             src: random/rand_hypergeometric
             strategy: "lexico-product"
+          - file: rand_mixed_5k_sorted_alphabetically
+            src: random/rand_mixed_5k
+            strategy: "alphabetic"
           - file: rand_10k_sorted_by_product
             src: random/rand_hypergeometric_10k
             strategy: "product"

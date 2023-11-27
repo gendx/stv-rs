@@ -45,8 +45,10 @@ jobs:
       - name: Build without features
         run: cargo build --verbose --all --no-default-features
       - name: Build examples without features
+        if: matrix.rust == 'nightly'
         run: cargo build --verbose --examples --no-default-features
       - name: Build with default features
         run: cargo build --verbose --all
       - name: Build examples with default features
+        if: matrix.rust == 'nightly'
         run: cargo build --verbose --examples
