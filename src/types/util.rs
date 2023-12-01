@@ -20,3 +20,10 @@ pub fn count_vec_allocations<T>(allocations: &mut BTreeMap<usize, usize>, v: &Ve
     let size = v.capacity() * std::mem::size_of::<T>();
     *allocations.entry(size).or_insert(0) += 1;
 }
+
+pub fn count_slice_allocations<T>(allocations: &mut BTreeMap<usize, usize>, v: &[T]) {
+    let size = std::mem::size_of_val(v);
+    // Heuristic: allocator aligns to 32 bytes.
+    let size = (size + 31) & !31;
+    *allocations.entry(size).or_insert(0) += 1;
+}
