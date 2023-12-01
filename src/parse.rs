@@ -312,12 +312,10 @@ mod test {
             (Info, "Candidates (by nickname): [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
             (Info, "Number of ballots: 171"),
             (Info, "Election title: Vegetable contest"),
-            (Debug, "Allocations of 32 bytes: 10 => 320 bytes"),
-            (Debug, "Allocations of 96 bytes: 3 => 288 bytes"),
-            (Debug, "Allocations of 160 bytes: 1 => 160 bytes"),
+            (Debug, "Allocations of 32 bytes: 8 => 256 bytes"),
             (Debug, "Allocations of 192 bytes: 1 => 192 bytes"),
-            (Debug, "Ballots use 960 bytes in 15 allocations"),
-            (Debug, "Each ballot uses 240 bytes in 3.75 allocations"),
+            (Debug, "Ballots use 448 bytes in 9 allocations"),
+            (Debug, "Each ballot uses 112 bytes in 2.25 allocations"),
         ]);
     }
 
@@ -369,10 +367,9 @@ mod test {
             (Info, "Number of ballots: 1"),
             (Info, "Election title: Vegetable contest"),
             (Debug, "Allocations of 32 bytes: 2 => 64 bytes"),
-            (Debug, "Allocations of 96 bytes: 1 => 96 bytes"),
-            (Debug, "Allocations of 160 bytes: 1 => 160 bytes"),
-            (Debug, "Ballots use 320 bytes in 4 allocations"),
-            (Debug, "Each ballot uses 320 bytes in 4 allocations"),
+            (Debug, "Allocations of 192 bytes: 1 => 192 bytes"),
+            (Debug, "Ballots use 256 bytes in 3 allocations"),
+            (Debug, "Each ballot uses 256 bytes in 3 allocations"),
         ]);
     }
 
@@ -433,13 +430,11 @@ mod test {
             (Info, "Candidates (by nickname): [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
             (Info, "Number of ballots: 188"),
             (Info, "Election title: Vegetable contest"),
-            (Debug, "Allocations of 0 bytes: 1 => 0 bytes"),
-            (Debug, "Allocations of 32 bytes: 10 => 320 bytes"),
-            (Debug, "Allocations of 96 bytes: 3 => 288 bytes"),
-            (Debug, "Allocations of 192 bytes: 1 => 192 bytes"),
-            (Debug, "Allocations of 320 bytes: 1 => 320 bytes"),
-            (Debug, "Ballots use 1120 bytes in 16 allocations"),
-            (Debug, "Each ballot uses 224 bytes in 3.2 allocations"),
+            (Debug, "Allocations of 0 bytes: 2 => 0 bytes"),
+            (Debug, "Allocations of 32 bytes: 8 => 256 bytes"),
+            (Debug, "Allocations of 384 bytes: 1 => 384 bytes"),
+            (Debug, "Ballots use 640 bytes in 11 allocations"),
+            (Debug, "Each ballot uses 128 bytes in 2.2 allocations"),
         ]);
     }
 
@@ -500,12 +495,11 @@ mod test {
             (Info, "Candidates (by nickname): [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
             (Info, "Number of ballots: 188"),
             (Info, "Election title: Vegetable contest"),
-            (Debug, "Allocations of 0 bytes: 2 => 0 bytes"),
-            (Debug, "Allocations of 32 bytes: 7 => 224 bytes"),
-            (Debug, "Allocations of 96 bytes: 3 => 288 bytes"),
-            (Debug, "Allocations of 320 bytes: 1 => 320 bytes"),
-            (Debug, "Ballots use 832 bytes in 13 allocations"),
-            (Debug, "Each ballot uses 166.4 bytes in 2.6 allocations"),
+            (Debug, "Allocations of 0 bytes: 4 => 0 bytes"),
+            (Debug, "Allocations of 32 bytes: 6 => 192 bytes"),
+            (Debug, "Allocations of 384 bytes: 1 => 384 bytes"),
+            (Debug, "Ballots use 576 bytes in 11 allocations"),
+            (Debug, "Each ballot uses 115.2 bytes in 2.2 allocations"),
         ]);
     }
 
@@ -566,12 +560,10 @@ mod test {
             (Warn, "Removing ballot that is empty or contains only withdrawn candidates: 17 0"),
             (Info, "Number of ballots: 171"),
             (Info, "Election title: Vegetable contest"),
-            (Debug, "Allocations of 32 bytes: 10 => 320 bytes"),
-            (Debug, "Allocations of 96 bytes: 3 => 288 bytes"),
-            (Debug, "Allocations of 160 bytes: 1 => 160 bytes"),
+            (Debug, "Allocations of 32 bytes: 8 => 256 bytes"),
             (Debug, "Allocations of 192 bytes: 1 => 192 bytes"),
-            (Debug, "Ballots use 960 bytes in 15 allocations"),
-            (Debug, "Each ballot uses 240 bytes in 3.75 allocations"),
+            (Debug, "Ballots use 448 bytes in 9 allocations"),
+            (Debug, "Each ballot uses 112 bytes in 2.25 allocations"),
         ]);
     }
 
@@ -632,11 +624,10 @@ mod test {
             (Warn, "Removing ballot that is empty or contains only withdrawn candidates: 17 0"),
             (Info, "Number of ballots: 129"),
             (Info, "Election title: Vegetable contest"),
-            (Debug, "Allocations of 32 bytes: 7 => 224 bytes"),
-            (Debug, "Allocations of 96 bytes: 3 => 288 bytes"),
-            (Debug, "Allocations of 160 bytes: 1 => 160 bytes"),
-            (Debug, "Ballots use 672 bytes in 11 allocations"),
-            (Debug, "Each ballot uses 224 bytes in 3.6666666666666665 allocations"),
+            (Debug, "Allocations of 32 bytes: 6 => 192 bytes"),
+            (Debug, "Allocations of 192 bytes: 1 => 192 bytes"),
+            (Debug, "Ballots use 384 bytes in 7 allocations"),
+            (Debug, "Each ballot uses 128 bytes in 2.3333333333333335 allocations"),
         ]);
     }
 
@@ -674,11 +665,10 @@ mod test {
             (Info, "Candidates (by nickname): [\"apple\", \"banana\"]"),
             (Info, "Number of ballots: 1"),
             (Info, "Election title: Vegetable contest"),
-            (Debug, "Allocations of 32 bytes: 1 => 32 bytes"),
-            (Debug, "Allocations of 96 bytes: 1 => 96 bytes"),
-            (Debug, "Allocations of 160 bytes: 1 => 160 bytes"),
-            (Debug, "Ballots use 288 bytes in 3 allocations"),
-            (Debug, "Each ballot uses 288 bytes in 3 allocations"),
+            (Debug, "Allocations of 32 bytes: 2 => 64 bytes"),
+            (Debug, "Allocations of 192 bytes: 1 => 192 bytes"),
+            (Debug, "Ballots use 256 bytes in 3 allocations"),
+            (Debug, "Each ballot uses 256 bytes in 3 allocations"),
         ]);
     }
 

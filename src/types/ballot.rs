@@ -14,12 +14,11 @@
 
 //! Types to represent ballots in an election.
 
-use super::util::count_vec_allocations;
+use super::util::count_slice_allocations;
 use std::collections::BTreeMap;
-use std::ops::Deref;
 
 /// Ballot cast in the election.
-pub type Ballot = BallotImpl<VecOrder<usize>>;
+pub type Ballot = BallotImpl<BoxedFlatOrder>;
 
 /// Ballot cast in the election.
 #[derive(Debug, PartialEq, Eq)]
@@ -163,66 +162,82 @@ pub trait Order {
 /// Ordering of candidates in a ballot.
 #[derive(Debug, PartialEq, Eq)]
 #[cfg_attr(test, derive(Clone))]
-pub struct VecOrder<T> {
-    /// The outer [`Vec`] represents the ranking of candidates, from most
-    /// preferred to least preferred. The inner [`Vec`] represents candidates
-    /// ranked equally at a given order.
-    order: Vec<Vec<T>>,
+pub struct BoxedFlatOrder {
+    /// Flattened list of all the candidates in the ballot.
+    order: Box<[u8]>,
+    /// Indices where each rank starts in this order.
+    order_indices: Box<[u8]>,
 }
 
-impl<T> Order for VecOrder<T>
-where
-    T: TryFrom<usize> + Into<usize> + Copy,
-{
-    #[inline(always)]
-    fn new(order: impl IntoIterator<Item = impl IntoIterator<Item = usize>>) -> Self {
+impl Order for BoxedFlatOrder {
+    fn new(into_order: impl IntoIterator<Item = impl IntoIterator<Item = usize>>) -> Self {
+        let mut order = Vec::new();
+        let mut order_indices = vec![0];
+        for rank in into_order.into_iter() {
+            for x in rank.into_iter() {
+                order.push(x.try_into().unwrap());
+            }
+            order_indices.push(order.len().try_into().unwrap());
+        }
+
+        if order.is_empty() {
+            order_indices = Vec::new();
+        }
+
         Self {
-            order: order
-                .into_iter()
-                .map(|rank| {
-                    rank.into_iter()
-                        .map(|x| x.try_into().ok().unwrap())
-                        .collect()
-                })
-                .collect(),
+            order: order.into_boxed_slice(),
+            order_indices: order_indices.into_boxed_slice(),
         }
     }
 
     #[cfg(test)]
     fn empty() -> Self {
-        Self { order: Vec::new() }
+        Self {
+            order: Box::new([]),
+            order_indices: Box::new([]),
+        }
     }
 
     #[inline(always)]
     fn order(&self) -> impl Iterator<Item = &[impl Into<usize> + Copy]> {
-        self.order.iter().map(|x| x.deref())
+        // TODO: Use array_windows once stable.
+        let count = if self.order_indices.is_empty() {
+            0
+        } else {
+            self.order_indices.len() - 1
+        };
+        (0..count).map(|i| {
+            let start = self.order_indices[i];
+            let end = self.order_indices[i + 1];
+            &self.order[start.into()..end.into()]
+        })
     }
 
     #[inline(always)]
     fn len(&self) -> usize {
-        self.order.len()
+        self.order_indices.len() - 1
     }
 
     #[inline(always)]
     fn is_empty(&self) -> bool {
-        self.order.is_empty()
+        self.order_indices.is_empty()
     }
 
     #[inline(always)]
     fn at(&self, i: usize) -> &[impl Into<usize> + Copy] {
-        &self.order[i]
+        let start = self.order_indices[i];
+        let end = self.order_indices[i + 1];
+        &self.order[start.into()..end.into()]
     }
 
     #[inline(always)]
     fn candidates(&self) -> impl Iterator<Item = &(impl Into<usize> + Copy)> {
-        self.order.iter().flatten()
+        self.order.iter()
     }
 
     #[inline(always)]
     fn count_allocations(&self, allocations: &mut BTreeMap<usize, usize>) {
-        count_vec_allocations(allocations, &self.order);
-        for rank in &self.order {
-            count_vec_allocations(allocations, rank);
-        }
+        count_slice_allocations(allocations, &self.order);
+        count_slice_allocations(allocations, &self.order_indices);
     }
 }
