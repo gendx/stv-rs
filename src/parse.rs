@@ -28,6 +28,9 @@ pub struct ParsingOptions {
     /// `remove_withdrawn_candidates` is true, this also removes ballots
     /// that only rank withdrawn candidates.
     pub remove_empty_ballots: bool,
+    /// Whether to optimize the layout of ballots in memory. This may entail
+    /// sorting the ballots.
+    pub optimize_layout: bool,
 }
 
 // TODO: Remove unwrap()s.
@@ -39,6 +42,15 @@ pub fn parse_election(
     let re_count = Regex::new(r"^([0-9]+) ([0-9]+)$").unwrap();
     let re_option = Regex::new(r"^\[[a-z]+(?: [a-z][a-z0-9]*)+\]$").unwrap();
     let re_ballot = Regex::new(r"^([0-9]+)((?: [a-z0-9=]*)*) 0$").unwrap();
+
+    info!(
+        "Optimizing the in-memory layout of ballots is {}",
+        if options.optimize_layout {
+            "enabled"
+        } else {
+            "disabled"
+        }
+    );
 
     let mut lines = input.lines().peekable();
 
@@ -179,6 +191,14 @@ pub fn parse_election(
     let num_ballots = ballots.iter().map(|b| b.count()).sum::<usize>();
     info!("Number of ballots: {num_ballots}");
 
+    if options.optimize_layout {
+        ballots.sort_by(|a, b| {
+            let ita = a.order().map(|rank| rank.len());
+            let itb = b.order().map(|rank| rank.len());
+            ita.cmp(itb)
+        });
+    }
+
     let candidates: Vec<Candidate> = nicknames
         .into_iter()
         .map(|nickname| {
@@ -260,6 +280,7 @@ mod test {
         ParsingOptions {
             remove_withdrawn_candidates: true,
             remove_empty_ballots: true,
+            optimize_layout: false,
         }
     }
 
@@ -306,6 +327,76 @@ mod test {
                 .build()
         );
         logger.check_any_target_logs([
+            (Info, "Optimizing the in-memory layout of ballots is disabled"),
+            (Info, "2 seats / 5 candidates"),
+            (Info, "Nicknames: [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
+            (Info, "Tie-break order: [\"cherry\", \"apple\", \"eggplant\", \"banana\", \"date\"]"),
+            (Info, "Candidates (by nickname): [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
+            (Trace, "Parsed ballot: count 3 for [[0], [2], [4], [3], [1]]"),
+            (Trace, "Parsed ballot: count 3 for [[3, 4], [1, 2, 0]]"),
+            (Trace, "Parsed ballot: count 42 for [[2]]"),
+            (Trace, "Parsed ballot: count 123 for [[1], [3]]"),
+            (Info, "Number of ballots: 171"),
+            (Info, "Election title: Vegetable contest"),
+            (Debug, "Allocations of 32 bytes: 8 => 256 bytes"),
+            (Debug, "Allocations of 192 bytes: 1 => 192 bytes"),
+            (Debug, "Ballots use 448 bytes in 9 allocations"),
+            (Debug, "Each ballot uses 112 bytes in 2.25 allocations"),
+        ]);
+    }
+
+    #[test]
+    fn test_parse_optimize_layout() {
+        let file = r#"5 2
+[nick apple banana cherry date eggplant]
+[tie cherry apple eggplant banana date]
+3 apple cherry eggplant date banana 0
+3 date=eggplant banana=cherry=apple 0
+42 cherry 0
+123 banana date 0
+0
+"Apple"
+"Banana"
+"Cherry"
+"Date"
+"Eggplant"
+"Vegetable contest"
+"#;
+        let logger = ThreadLocalLogger::start();
+        let election = parse_election(
+            Cursor::new(file),
+            ParsingOptions {
+                remove_withdrawn_candidates: true,
+                remove_empty_ballots: true,
+                optimize_layout: true,
+            },
+        )
+        .unwrap();
+
+        assert_eq!(
+            election,
+            Election::builder()
+                .title("Vegetable contest")
+                .num_seats(2)
+                .candidates([
+                    Candidate::new("apple", false),
+                    Candidate::new("banana", false),
+                    Candidate::new("cherry", false),
+                    Candidate::new("date", false),
+                    Candidate::new("eggplant", false),
+                ])
+                .ballots(vec![
+                    Ballot::new(42, [vec![2]]),
+                    Ballot::new(123, [vec![1], vec![3]]),
+                    Ballot::new(3, [vec![0], vec![2], vec![4], vec![3], vec![1]]),
+                    Ballot::new(3, [vec![3, 4], vec![1, 2, 0]]),
+                ])
+                .check_num_ballots(171)
+                .tie_order([2, 0, 4, 1, 3])
+                .build()
+        );
+        logger.check_any_target_logs([
+            (Info, "Optimizing the in-memory layout of ballots is enabled"),
             (Info, "2 seats / 5 candidates"),
             (Info, "Nicknames: [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
             (Info, "Tie-break order: [\"cherry\", \"apple\", \"eggplant\", \"banana\", \"date\"]"),
@@ -358,6 +449,10 @@ mod test {
                 .build()
         );
         logger.check_any_target_logs([
+            (
+                Info,
+                "Optimizing the in-memory layout of ballots is disabled",
+            ),
             (Info, "2 seats / 3 candidates"),
             (Info, "Nicknames: [\"apple\", \"ba2nana34\", \"cherry\"]"),
             (
@@ -402,6 +497,7 @@ mod test {
             ParsingOptions {
                 remove_withdrawn_candidates: false,
                 remove_empty_ballots: false,
+                optimize_layout: false,
             },
         )
         .unwrap();
@@ -429,6 +525,7 @@ mod test {
                 .build()
         );
         logger.check_any_target_logs([
+            (Info, "Optimizing the in-memory layout of ballots is disabled"),
             (Info, "2 seats / 5 candidates"),
             (Info, "Nicknames: [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
             (Info, "Withdrawn: [\"cherry\", \"eggplant\"]"),
@@ -472,6 +569,7 @@ mod test {
             ParsingOptions {
                 remove_withdrawn_candidates: true,
                 remove_empty_ballots: false,
+                optimize_layout: false,
             },
         )
         .unwrap();
@@ -499,6 +597,7 @@ mod test {
                 .build()
         );
         logger.check_any_target_logs([
+            (Info, "Optimizing the in-memory layout of ballots is disabled"),
             (Info, "2 seats / 5 candidates"),
             (Info, "Nicknames: [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
             (Info, "Withdrawn: [\"cherry\", \"eggplant\"]"),
@@ -542,6 +641,7 @@ mod test {
             ParsingOptions {
                 remove_withdrawn_candidates: false,
                 remove_empty_ballots: true,
+                optimize_layout: false,
             },
         )
         .unwrap();
@@ -568,6 +668,7 @@ mod test {
                 .build()
         );
         logger.check_any_target_logs([
+            (Info, "Optimizing the in-memory layout of ballots is disabled"),
             (Info, "2 seats / 5 candidates"),
             (Info, "Nicknames: [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
             (Info, "Withdrawn: [\"cherry\", \"eggplant\"]"),
@@ -611,6 +712,7 @@ mod test {
             ParsingOptions {
                 remove_withdrawn_candidates: true,
                 remove_empty_ballots: true,
+                optimize_layout: false,
             },
         )
         .unwrap();
@@ -636,6 +738,7 @@ mod test {
                 .build()
         );
         logger.check_any_target_logs([
+            (Info, "Optimizing the in-memory layout of ballots is disabled"),
             (Info, "2 seats / 5 candidates"),
             (Info, "Nicknames: [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
             (Info, "Withdrawn: [\"cherry\", \"eggplant\"]"),
@@ -684,6 +787,10 @@ mod test {
                 .build()
         );
         logger.check_any_target_logs([
+            (
+                Info,
+                "Optimizing the in-memory layout of ballots is disabled",
+            ),
             (Info, "1 seats / 2 candidates"),
             (Info, "Nicknames: [\"apple\", \"banana\"]"),
             (Warn, "Unknown option: unknown"),
