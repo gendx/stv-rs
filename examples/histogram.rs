@@ -31,6 +31,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         ParsingOptions {
             remove_withdrawn_candidates: false,
             remove_empty_ballots: false,
+            optimize_layout: false,
         },
     )?;
     write_histograms(BufWriter::new(stdout().lock()), &election)?;

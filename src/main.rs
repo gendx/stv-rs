@@ -16,7 +16,7 @@
 
 #![forbid(missing_docs, unsafe_code)]
 
-use clap::{Parser, Subcommand, ValueEnum};
+use clap::{ArgAction, Parser, Subcommand, ValueEnum};
 use num::{BigInt, BigRational};
 use std::fs::File;
 use std::io::{self, stdin, stdout, BufRead, BufReader, Write};
@@ -49,6 +49,10 @@ struct Cli {
     /// stdin.
     #[arg(long)]
     input: Option<String>,
+
+    /// Whether to optimize the in-memory layout of ballots after parsing.
+    #[arg(long, action = ArgAction::Set, default_value_t = true)]
+    optimize_layout: bool,
 
     /// Counting algorithm to use.
     #[command(subcommand)]
@@ -143,6 +147,7 @@ impl Cli {
             ParsingOptions {
                 remove_withdrawn_candidates: true,
                 remove_empty_ballots: true,
+                optimize_layout: self.optimize_layout,
             },
         )?;
         self.run_election(&election, &mut output)?;
@@ -260,6 +265,7 @@ mod test {
                 package_name: None,
                 arithmetic: Arithmetic::Fixed9,
                 input: None,
+                optimize_layout: true,
                 algorithm: Algorithm::Meek(MeekParams {
                     omega_exponent: 6,
                     parallel: Parallel::Rayon,
@@ -293,6 +299,7 @@ mod test {
             "--arithmetic=float64",
             "--package-name=foo bar",
             "--input=abc def",
+            "--optimize-layout=false",
             "meek",
             "--omega-exponent=42",
             "--parallel=no",
@@ -308,6 +315,7 @@ mod test {
                 package_name: Some("foo bar".to_owned()),
                 arithmetic: Arithmetic::Float64,
                 input: Some("abc def".to_owned()),
+                optimize_layout: false,
                 algorithm: Algorithm::Meek(MeekParams {
                     omega_exponent: 42,
                     parallel: Parallel::No,
@@ -328,6 +336,7 @@ mod test {
             "--arithmetic", "approx",
             "--package-name", "foo bar",
             "--input", "abc def",
+            "--optimize-layout", "false",
             "meek",
             "--omega-exponent", "42",
             "--parallel", "rayon",
@@ -343,6 +352,7 @@ mod test {
                 package_name: Some("foo bar".to_owned()),
                 arithmetic: Arithmetic::Approx,
                 input: Some("abc def".to_owned()),
+                optimize_layout: false,
                 algorithm: Algorithm::Meek(MeekParams {
                     omega_exponent: 42,
                     parallel: Parallel::Rayon,
@@ -370,6 +380,7 @@ mod test {
                 package_name: None,
                 arithmetic: Arithmetic::Fixed9,
                 input: None,
+                optimize_layout: true,
                 algorithm: Algorithm::Plurality(PluralityParams {
                     votes_per_ballot: None,
                 })
@@ -394,6 +405,7 @@ mod test {
                 package_name: Some("foo bar".to_owned()),
                 arithmetic: Arithmetic::Float64,
                 input: Some("abc def".to_owned()),
+                optimize_layout: true,
                 algorithm: Algorithm::Plurality(PluralityParams {
                     votes_per_ballot: Some(5),
                 })
@@ -417,6 +429,7 @@ mod test {
             package_name: None,
             arithmetic,
             input: None,
+            optimize_layout: true,
             algorithm: Algorithm::Meek(MeekParams {
                 omega_exponent: 6,
                 parallel: Parallel::No,
@@ -433,6 +446,7 @@ mod test {
             package_name: None,
             arithmetic,
             input: None,
+            optimize_layout: true,
             algorithm: Algorithm::Plurality(PluralityParams {
                 votes_per_ballot: None,
             }),
