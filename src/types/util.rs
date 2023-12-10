@@ -27,3 +27,13 @@ pub fn count_slice_allocations<T>(allocations: &mut BTreeMap<usize, usize>, v: &
     let size = (size + 31) & !31;
     *allocations.entry(size).or_insert(0) += 1;
 }
+
+/// Returns the address of the beginning of the slice, or none if the slice is
+/// empty.
+pub fn address_of_slice<T>(v: &[T]) -> Option<usize> {
+    if v.is_empty() {
+        None
+    } else {
+        Some(v.as_ptr() as usize)
+    }
+}

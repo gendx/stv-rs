@@ -33,9 +33,13 @@ pub mod log_tester {
 
     impl ThreadLocalLogger {
         pub fn start() -> Self {
+            Self::start_filtered(LevelFilter::Trace)
+        }
+
+        pub fn start_filtered(filter: LevelFilter) -> Self {
             // set_logger only succeeds the first time, but the error isn't a problem.
             let _ = log::set_logger(&LoggerImpl);
-            log::set_max_level(LevelFilter::Trace);
+            log::set_max_level(filter);
             let old = ACTIVE.replace(true);
             assert!(!old);
             ThreadLocalLogger
@@ -76,8 +80,7 @@ pub mod log_tester {
             );
         }
 
-        /// Checks that the recorded logs were all from the given (target,
-        /// level) pair, and exactly the expected ones.
+        /// Checks that the recorded logs were exactly the expected ones.
         #[track_caller]
         pub fn check_any_target_logs<'a>(
             self,
@@ -96,6 +99,8 @@ pub mod log_tester {
             assert_eq!(report, expected_report);
         }
 
+        /// Checks that the recorded logs were all from the given (target,
+        /// level) pair, and exactly the expected ones.
         #[track_caller]
         pub fn check_target_level_logs(self, target: &str, level: Level, expected: &str) {
             let mut report = String::new();

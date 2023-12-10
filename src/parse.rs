@@ -191,12 +191,16 @@ pub fn parse_election(
     let num_ballots = ballots.iter().map(|b| b.count()).sum::<usize>();
     info!("Number of ballots: {num_ballots}");
 
+    // This block intentionally clones the ballots into themselves to obtain a more
+    // efficient memory layout, which conflicts with this lint.
+    #[allow(clippy::assigning_clones)]
     if options.optimize_layout {
         ballots.sort_by(|a, b| {
             let ita = a.order().map(|rank| rank.len());
             let itb = b.order().map(|rank| rank.len());
             ita.cmp(itb)
         });
+        ballots = ballots.clone();
     }
 
     let candidates: Vec<Candidate> = nicknames
@@ -242,7 +246,8 @@ fn remove_quotes(x: &str) -> &str {
 mod test {
     use super::*;
     use crate::util::log_tester::ThreadLocalLogger;
-    use log::Level::{Debug, Info, Trace, Warn};
+    use log::Level::{Debug, Info, Warn};
+    use log::LevelFilter;
     use std::io::Cursor;
 
     #[test]
@@ -301,7 +306,7 @@ mod test {
 "Eggplant"
 "Vegetable contest"
 "#;
-        let logger = ThreadLocalLogger::start();
+        let logger = ThreadLocalLogger::start_filtered(LevelFilter::Debug);
         let election = parse_election(Cursor::new(file), basic_parsing_options()).unwrap();
 
         assert_eq!(
@@ -332,10 +337,6 @@ mod test {
             (Info, "Nicknames: [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
             (Info, "Tie-break order: [\"cherry\", \"apple\", \"eggplant\", \"banana\", \"date\"]"),
             (Info, "Candidates (by nickname): [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
-            (Trace, "Parsed ballot: count 3 for [[0], [2], [4], [3], [1]]"),
-            (Trace, "Parsed ballot: count 3 for [[3, 4], [1, 2, 0]]"),
-            (Trace, "Parsed ballot: count 42 for [[2]]"),
-            (Trace, "Parsed ballot: count 123 for [[1], [3]]"),
             (Info, "Number of ballots: 171"),
             (Info, "Election title: Vegetable contest"),
             (Debug, "Allocations of 32 bytes: 8 => 256 bytes"),
@@ -362,7 +363,7 @@ mod test {
 "Eggplant"
 "Vegetable contest"
 "#;
-        let logger = ThreadLocalLogger::start();
+        let logger = ThreadLocalLogger::start_filtered(LevelFilter::Debug);
         let election = parse_election(
             Cursor::new(file),
             ParsingOptions {
@@ -401,10 +402,6 @@ mod test {
             (Info, "Nicknames: [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
             (Info, "Tie-break order: [\"cherry\", \"apple\", \"eggplant\", \"banana\", \"date\"]"),
             (Info, "Candidates (by nickname): [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
-            (Trace, "Parsed ballot: count 3 for [[0], [2], [4], [3], [1]]"),
-            (Trace, "Parsed ballot: count 3 for [[3, 4], [1, 2, 0]]"),
-            (Trace, "Parsed ballot: count 42 for [[2]]"),
-            (Trace, "Parsed ballot: count 123 for [[1], [3]]"),
             (Info, "Number of ballots: 171"),
             (Info, "Election title: Vegetable contest"),
             (Debug, "Allocations of 32 bytes: 8 => 256 bytes"),
@@ -426,7 +423,7 @@ mod test {
 "Cherry"
 "Vegetable contest"
 "#;
-        let logger = ThreadLocalLogger::start();
+        let logger = ThreadLocalLogger::start_filtered(LevelFilter::Debug);
         let election = parse_election(Cursor::new(file), basic_parsing_options()).unwrap();
 
         assert_eq!(
@@ -463,7 +460,6 @@ mod test {
                 Info,
                 "Candidates (by nickname): [\"apple\", \"ba2nana34\", \"cherry\"]",
             ),
-            (Trace, "Parsed ballot: count 1 for [[0], [1]]"),
             (Info, "Number of ballots: 1"),
             (Info, "Election title: Vegetable contest"),
             (Debug, "Allocations of 32 bytes: 2 => 64 bytes"),
@@ -491,7 +487,7 @@ mod test {
 "Eggplant"
 "Vegetable contest"
 "#;
-        let logger = ThreadLocalLogger::start();
+        let logger = ThreadLocalLogger::start_filtered(LevelFilter::Debug);
         let election = parse_election(
             Cursor::new(file),
             ParsingOptions {
@@ -530,11 +526,6 @@ mod test {
             (Info, "Nicknames: [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
             (Info, "Withdrawn: [\"cherry\", \"eggplant\"]"),
             (Info, "Candidates (by nickname): [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
-            (Trace, "Parsed ballot: count 3 for [[0], [2], [4], [3], [1]]"),
-            (Trace, "Parsed ballot: count 3 for [[3, 4], [1, 2, 0]]"),
-            (Trace, "Parsed ballot: count 42 for [[2]]"),
-            (Trace, "Parsed ballot: count 123 for [[1], [3]]"),
-            (Trace, "Parsed ballot: count 17 for []"),
             (Info, "Number of ballots: 188"),
             (Info, "Election title: Vegetable contest"),
             (Debug, "Allocations of 0 bytes: 2 => 0 bytes"),
@@ -563,7 +554,7 @@ mod test {
 "Eggplant"
 "Vegetable contest"
 "#;
-        let logger = ThreadLocalLogger::start();
+        let logger = ThreadLocalLogger::start_filtered(LevelFilter::Debug);
         let election = parse_election(
             Cursor::new(file),
             ParsingOptions {
@@ -602,11 +593,6 @@ mod test {
             (Info, "Nicknames: [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
             (Info, "Withdrawn: [\"cherry\", \"eggplant\"]"),
             (Info, "Candidates (by nickname): [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
-            (Trace, "Parsed ballot: count 3 for [[0], [3], [1]]"),
-            (Trace, "Parsed ballot: count 3 for [[3], [1, 0]]"),
-            (Trace, "Parsed ballot: count 42 for []"),
-            (Trace, "Parsed ballot: count 123 for [[1], [3]]"),
-            (Trace, "Parsed ballot: count 17 for []"),
             (Info, "Number of ballots: 188"),
             (Info, "Election title: Vegetable contest"),
             (Debug, "Allocations of 0 bytes: 4 => 0 bytes"),
@@ -635,7 +621,7 @@ mod test {
 "Eggplant"
 "Vegetable contest"
 "#;
-        let logger = ThreadLocalLogger::start();
+        let logger = ThreadLocalLogger::start_filtered(LevelFilter::Debug);
         let election = parse_election(
             Cursor::new(file),
             ParsingOptions {
@@ -673,11 +659,6 @@ mod test {
             (Info, "Nicknames: [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
             (Info, "Withdrawn: [\"cherry\", \"eggplant\"]"),
             (Info, "Candidates (by nickname): [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
-            (Trace, "Parsed ballot: count 3 for [[0], [2], [4], [3], [1]]"),
-            (Trace, "Parsed ballot: count 3 for [[3, 4], [1, 2, 0]]"),
-            (Trace, "Parsed ballot: count 42 for [[2]]"),
-            (Trace, "Parsed ballot: count 123 for [[1], [3]]"),
-            (Trace, "Parsed ballot: count 17 for []"),
             (Warn, "Removing ballot that is empty or contains only withdrawn candidates: 17 0"),
             (Info, "Number of ballots: 171"),
             (Info, "Election title: Vegetable contest"),
@@ -706,7 +687,7 @@ mod test {
 "Eggplant"
 "Vegetable contest"
 "#;
-        let logger = ThreadLocalLogger::start();
+        let logger = ThreadLocalLogger::start_filtered(LevelFilter::Debug);
         let election = parse_election(
             Cursor::new(file),
             ParsingOptions {
@@ -743,12 +724,7 @@ mod test {
             (Info, "Nicknames: [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
             (Info, "Withdrawn: [\"cherry\", \"eggplant\"]"),
             (Info, "Candidates (by nickname): [\"apple\", \"banana\", \"cherry\", \"date\", \"eggplant\"]"),
-            (Trace, "Parsed ballot: count 3 for [[0], [3], [1]]"),
-            (Trace, "Parsed ballot: count 3 for [[3], [1, 0]]"),
-            (Trace, "Parsed ballot: count 42 for []"),
             (Warn, "Removing ballot that is empty or contains only withdrawn candidates: 42 cherry 0"),
-            (Trace, "Parsed ballot: count 123 for [[1], [3]]"),
-            (Trace, "Parsed ballot: count 17 for []"),
             (Warn, "Removing ballot that is empty or contains only withdrawn candidates: 17 0"),
             (Info, "Number of ballots: 129"),
             (Info, "Election title: Vegetable contest"),
@@ -770,7 +746,7 @@ mod test {
 "Banana"
 "Vegetable contest"
 "#;
-        let logger = ThreadLocalLogger::start();
+        let logger = ThreadLocalLogger::start_filtered(LevelFilter::Debug);
         let election = parse_election(Cursor::new(file), basic_parsing_options()).unwrap();
 
         assert_eq!(
@@ -795,7 +771,6 @@ mod test {
             (Info, "Nicknames: [\"apple\", \"banana\"]"),
             (Warn, "Unknown option: unknown"),
             (Info, "Candidates (by nickname): [\"apple\", \"banana\"]"),
-            (Trace, "Parsed ballot: count 1 for [[0]]"),
             (Info, "Number of ballots: 1"),
             (Info, "Election title: Vegetable contest"),
             (Debug, "Allocations of 32 bytes: 2 => 64 bytes"),
