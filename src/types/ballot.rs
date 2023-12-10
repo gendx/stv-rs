@@ -14,15 +14,15 @@
 
 //! Types to represent ballots in an election.
 
-use super::util::count_slice_allocations;
+use super::util::{address_of_slice, count_slice_allocations};
 use std::collections::BTreeMap;
 
 /// Ballot cast in the election.
 pub type Ballot = BallotImpl<BoxedFlatOrder>;
 
 /// Ballot cast in the election.
-#[derive(Debug, PartialEq, Eq)]
-pub struct BallotImpl<O: Order> {
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct BallotImpl<O: Order + Clone> {
     /// Number of electors that have cast this ballot.
     count: usize,
     /// Whether this ballot contains candidates ranked equally.
@@ -31,7 +31,7 @@ pub struct BallotImpl<O: Order> {
     order: O,
 }
 
-impl<O: Order> BallotImpl<O> {
+impl<O: Order + Clone> BallotImpl<O> {
     /// Constructs a new ballot.
     #[inline(always)]
     pub fn new(
@@ -126,6 +126,11 @@ impl<O: Order> BallotImpl<O> {
     pub(super) fn count_allocations(&self, allocations: &mut BTreeMap<usize, usize>) {
         self.order.count_allocations(allocations)
     }
+
+    #[inline(always)]
+    pub(super) fn allocated_addresses(&self) -> impl Iterator<Item = usize> + '_ {
+        self.order.allocated_addresses()
+    }
 }
 
 /// Ordering of candidates in a ballot.
@@ -157,11 +162,13 @@ pub trait Order {
     /// Counts the allocations used by this type, reporting them into the given
     /// map.
     fn count_allocations(&self, allocations: &mut BTreeMap<usize, usize>);
+
+    /// Returns the addresses of heap-allocated items contained in this object.
+    fn allocated_addresses(&self) -> impl Iterator<Item = usize>;
 }
 
 /// Ordering of candidates in a ballot.
-#[derive(Debug, PartialEq, Eq)]
-#[cfg_attr(test, derive(Clone))]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BoxedFlatOrder {
     /// Flattened list of all the candidates in the ballot.
     order: Box<[u8]>,
@@ -239,5 +246,15 @@ impl Order for BoxedFlatOrder {
     fn count_allocations(&self, allocations: &mut BTreeMap<usize, usize>) {
         count_slice_allocations(allocations, &self.order);
         count_slice_allocations(allocations, &self.order_indices);
+    }
+
+    #[inline(always)]
+    fn allocated_addresses(&self) -> impl Iterator<Item = usize> {
+        [
+            address_of_slice(&self.order),
+            address_of_slice(&self.order_indices),
+        ]
+        .into_iter()
+        .flatten()
     }
 }

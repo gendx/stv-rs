@@ -18,8 +18,8 @@ mod ballot;
 mod util;
 
 pub use ballot::Ballot;
-use log::Level::Debug;
-use log::{debug, log_enabled};
+use log::Level::{Debug, Trace};
+use log::{debug, log_enabled, trace};
 use std::borrow::Borrow;
 use std::collections::{BTreeMap, HashMap};
 use util::count_vec_allocations;
@@ -77,6 +77,45 @@ impl Election {
             total_size as f64 / ballots_len,
             total_count as f64 / ballots_len
         );
+
+        if !log_enabled!(Trace) {
+            return;
+        }
+
+        trace!("Allocated addresses:");
+        let mut diffs = BTreeMap::new();
+        let mut prev = None;
+        for b in &self.ballots {
+            for address in b.allocated_addresses() {
+                match prev {
+                    None => trace!("- {address:#x?}"),
+                    Some(prev) => {
+                        let diff = if address >= prev {
+                            trace!("- {address:#x?} (+{:#x?})", address - prev);
+                            address - prev
+                        } else {
+                            trace!("- {address:#x?} (-{:#x?})", prev - address);
+                            prev - address
+                        };
+                        *diffs.entry(diff.checked_ilog2().unwrap_or(0)).or_insert(0) += 1;
+                    }
+                }
+                prev = Some(address);
+            }
+        }
+
+        trace!("Histogram of sequential jumps between allocated addresses:");
+        let max_count = diffs.values().max().unwrap();
+        for (&diff_log2, count) in diffs.iter() {
+            let start = if diff_log2 == 0 { 0 } else { 1u64 << diff_log2 };
+            let end = (1u64 << (diff_log2 + 1)) - 1;
+
+            let count_stars = count * 40 / max_count;
+            let count_spaces = 40 - count_stars;
+            let stars = &"****************************************"[..count_stars];
+            let spaces = &"                                        "[..count_spaces];
+            trace!("{stars}{spaces} {start}..={end}: {count}");
+        }
     }
 }
 
