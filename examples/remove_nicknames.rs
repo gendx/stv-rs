@@ -72,6 +72,7 @@ impl Cli {
         ParsingOptions {
             remove_withdrawn_candidates: self.remove_withdrawn_candidates,
             remove_empty_ballots: self.remove_empty_ballots,
+            optimize_layout: false,
         }
     }
 

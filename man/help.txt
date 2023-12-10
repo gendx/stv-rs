@@ -24,6 +24,12 @@ Options:
       --input <INPUT>
           Input ballot file. If no input is provided, fallback to reading from stdin
 
+      --optimize-layout <OPTIMIZE_LAYOUT>
+          Whether to optimize the in-memory layout of ballots after parsing
+          
+          [default: true]
+          [possible values: true, false]
+
   -h, --help
           Print help (see a summary with '-h')
 
