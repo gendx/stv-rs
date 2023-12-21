@@ -5,7 +5,7 @@ Election: Vegetable contest
 	Rule: Simulated Plurality Block Voting
 	Arithmetic: fixed-point decimal arithmetic (9 places)
 	Seats: 10
-	Ballots: 4990830
+	Ballots: 4986378
 	Votes per ballot: 10
 
 Action: Count Complete
@@ -30,23 +30,23 @@ Action: Defeat: Nut
 Action: Defeat: Mushroom
 Action: Defeat: Litchi
 Action: Count Complete
-	Elected:  Apple (4916094.051967235)
-	Elected:  Banana (4854898.053942506)
-	Elected:  Cherry (4753816.220196627)
-	Elected:  Date (4603666.732876452)
-	Elected:  Eggplant (4402975.386822607)
-	Elected:  Fig (4151697.436011109)
-	Elected:  Grape (3836375.618533049)
-	Elected:  Hazelnut (3463327.875660316)
-	Elected:  Jalapeno (3061113.812554871)
-	Elected:  Kiwi (2678818.639538522)
-	Defeated: Litchi (2228402.439134999)
-	Defeated: Mushroom (1851937.751449337)
-	Defeated: Nut (1428931.529239007)
-	Defeated: Orange (1130789.072906060)
-	Defeated: Pear (826381.420942683)
-	Defeated: Quinoa (623859.688417996)
-	Defeated: Radish (438362.117008718)
-	Defeated: Soy (308919.830910451)
-	Defeated: Tomato (206637.461872820)
-	Defeated: Vanilla (141294.858310331)
+	Elected:  Apple (4914431.617443920)
+	Elected:  Banana (4851907.563861809)
+	Elected:  Cherry (4747288.591623912)
+	Elected:  Date (4608160.973351744)
+	Elected:  Eggplant (4386371.483254194)
+	Elected:  Fig (4149440.637202968)
+	Elected:  Grape (3814049.189167279)
+	Elected:  Hazelnut (3464860.578039484)
+	Elected:  Jalapeno (3050159.819699262)
+	Elected:  Kiwi (2677385.964933871)
+	Defeated: Litchi (2210074.452234518)
+	Defeated: Mushroom (1863551.965737565)
+	Defeated: Nut (1435673.708606747)
+	Defeated: Orange (1121295.256240022)
+	Defeated: Pear (834094.499114472)
+	Defeated: Quinoa (625488.474131591)
+	Defeated: Radish (444540.478514937)
+	Defeated: Soy (310450.828131912)
+	Defeated: Tomato (210928.774175698)
+	Defeated: Vanilla (143625.142834950)

@@ -55,11 +55,13 @@ jobs:
 
       - name: Generate random ballots
         run: |
-          target/release/examples/random_ballots --ballot-pattern hypergeometric20 --num-ballots 100000 --seed 42 --output testdata/ballots/random/rand_hypergeometric_100k.blt
+          target/release/examples/random_ballots --ballot-pattern hypergeometric20 --num-ballots 10000 --seed 43 --output testdata/ballots/random/rand_hypergeometric_10k.blt
+          target/release/examples/random_ballots --ballot-pattern hypergeometric20 --num-ballots 100000 --seed 43 --output testdata/ballots/random/rand_hypergeometric_100k.blt
       - uses: actions/upload-artifact@v3
         with:
           name: large-test-files
           path: |
+            testdata/ballots/random/rand_hypergeometric_10k.blt
             testdata/ballots/random/rand_hypergeometric_100k.blt
           if-no-files-found: error
 
@@ -104,8 +106,30 @@ jobs:
     strategy:
       matrix:
         file:
+          - bigint/rand_hypergeometric_many
+          - crashes/rand_geometric
+          - random/rand_2x10
+          - random/rand_5x4
+          - random/rand_hypergeometric
           - random/rand_mixed_5k
         include:
+          - cli: ""
+          - file: bigint/rand_hypergeometric_many
+            pattern: hypergeometric80
+            num_ballots: 200
+            cli: "--title=\"Vegetable contest with many candidates\""
+          - file: crashes/rand_geometric
+            pattern: geometric20
+            num_ballots: 1000
+          - file: random/rand_2x10
+            pattern: tuples2x10
+            num_ballots: 1000
+          - file: random/rand_5x4
+            pattern: tuples5x4
+            num_ballots: 1000
+          - file: random/rand_hypergeometric
+            pattern: hypergeometric20
+            num_ballots: 1000
           - file: random/rand_mixed_5k
             pattern: mixed20
             num_ballots: 5000
@@ -121,7 +145,7 @@ jobs:
 
       - name: Check generated ballot
         run: |
-          target/release/examples/random_ballots --seed=42 --ballot-pattern=${{ matrix.pattern }} --num-ballots=${{ matrix.num_ballots }} | diff -s testdata/ballots/${{ matrix.file }}.blt -
+          target/release/examples/random_ballots --seed=43 --ballot-pattern=${{ matrix.pattern }} --num-ballots=${{ matrix.num_ballots }} ${{ matrix.cli }} | diff -s testdata/ballots/${{ matrix.file }}.blt -
 
   meek_tests:
     needs: build
@@ -375,9 +399,6 @@ jobs:
           - rand_sorted_lexicographically
           - rand_sorted_by_lexico_product
           - rand_mixed_5k_sorted_alphabetically
-          - rand_10k_sorted_by_product
-          - rand_10k_sorted_lexicographically
-          - rand_10k_sorted_by_lexico_product
         include:
           - file: rand_sorted_by_product
             src: random/rand_hypergeometric
@@ -391,15 +412,6 @@ jobs:
           - file: rand_mixed_5k_sorted_alphabetically
             src: random/rand_mixed_5k
             strategy: "alphabetic"
-          - file: rand_10k_sorted_by_product
-            src: random/rand_hypergeometric_10k
-            strategy: "product"
-          - file: rand_10k_sorted_lexicographically
-            src: random/rand_hypergeometric_10k
-            strategy: "lexicographic"
-          - file: rand_10k_sorted_by_lexico_product
-            src: random/rand_hypergeometric_10k
-            strategy: "lexico-product"
       fail-fast: false
     runs-on: ubuntu-latest
     steps:
