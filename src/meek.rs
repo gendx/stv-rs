@@ -1675,6 +1675,28 @@ Action: Count Complete
                 "stv_rs::parallelism::thread_pool",
                 "[main thread] Joined threads.",
             ),
+            #[cfg(feature = "log_parallelism")]
+            (
+                Info,
+                "stv_rs::parallelism::range",
+                "Work-stealing statistics:",
+            ),
+            #[cfg(feature = "log_parallelism")]
+            (Info, "stv_rs::parallelism::range", "- increments: 0"),
+            #[cfg(feature = "log_parallelism")]
+            (Info, "stv_rs::parallelism::range", "- failed_increments: 0"),
+            #[cfg(feature = "log_parallelism")]
+            (Info, "stv_rs::parallelism::range", "- other_loads: 0"),
+            #[cfg(feature = "log_parallelism")]
+            (Info, "stv_rs::parallelism::range", "- thefts: 0"),
+            #[cfg(feature = "log_parallelism")]
+            (Info, "stv_rs::parallelism::range", "- failed_thefts: 0"),
+            #[cfg(feature = "log_parallelism")]
+            (
+                Info,
+                "stv_rs::parallelism::range",
+                "- increments + thefts: 0",
+            ),
         ]);
         #[cfg(overflow_checks)]
         logger.check_logs([]);

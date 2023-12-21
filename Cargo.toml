@@ -32,6 +32,7 @@ rand_distr = "0.4"
 [features]
 default = ["checked_i64"]
 checked_i64 = []
+log_parallelism = []
 
 [package.metadata.docs.rs]
 rustdoc-args = ["--document-private-items"]
