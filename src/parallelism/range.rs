@@ -209,6 +209,7 @@ impl Range for WorkStealingRange {
 
     fn iter(&self) -> Self::Iter {
         WorkStealingRangeIterator {
+            local_range: 0..0,
             id: self.id,
             ranges: self.ranges.clone(),
             #[cfg(feature = "log_parallelism")]
@@ -293,12 +294,19 @@ impl PackedRange {
         self.end() - self.start()
     }
 
-    /// Increments the start of the range.
+    /// Increments the start of the range by at most the given count.
     #[inline(always)]
-    fn increment_start(self) -> (u32, Self) {
+    fn increment_start_by(self, count: u32) -> (std::ops::Range<u32>, Self) {
         assert!(self.start() < self.end());
         // TODO: check for overflow.
-        (self.start(), PackedRange::new(self.start() + 1, self.end()))
+        if self.end() - self.start() < count {
+            (self.start()..self.end(), PackedRange::default())
+        } else {
+            (
+                self.start()..self.start() + count,
+                PackedRange::new(self.start() + count, self.end()),
+            )
+        }
     }
 
     /// Splits the range into two halves. If the input range is non-empty, the
@@ -353,6 +361,7 @@ impl<'a> AddAssign<&'a WorkStealingStats> for WorkStealingStats {
 
 /// An iterator for the [`WorkStealingRange`].
 pub struct WorkStealingRangeIterator {
+    local_range: std::ops::Range<u32>,
     /// Index of the thread that owns this range.
     id: usize,
     /// Handle to the ranges of all the threads.
@@ -365,17 +374,38 @@ pub struct WorkStealingRangeIterator {
     global_stats: Arc<Mutex<WorkStealingStats>>,
 }
 
+impl WorkStealingRangeIterator {
+    const BATCH_SIZE: u32 = 10;
+
+    #[inline(always)]
+    fn next_local(&mut self) -> Option<usize> {
+        if self.local_range.is_empty() {
+            None
+        } else {
+            let result = self.local_range.start;
+            self.local_range.start += 1;
+            Some(result as usize)
+        }
+    }
+}
+
 impl Iterator for WorkStealingRangeIterator {
     type Item = usize;
 
     fn next(&mut self) -> Option<usize> {
+        let local_result = self.next_local();
+        if local_result.is_some() {
+            return local_result;
+        }
+
         let my_atomic_range: &AtomicRange = &self.ranges[self.id];
         let mut my_range: PackedRange = my_atomic_range.load();
         loop {
             if !my_range.is_empty() {
-                let (taken, my_new_range) = my_range.increment_start();
+                let (taken_range, my_new_range) = my_range.increment_start_by(Self::BATCH_SIZE);
                 match my_atomic_range.compare_exchange(my_range, my_new_range) {
                     Ok(()) => {
+                        self.local_range = taken_range;
                         #[cfg(feature = "log_parallelism")]
                         {
                             self.stats.increments += 1;
@@ -386,7 +416,7 @@ impl Iterator for WorkStealingRangeIterator {
                                 my_new_range.end()
                             );
                         }
-                        return Some(taken as usize);
+                        return self.next_local();
                     }
                     Err(range) => {
                         my_range = range;
@@ -442,13 +472,15 @@ impl Iterator for WorkStealingRangeIterator {
                     let (remaining, stolen) = max_range.split();
                     match self.ranges[max_index].compare_exchange(max_range, remaining) {
                         Ok(()) => {
-                            let (taken, my_new_range) = stolen.increment_start();
+                            let (taken_range, my_new_range) =
+                                stolen.increment_start_by(Self::BATCH_SIZE);
+                            self.local_range = taken_range;
                             my_atomic_range.store(my_new_range);
                             #[cfg(feature = "log_parallelism")]
                             {
                                 self.stats.thefts += 1;
                             }
-                            return Some(taken as usize);
+                            return self.next_local();
                         }
                         Err(range) => {
                             other_ranges[max_index] = range;
@@ -586,11 +618,48 @@ mod test {
         let mut range = PackedRange::new(0, 10);
 
         for i in 1..=10 {
-            let (j, new_range) = range.increment_start();
+            let (j, new_range) = range.increment_start_by(1);
             range = new_range;
-            assert_eq!(j, i - 1);
+            assert_eq!(j, i - 1..i);
             assert_eq!((range.start(), range.end()), (i, 10));
         }
+    }
+
+    #[test]
+    fn test_packed_range_increment_start_by_2() {
+        let mut range = PackedRange::new(0, 10);
+
+        for i in 1..=5 {
+            let (j, new_range) = range.increment_start_by(2);
+            range = new_range;
+            assert_eq!(j, 2 * i - 2..2 * i);
+            assert_eq!((range.start(), range.end()), (2 * i, 10));
+        }
+    }
+
+    #[test]
+    fn test_packed_range_increment_start_by_3() {
+        let mut range = PackedRange::new(0, 10);
+
+        let (j, new_range) = range.increment_start_by(3);
+        range = new_range;
+        assert_eq!(j, 0..3);
+        assert_eq!((range.start(), range.end()), (3, 10));
+
+        let (j, new_range) = range.increment_start_by(3);
+        range = new_range;
+        assert_eq!(j, 3..6);
+        assert_eq!((range.start(), range.end()), (6, 10));
+
+        let (j, new_range) = range.increment_start_by(3);
+        range = new_range;
+        assert_eq!(j, 6..9);
+        assert_eq!((range.start(), range.end()), (9, 10));
+
+        let (j, new_range) = range.increment_start_by(3);
+        range = new_range;
+        assert_eq!(j, 9..10);
+        assert!(range.is_empty());
     }
 
     #[test]
