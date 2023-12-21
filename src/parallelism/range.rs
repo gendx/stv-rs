@@ -287,12 +287,18 @@ impl PackedRange {
         (self.0 >> 32) as u32
     }
 
+    /// Reads the length of the range.
+    #[inline(always)]
+    fn len(self) -> u32 {
+        self.end() - self.start()
+    }
+
     /// Increments the start of the range.
     #[inline(always)]
-    fn increment_start(self) -> Self {
+    fn increment_start(self) -> (u32, Self) {
         assert!(self.start() < self.end());
         // TODO: check for overflow.
-        PackedRange::new(self.start() + 1, self.end())
+        (self.start(), PackedRange::new(self.start() + 1, self.end()))
     }
 
     /// Splits the range into two halves. If the input range is non-empty, the
@@ -367,7 +373,7 @@ impl Iterator for WorkStealingRangeIterator {
         let mut my_range: PackedRange = my_atomic_range.load();
         loop {
             if !my_range.is_empty() {
-                let my_new_range = my_range.increment_start();
+                let (taken, my_new_range) = my_range.increment_start();
                 match my_atomic_range.compare_exchange(my_range, my_new_range) {
                     Ok(()) => {
                         #[cfg(feature = "log_parallelism")]
@@ -380,7 +386,7 @@ impl Iterator for WorkStealingRangeIterator {
                                 my_new_range.end()
                             );
                         }
-                        return Some(my_range.start() as usize);
+                        return Some(taken as usize);
                     }
                     Err(range) => {
                         my_range = range;
@@ -406,52 +412,60 @@ impl Iterator for WorkStealingRangeIterator {
                     my_range.end()
                 );
                 let range_count = self.ranges.len();
-                // TODO: don't necessarily steal in order
-                'others: for i in 1..range_count {
-                    #[cfg(feature = "log_parallelism")]
-                    {
-                        self.stats.other_loads += 1;
-                    }
-                    let index: usize = (self.id + i) % range_count;
-                    let other_atomic_range: &AtomicRange = &self.ranges[index];
-                    let mut other_range = other_atomic_range.load();
-                    'inner: loop {
-                        if other_range.is_empty() {
-                            continue 'others;
-                        }
 
-                        // Steal some work.
-                        let (remaining, stolen) = other_range.split();
-                        match other_atomic_range.compare_exchange(other_range, remaining) {
-                            Ok(()) => {
-                                my_atomic_range.store(stolen.increment_start());
-                                #[cfg(feature = "log_parallelism")]
-                                {
-                                    self.stats.thefts += 1;
-                                    debug!(
-                                        "[thread {}] Stole from #{index}: stole {}..{} and left {}..{}.",
-                                        self.id,
-                                        stolen.start(),
-                                        stolen.end(),
-                                        remaining.start(),
-                                        remaining.end()
-                                    );
-                                }
-                                return Some(stolen.start() as usize);
+                #[cfg(feature = "log_parallelism")]
+                {
+                    self.stats.other_loads += range_count as u64 - 1;
+                }
+                let mut other_ranges = vec![PackedRange::default(); range_count];
+                for (i, range) in other_ranges.iter_mut().enumerate() {
+                    if i == self.id {
+                        continue;
+                    }
+                    *range = self.ranges[i].load();
+                }
+
+                let mut max_index = 0;
+                let mut max_range = PackedRange::default();
+                for (i, range) in other_ranges.iter().enumerate() {
+                    if i == self.id {
+                        continue;
+                    }
+                    if range.len() > max_range.len() {
+                        max_index = i;
+                        max_range = *range;
+                    }
+                }
+
+                while !max_range.is_empty() {
+                    // Steal some work.
+                    let (remaining, stolen) = max_range.split();
+                    match self.ranges[max_index].compare_exchange(max_range, remaining) {
+                        Ok(()) => {
+                            let (taken, my_new_range) = stolen.increment_start();
+                            my_atomic_range.store(my_new_range);
+                            #[cfg(feature = "log_parallelism")]
+                            {
+                                self.stats.thefts += 1;
                             }
-                            Err(range) => {
-                                other_range = range;
-                                #[cfg(feature = "log_parallelism")]
-                                {
-                                    self.stats.failed_thefts += 1;
-                                    debug!(
-                                        "[thread {}] Failed to steal from #{index}, new range is {}..{}.",
-                                        self.id,
-                                        range.start(),
-                                        range.end()
-                                    );
+                            return Some(taken as usize);
+                        }
+                        Err(range) => {
+                            other_ranges[max_index] = range;
+                            #[cfg(feature = "log_parallelism")]
+                            {
+                                self.stats.failed_thefts += 1;
+                            }
+                            // Re-compute max_index.
+                            max_range = range;
+                            for (i, range) in other_ranges.iter().enumerate() {
+                                if i == self.id {
+                                    continue;
                                 }
-                                continue 'inner;
+                                if range.len() > max_range.len() {
+                                    max_index = i;
+                                    max_range = *range;
+                                }
                             }
                         }
                     }
@@ -572,7 +586,9 @@ mod test {
         let mut range = PackedRange::new(0, 10);
 
         for i in 1..=10 {
-            range = range.increment_start();
+            let (j, new_range) = range.increment_start();
+            range = new_range;
+            assert_eq!(j, i - 1);
             assert_eq!((range.start(), range.end()), (i, 10));
         }
     }
