@@ -337,6 +337,9 @@ impl<I, R> Drop for ThreadPool<'_, I, R> {
             }
         }
         debug!("[main thread] Joined threads.");
+
+        #[cfg(feature = "log_parallelism")]
+        self.range_orchestrator.print_statistics();
     }
 }
 

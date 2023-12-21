@@ -12,9 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use log::{debug, trace, warn};
+use log::debug;
+#[cfg(feature = "log_parallelism")]
+use log::{info, trace};
+#[cfg(feature = "log_parallelism")]
+use std::ops::AddAssign;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
+#[cfg(feature = "log_parallelism")]
+use std::sync::Mutex;
 
 /// A factory for handing out ranges of items to various threads.
 pub trait RangeFactory {
@@ -37,6 +43,10 @@ pub trait RangeFactory {
 pub trait RangeOrchestrator {
     /// Resets all the ranges to prepare a new computation round.
     fn reset_ranges(&self);
+
+    /// Hook to display various debugging statistics.
+    #[cfg(feature = "log_parallelism")]
+    fn print_statistics(&self) {}
 }
 
 /// A range of items similar to [`std::ops::Range`], but that can steal from or
@@ -111,6 +121,9 @@ pub struct WorkStealingRangeFactory {
     num_elements: usize,
     /// Handle to the ranges of all the threads.
     ranges: Arc<Vec<AtomicRange>>,
+    /// Handle to the work-stealing statistics.
+    #[cfg(feature = "log_parallelism")]
+    stats: Arc<Mutex<WorkStealingStats>>,
 }
 
 impl RangeFactory for WorkStealingRangeFactory {
@@ -121,6 +134,8 @@ impl RangeFactory for WorkStealingRangeFactory {
         Self {
             num_elements,
             ranges: Arc::new((0..num_threads).map(|_| AtomicRange::default()).collect()),
+            #[cfg(feature = "log_parallelism")]
+            stats: Arc::new(Mutex::new(WorkStealingStats::default())),
         }
     }
 
@@ -128,6 +143,8 @@ impl RangeFactory for WorkStealingRangeFactory {
         WorkStealingRangeOrchestrator {
             num_elements: self.num_elements,
             ranges: self.ranges,
+            #[cfg(feature = "log_parallelism")]
+            stats: self.stats,
         }
     }
 
@@ -135,6 +152,8 @@ impl RangeFactory for WorkStealingRangeFactory {
         WorkStealingRange {
             id: thread_id,
             ranges: self.ranges.clone(),
+            #[cfg(feature = "log_parallelism")]
+            stats: self.stats.clone(),
         }
     }
 }
@@ -145,6 +164,9 @@ pub struct WorkStealingRangeOrchestrator {
     num_elements: usize,
     /// Handle to the ranges of all the threads.
     ranges: Arc<Vec<AtomicRange>>,
+    /// Handle to the work-stealing statistics.
+    #[cfg(feature = "log_parallelism")]
+    stats: Arc<Mutex<WorkStealingStats>>,
 }
 
 impl RangeOrchestrator for WorkStealingRangeOrchestrator {
@@ -157,6 +179,18 @@ impl RangeOrchestrator for WorkStealingRangeOrchestrator {
             range.store(PackedRange::new(start as u32, end as u32));
         }
     }
+
+    #[cfg(feature = "log_parallelism")]
+    fn print_statistics(&self) {
+        let stats = self.stats.lock().unwrap();
+        info!("Work-stealing statistics:");
+        info!("- increments: {}", stats.increments);
+        info!("- failed_increments: {}", stats.failed_increments);
+        info!("- other_loads: {}", stats.other_loads);
+        info!("- thefts: {}", stats.thefts);
+        info!("- failed_thefts: {}", stats.failed_thefts);
+        info!("- increments + thefts: {}", stats.increments + stats.thefts);
+    }
 }
 
 /// A range that implements work stealing.
@@ -165,6 +199,9 @@ pub struct WorkStealingRange {
     id: usize,
     /// Handle to the ranges of all the threads.
     ranges: Arc<Vec<AtomicRange>>,
+    /// Handle to the work-stealing statistics.
+    #[cfg(feature = "log_parallelism")]
+    stats: Arc<Mutex<WorkStealingStats>>,
 }
 
 impl Range for WorkStealingRange {
@@ -174,6 +211,10 @@ impl Range for WorkStealingRange {
         WorkStealingRangeIterator {
             id: self.id,
             ranges: self.ranges.clone(),
+            #[cfg(feature = "log_parallelism")]
+            stats: WorkStealingStats::default(),
+            #[cfg(feature = "log_parallelism")]
+            global_stats: self.stats.clone(),
         }
     }
 }
@@ -274,12 +315,47 @@ impl PackedRange {
     }
 }
 
+#[cfg(feature = "log_parallelism")]
+#[derive(Default)]
+pub struct WorkStealingStats {
+    /// Number of times this thread successfully incremented its range.
+    increments: u64,
+    /// Number of times this thread failed to increment its range, because
+    /// another thread stole it.
+    failed_increments: u64,
+    /// Number of times this thread loaded the range of another thread
+    /// (excluding compare-exchanges).
+    other_loads: u64,
+    /// Number of times this thread has stolen a range from another thread.
+    thefts: u64,
+    /// Number of times this thread failed to steal a range because another
+    /// thread modified it in the meantime.
+    failed_thefts: u64,
+}
+
+#[cfg(feature = "log_parallelism")]
+impl<'a> AddAssign<&'a WorkStealingStats> for WorkStealingStats {
+    fn add_assign(&mut self, other: &WorkStealingStats) {
+        self.increments += other.increments;
+        self.failed_increments += other.failed_increments;
+        self.other_loads += other.other_loads;
+        self.thefts += other.thefts;
+        self.failed_thefts += other.failed_thefts;
+    }
+}
+
 /// An iterator for the [`WorkStealingRange`].
 pub struct WorkStealingRangeIterator {
     /// Index of the thread that owns this range.
     id: usize,
     /// Handle to the ranges of all the threads.
     ranges: Arc<Vec<AtomicRange>>,
+    /// Local work-stealing statistics.
+    #[cfg(feature = "log_parallelism")]
+    stats: WorkStealingStats,
+    /// Handle to the global work-stealing statistics.
+    #[cfg(feature = "log_parallelism")]
+    global_stats: Arc<Mutex<WorkStealingStats>>,
 }
 
 impl Iterator for WorkStealingRangeIterator {
@@ -293,26 +369,35 @@ impl Iterator for WorkStealingRangeIterator {
                 let my_new_range = my_range.increment_start();
                 match my_atomic_range.compare_exchange(my_range, my_new_range) {
                     Ok(()) => {
-                        trace!(
-                            "[thread {}] Incremented range to {}..{}.",
-                            self.id,
-                            my_new_range.start(),
-                            my_new_range.end()
-                        );
+                        #[cfg(feature = "log_parallelism")]
+                        {
+                            self.stats.increments += 1;
+                            trace!(
+                                "[thread {}] Incremented range to {}..{}.",
+                                self.id,
+                                my_new_range.start(),
+                                my_new_range.end()
+                            );
+                        }
                         return Some(my_range.start() as usize);
                     }
                     Err(range) => {
                         my_range = range;
-                        warn!(
-                            "[thread {}] Failed to increment range, new range is {}..{}.",
-                            self.id,
-                            range.start(),
-                            range.end()
-                        );
+                        #[cfg(feature = "log_parallelism")]
+                        {
+                            self.stats.failed_increments += 1;
+                            debug!(
+                                "[thread {}] Failed to increment range, new range is {}..{}.",
+                                self.id,
+                                range.start(),
+                                range.end()
+                            );
+                        }
                         continue;
                     }
                 }
             } else {
+                #[cfg(feature = "log_parallelism")]
                 debug!(
                     "[thread {}] Range {}..{} is empty, scanning other threads.",
                     self.id,
@@ -322,6 +407,10 @@ impl Iterator for WorkStealingRangeIterator {
                 let range_count = self.ranges.len();
                 // TODO: don't necessarily steal in order
                 'others: for i in 1..range_count {
+                    #[cfg(feature = "log_parallelism")]
+                    {
+                        self.stats.other_loads += 1;
+                    }
                     let index: usize = (self.id + i) % range_count;
                     let other_atomic_range: &AtomicRange = &self.ranges[index];
                     let mut other_range = other_atomic_range.load();
@@ -335,30 +424,43 @@ impl Iterator for WorkStealingRangeIterator {
                         match other_atomic_range.compare_exchange(other_range, remaining) {
                             Ok(()) => {
                                 my_atomic_range.store(stolen.increment_start());
-                                debug!(
-                                    "[thread {}] Stole from #{index}: stole {}..{} and left {}..{}.",
-                                    self.id,
-                                    stolen.start(),
-                                    stolen.end(),
-                                    remaining.start(),
-                                    remaining.end()
-                                );
+                                #[cfg(feature = "log_parallelism")]
+                                {
+                                    self.stats.thefts += 1;
+                                    debug!(
+                                        "[thread {}] Stole from #{index}: stole {}..{} and left {}..{}.",
+                                        self.id,
+                                        stolen.start(),
+                                        stolen.end(),
+                                        remaining.start(),
+                                        remaining.end()
+                                    );
+                                }
                                 return Some(stolen.start() as usize);
                             }
                             Err(range) => {
                                 other_range = range;
-                                warn!(
-                                    "[thread {}] Failed to steal from #{index}, new range is {}..{}.",
-                                    self.id,
-                                    range.start(),
-                                    range.end()
-                                );
+                                #[cfg(feature = "log_parallelism")]
+                                {
+                                    self.stats.failed_thefts += 1;
+                                    debug!(
+                                        "[thread {}] Failed to steal from #{index}, new range is {}..{}.",
+                                        self.id,
+                                        range.start(),
+                                        range.end()
+                                    );
+                                }
                                 continue 'inner;
                             }
                         }
                     }
                 }
-                debug!("[thread {}] Didn't find anything to steal", self.id);
+
+                #[cfg(feature = "log_parallelism")]
+                {
+                    debug!("[thread {}] Didn't find anything to steal", self.id);
+                    *self.global_stats.lock().unwrap() += &self.stats;
+                }
                 // Didn't manage to steal anything.
                 return None;
             }
