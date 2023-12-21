@@ -48,9 +48,9 @@ Election: Example election with a skewed distribution of ballots: few complex ba
 	Add eligible: Q
 	Add eligible: R
 Action: Begin Count
-	Hopeful:  Apple (987.500000000)
-	Hopeful:  Banana (12.500000000)
-	Hopeful:  Cherry (0.000000000)
+	Hopeful:  Apple (337.499999675)
+	Hopeful:  Banana (337.499999675)
+	Hopeful:  Cherry (324.999999675)
 	Hopeful:  Date (0.000000000)
 	Hopeful:  Eggplant (0.000000000)
 	Hopeful:  Fig (0.000000000)
@@ -87,15 +87,15 @@ Action: Begin Count
 	Hopeful:  Q (0.000000000)
 	Hopeful:  R (0.000000000)
 	Quota: 27.027027028
-	Votes: 1000.000000000
+	Votes: 999.999999025
 	Residual: 0.000000000
-	Total: 1000.000000000
+	Total: 999.999999025
 	Surplus: 0.000000000
 Round 1:
 Action: Elect: Apple
-	Elected:  Apple (987.500000000)
-	Hopeful:  Banana (12.500000000)
-	Hopeful:  Cherry (0.000000000)
+	Elected:  Apple (337.499999675)
+	Hopeful:  Banana (337.499999675)
+	Hopeful:  Cherry (324.999999675)
 	Hopeful:  Date (0.000000000)
 	Hopeful:  Eggplant (0.000000000)
 	Hopeful:  Fig (0.000000000)
@@ -131,118 +131,111 @@ Action: Elect: Apple
 	Hopeful:  P (0.000000000)
 	Hopeful:  Q (0.000000000)
 	Hopeful:  R (0.000000000)
-	Quota: 27.027027028
-	Votes: 1000.000000000
-	Residual: 0.000000000
+	Quota: 27.027027001
+	Votes: 999.999999025
+	Residual: 0.000000975
+	Total: 1000.000000000
+	Surplus: 0.000000000
+Action: Elect: Banana
+	Elected:  Apple (337.499999675)
+	Elected:  Banana (337.499999675)
+	Hopeful:  Cherry (324.999999675)
+	Hopeful:  Date (0.000000000)
+	Hopeful:  Eggplant (0.000000000)
+	Hopeful:  Fig (0.000000000)
+	Hopeful:  Grape (0.000000000)
+	Hopeful:  Hazelnut (0.000000000)
+	Hopeful:  Jalapeno (0.000000000)
+	Hopeful:  Kiwi (0.000000000)
+	Hopeful:  Litchi (0.000000000)
+	Hopeful:  Mushroom (0.000000000)
+	Hopeful:  Nut (0.000000000)
+	Hopeful:  Orange (0.000000000)
+	Hopeful:  Pear (0.000000000)
+	Hopeful:  Quinoa (0.000000000)
+	Hopeful:  Radish (0.000000000)
+	Hopeful:  Soy (0.000000000)
+	Hopeful:  Tomato (0.000000000)
+	Hopeful:  Vanilla (0.000000000)
+	Hopeful:  A (0.000000000)
+	Hopeful:  B (0.000000000)
+	Hopeful:  C (0.000000000)
+	Hopeful:  D (0.000000000)
+	Hopeful:  E (0.000000000)
+	Hopeful:  F (0.000000000)
+	Hopeful:  G (0.000000000)
+	Hopeful:  H (0.000000000)
+	Hopeful:  I (0.000000000)
+	Hopeful:  J (0.000000000)
+	Hopeful:  K (0.000000000)
+	Hopeful:  L (0.000000000)
+	Hopeful:  M (0.000000000)
+	Hopeful:  N (0.000000000)
+	Hopeful:  O (0.000000000)
+	Hopeful:  P (0.000000000)
+	Hopeful:  Q (0.000000000)
+	Hopeful:  R (0.000000000)
+	Quota: 27.027027001
+	Votes: 999.999999025
+	Residual: 0.000000975
+	Total: 1000.000000000
+	Surplus: 0.000000000
+Action: Elect: Cherry
+	Elected:  Apple (337.499999675)
+	Elected:  Banana (337.499999675)
+	Elected:  Cherry (324.999999675)
+	Hopeful:  Date (0.000000000)
+	Hopeful:  Eggplant (0.000000000)
+	Hopeful:  Fig (0.000000000)
+	Hopeful:  Grape (0.000000000)
+	Hopeful:  Hazelnut (0.000000000)
+	Hopeful:  Jalapeno (0.000000000)
+	Hopeful:  Kiwi (0.000000000)
+	Hopeful:  Litchi (0.000000000)
+	Hopeful:  Mushroom (0.000000000)
+	Hopeful:  Nut (0.000000000)
+	Hopeful:  Orange (0.000000000)
+	Hopeful:  Pear (0.000000000)
+	Hopeful:  Quinoa (0.000000000)
+	Hopeful:  Radish (0.000000000)
+	Hopeful:  Soy (0.000000000)
+	Hopeful:  Tomato (0.000000000)
+	Hopeful:  Vanilla (0.000000000)
+	Hopeful:  A (0.000000000)
+	Hopeful:  B (0.000000000)
+	Hopeful:  C (0.000000000)
+	Hopeful:  D (0.000000000)
+	Hopeful:  E (0.000000000)
+	Hopeful:  F (0.000000000)
+	Hopeful:  G (0.000000000)
+	Hopeful:  H (0.000000000)
+	Hopeful:  I (0.000000000)
+	Hopeful:  J (0.000000000)
+	Hopeful:  K (0.000000000)
+	Hopeful:  L (0.000000000)
+	Hopeful:  M (0.000000000)
+	Hopeful:  N (0.000000000)
+	Hopeful:  O (0.000000000)
+	Hopeful:  P (0.000000000)
+	Hopeful:  Q (0.000000000)
+	Hopeful:  R (0.000000000)
+	Quota: 27.027027001
+	Votes: 999.999999025
+	Residual: 0.000000975
 	Total: 1000.000000000
 	Surplus: 0.000000000
 Action: Iterate (elected)
-	Quota: 27.027027028
-	Votes: 1000.000000000
-	Residual: 0.000000000
+	Quota: 27.027027001
+	Votes: 999.999999025
+	Residual: 0.000000975
 	Total: 1000.000000000
-	Surplus: 960.472972972
+	Surplus: 918.918918022
 Round 2:
-Action: Elect: Banana
-	Elected:  Apple (27.027027725)
-	Elected:  Banana (24.657885725)
-	Hopeful:  Cherry (0.000000000)
-	Hopeful:  Date (0.000000000)
-	Hopeful:  Eggplant (0.000000000)
-	Hopeful:  Fig (0.000000000)
-	Hopeful:  Grape (0.000000000)
-	Hopeful:  Hazelnut (0.000000000)
-	Hopeful:  Jalapeno (0.000000000)
-	Hopeful:  Kiwi (0.000000000)
-	Hopeful:  Litchi (0.000000000)
-	Hopeful:  Mushroom (0.000000000)
-	Hopeful:  Nut (0.000000000)
-	Hopeful:  Orange (0.000000000)
-	Hopeful:  Pear (0.000000000)
-	Hopeful:  Quinoa (0.000000000)
-	Hopeful:  Radish (0.000000000)
-	Hopeful:  Soy (0.000000000)
-	Hopeful:  Tomato (0.000000000)
-	Hopeful:  Vanilla (0.000000000)
-	Hopeful:  A (0.000000000)
-	Hopeful:  B (0.000000000)
-	Hopeful:  C (0.000000000)
-	Hopeful:  D (0.000000000)
-	Hopeful:  E (0.000000000)
-	Hopeful:  F (0.000000000)
-	Hopeful:  G (0.000000000)
-	Hopeful:  H (0.000000000)
-	Hopeful:  I (0.000000000)
-	Hopeful:  J (0.000000000)
-	Hopeful:  K (0.000000000)
-	Hopeful:  L (0.000000000)
-	Hopeful:  M (0.000000000)
-	Hopeful:  N (0.000000000)
-	Hopeful:  O (0.000000000)
-	Hopeful:  P (0.000000000)
-	Hopeful:  Q (0.000000000)
-	Hopeful:  R (0.000000000)
-	Quota: 1.396889553
-	Votes: 51.684913450
-	Residual: 948.315086550
-	Total: 1000.000000000
-	Surplus: 960.472972972
-Action: Iterate (elected)
-	Quota: 1.396889553
-	Votes: 51.684913450
-	Residual: 948.315086550
-	Total: 1000.000000000
-	Surplus: 48.891134344
-Round 3:
-Action: Elect: Cherry
-	Elected:  Apple (1.413570275)
-	Elected:  Banana (1.415268900)
-	Elected:  Cherry (11.775184225)
-	Hopeful:  Date (11.775184225)
-	Hopeful:  Eggplant (0.000000000)
-	Hopeful:  Fig (0.000000000)
-	Hopeful:  Grape (0.000000000)
-	Hopeful:  Hazelnut (0.000000000)
-	Hopeful:  Jalapeno (0.000000000)
-	Hopeful:  Kiwi (0.000000000)
-	Hopeful:  Litchi (0.000000000)
-	Hopeful:  Mushroom (0.000000000)
-	Hopeful:  Nut (0.000000000)
-	Hopeful:  Orange (0.000000000)
-	Hopeful:  Pear (0.000000000)
-	Hopeful:  Quinoa (0.000000000)
-	Hopeful:  Radish (0.000000000)
-	Hopeful:  Soy (0.000000000)
-	Hopeful:  Tomato (0.000000000)
-	Hopeful:  Vanilla (0.000000000)
-	Hopeful:  A (0.000000000)
-	Hopeful:  B (0.000000000)
-	Hopeful:  C (0.000000000)
-	Hopeful:  D (0.000000000)
-	Hopeful:  E (0.000000000)
-	Hopeful:  F (0.000000000)
-	Hopeful:  G (0.000000000)
-	Hopeful:  H (0.000000000)
-	Hopeful:  I (0.000000000)
-	Hopeful:  J (0.000000000)
-	Hopeful:  K (0.000000000)
-	Hopeful:  L (0.000000000)
-	Hopeful:  M (0.000000000)
-	Hopeful:  N (0.000000000)
-	Hopeful:  O (0.000000000)
-	Hopeful:  P (0.000000000)
-	Hopeful:  Q (0.000000000)
-	Hopeful:  R (0.000000000)
-	Quota: 0.712951558
-	Votes: 26.379207625
-	Residual: 973.620792375
-	Total: 1000.000000000
-	Surplus: 48.891134344
 Action: Elect: Date
-	Elected:  Apple (1.413570275)
-	Elected:  Banana (1.415268900)
-	Elected:  Cherry (11.775184225)
-	Elected:  Date (11.775184225)
+	Elected:  Apple (73.800500250)
+	Elected:  Banana (73.800500250)
+	Elected:  Cherry (75.641102000)
+	Elected:  Date (20.276635875)
 	Hopeful:  Eggplant (0.000000000)
 	Hopeful:  Fig (0.000000000)
 	Hopeful:  Grape (0.000000000)
@@ -277,25 +270,25 @@ Action: Elect: Date
 	Hopeful:  P (0.000000000)
 	Hopeful:  Q (0.000000000)
 	Hopeful:  R (0.000000000)
-	Quota: 0.712951558
-	Votes: 26.379207625
-	Residual: 973.620792375
+	Quota: 6.581587524
+	Votes: 243.518738375
+	Residual: 756.481261625
 	Total: 1000.000000000
-	Surplus: 48.891134344
+	Surplus: 918.918918022
 Action: Iterate (elected)
-	Quota: 0.712951558
-	Votes: 26.379207625
-	Residual: 973.620792375
+	Quota: 6.581587524
+	Votes: 243.518738375
+	Residual: 756.481261625
 	Total: 1000.000000000
-	Surplus: 23.527401393
-Round 4:
+	Surplus: 217.192388279
+Round 3:
 Action: Elect: Eggplant
-	Elected:  Apple (0.713203475)
-	Elected:  Banana (0.713201675)
-	Elected:  Cherry (1.424942500)
-	Elected:  Date (1.424942500)
-	Elected:  Eggplant (10.709665650)
-	Hopeful:  Fig (10.709665650)
+	Elected:  Apple (7.091032850)
+	Elected:  Banana (7.091032850)
+	Elected:  Cherry (7.154040675)
+	Elected:  Date (7.970311650)
+	Elected:  Eggplant (8.262251325)
+	Hopeful:  Fig (8.262251325)
 	Hopeful:  Grape (0.000000000)
 	Hopeful:  Hazelnut (0.000000000)
 	Hopeful:  Jalapeno (0.000000000)
@@ -328,18 +321,18 @@ Action: Elect: Eggplant
 	Hopeful:  P (0.000000000)
 	Hopeful:  Q (0.000000000)
 	Hopeful:  R (0.000000000)
-	Quota: 0.694476256
-	Votes: 25.695621450
-	Residual: 974.304378550
+	Quota: 1.238673532
+	Votes: 45.830920675
+	Residual: 954.169079325
 	Total: 1000.000000000
-	Surplus: 23.527401393
+	Surplus: 217.192388279
 Action: Elect: Fig
-	Elected:  Apple (0.713203475)
-	Elected:  Banana (0.713201675)
-	Elected:  Cherry (1.424942500)
-	Elected:  Date (1.424942500)
-	Elected:  Eggplant (10.709665650)
-	Elected:  Fig (10.709665650)
+	Elected:  Apple (7.091032850)
+	Elected:  Banana (7.091032850)
+	Elected:  Cherry (7.154040675)
+	Elected:  Date (7.970311650)
+	Elected:  Eggplant (8.262251325)
+	Elected:  Fig (8.262251325)
 	Hopeful:  Grape (0.000000000)
 	Hopeful:  Hazelnut (0.000000000)
 	Hopeful:  Jalapeno (0.000000000)
@@ -372,27 +365,27 @@ Action: Elect: Fig
 	Hopeful:  P (0.000000000)
 	Hopeful:  Q (0.000000000)
 	Hopeful:  R (0.000000000)
-	Quota: 0.694476256
-	Votes: 25.695621450
-	Residual: 974.304378550
+	Quota: 1.238673532
+	Votes: 45.830920675
+	Residual: 954.169079325
 	Total: 1000.000000000
-	Surplus: 23.527401393
+	Surplus: 217.192388279
 Action: Iterate (elected)
-	Quota: 0.694476256
-	Votes: 25.695621450
-	Residual: 974.304378550
+	Quota: 1.238673532
+	Votes: 45.830920675
+	Residual: 954.169079325
 	Total: 1000.000000000
-	Surplus: 21.528763914
-Round 5:
+	Surplus: 38.398879483
+Round 4:
 Action: Elect: Grape
-	Elected:  Apple (0.694483675)
-	Elected:  Banana (0.694482800)
-	Elected:  Cherry (0.706147775)
-	Elected:  Date (0.706147775)
-	Elected:  Eggplant (1.435320750)
-	Elected:  Fig (1.435320750)
-	Elected:  Grape (10.002726575)
-	Hopeful:  Hazelnut (10.002726575)
+	Elected:  Apple (1.245968500)
+	Elected:  Banana (1.245968500)
+	Elected:  Cherry (1.250443925)
+	Elected:  Date (1.257187150)
+	Elected:  Eggplant (3.279824450)
+	Elected:  Fig (3.279824450)
+	Elected:  Grape (8.545186275)
+	Hopeful:  Hazelnut (8.545186275)
 	Hopeful:  Jalapeno (0.000000000)
 	Hopeful:  Kiwi (0.000000000)
 	Hopeful:  Litchi (0.000000000)
@@ -423,20 +416,20 @@ Action: Elect: Grape
 	Hopeful:  P (0.000000000)
 	Hopeful:  Q (0.000000000)
 	Hopeful:  R (0.000000000)
-	Quota: 0.693982613
-	Votes: 25.677356675
-	Residual: 974.322643325
+	Quota: 0.774313231
+	Votes: 28.649589525
+	Residual: 971.350410475
 	Total: 1000.000000000
-	Surplus: 21.528763914
+	Surplus: 38.398879483
 Action: Elect: Hazelnut
-	Elected:  Apple (0.694483675)
-	Elected:  Banana (0.694482800)
-	Elected:  Cherry (0.706147775)
-	Elected:  Date (0.706147775)
-	Elected:  Eggplant (1.435320750)
-	Elected:  Fig (1.435320750)
-	Elected:  Grape (10.002726575)
-	Elected:  Hazelnut (10.002726575)
+	Elected:  Apple (1.245968500)
+	Elected:  Banana (1.245968500)
+	Elected:  Cherry (1.250443925)
+	Elected:  Date (1.257187150)
+	Elected:  Eggplant (3.279824450)
+	Elected:  Fig (3.279824450)
+	Elected:  Grape (8.545186275)
+	Elected:  Hazelnut (8.545186275)
 	Hopeful:  Jalapeno (0.000000000)
 	Hopeful:  Kiwi (0.000000000)
 	Hopeful:  Litchi (0.000000000)
@@ -467,29 +460,29 @@ Action: Elect: Hazelnut
 	Hopeful:  P (0.000000000)
 	Hopeful:  Q (0.000000000)
 	Hopeful:  R (0.000000000)
-	Quota: 0.693982613
-	Votes: 25.677356675
-	Residual: 974.322643325
+	Quota: 0.774313231
+	Votes: 28.649589525
+	Residual: 971.350410475
 	Total: 1000.000000000
-	Surplus: 21.528763914
+	Surplus: 38.398879483
 Action: Iterate (elected)
-	Quota: 0.693982613
-	Votes: 25.677356675
-	Residual: 974.322643325
+	Quota: 0.774313231
+	Votes: 28.649589525
+	Residual: 971.350410475
 	Total: 1000.000000000
-	Surplus: 20.125495771
-Round 6:
+	Surplus: 22.455083677
+Round 5:
 Action: Elect: Jalapeno
-	Elected:  Apple (0.693985025)
-	Elected:  Banana (0.693982825)
-	Elected:  Cherry (0.694176300)
-	Elected:  Date (0.694176300)
-	Elected:  Eggplant (0.706748425)
-	Elected:  Fig (0.706748425)
-	Elected:  Grape (1.439043750)
-	Elected:  Hazelnut (1.439043750)
-	Elected:  Jalapeno (9.304482650)
-	Hopeful:  Kiwi (9.304482650)
+	Elected:  Apple (0.774676525)
+	Elected:  Banana (0.774676525)
+	Elected:  Cherry (0.774876150)
+	Elected:  Date (0.775230625)
+	Elected:  Eggplant (0.840218150)
+	Elected:  Fig (0.840218150)
+	Elected:  Grape (1.945275625)
+	Elected:  Hazelnut (1.945275625)
+	Elected:  Jalapeno (9.297984550)
+	Hopeful:  Kiwi (9.297984550)
 	Hopeful:  Litchi (0.000000000)
 	Hopeful:  Mushroom (0.000000000)
 	Hopeful:  Nut (0.000000000)
@@ -518,22 +511,22 @@ Action: Elect: Jalapeno
 	Hopeful:  P (0.000000000)
 	Hopeful:  Q (0.000000000)
 	Hopeful:  R (0.000000000)
-	Quota: 0.693969463
-	Votes: 25.676870100
-	Residual: 974.323129900
+	Quota: 0.736930176
+	Votes: 27.266416475
+	Residual: 972.733583525
 	Total: 1000.000000000
-	Surplus: 20.125495771
+	Surplus: 22.455083677
 Action: Elect: Kiwi
-	Elected:  Apple (0.693985025)
-	Elected:  Banana (0.693982825)
-	Elected:  Cherry (0.694176300)
-	Elected:  Date (0.694176300)
-	Elected:  Eggplant (0.706748425)
-	Elected:  Fig (0.706748425)
-	Elected:  Grape (1.439043750)
-	Elected:  Hazelnut (1.439043750)
-	Elected:  Jalapeno (9.304482650)
-	Elected:  Kiwi (9.304482650)
+	Elected:  Apple (0.774676525)
+	Elected:  Banana (0.774676525)
+	Elected:  Cherry (0.774876150)
+	Elected:  Date (0.775230625)
+	Elected:  Eggplant (0.840218150)
+	Elected:  Fig (0.840218150)
+	Elected:  Grape (1.945275625)
+	Elected:  Hazelnut (1.945275625)
+	Elected:  Jalapeno (9.297984550)
+	Elected:  Kiwi (9.297984550)
 	Hopeful:  Litchi (0.000000000)
 	Hopeful:  Mushroom (0.000000000)
 	Hopeful:  Nut (0.000000000)
@@ -562,31 +555,31 @@ Action: Elect: Kiwi
 	Hopeful:  P (0.000000000)
 	Hopeful:  Q (0.000000000)
 	Hopeful:  R (0.000000000)
-	Quota: 0.693969463
-	Votes: 25.676870100
-	Residual: 974.323129900
+	Quota: 0.736930176
+	Votes: 27.266416475
+	Residual: 972.733583525
 	Total: 1000.000000000
-	Surplus: 20.125495771
+	Surplus: 22.455083677
 Action: Iterate (elected)
-	Quota: 0.693969463
-	Votes: 25.676870100
-	Residual: 974.323129900
+	Quota: 0.736930176
+	Votes: 27.266416475
+	Residual: 972.733583525
 	Total: 1000.000000000
-	Surplus: 18.737175470
-Round 7:
+	Surplus: 19.897114715
+Round 6:
 Action: Elect: Litchi
-	Elected:  Apple (0.693970025)
-	Elected:  Banana (0.693969475)
-	Elected:  Cherry (0.693972975)
-	Elected:  Date (0.693972975)
-	Elected:  Eggplant (0.694182050)
-	Elected:  Fig (0.694182050)
-	Elected:  Grape (0.707722250)
-	Elected:  Hazelnut (0.707722250)
-	Elected:  Jalapeno (1.443036550)
-	Elected:  Kiwi (1.443036550)
-	Elected:  Litchi (8.605544125)
-	Hopeful:  Mushroom (8.605544125)
+	Elected:  Apple (0.736959800)
+	Elected:  Banana (0.736959800)
+	Elected:  Cherry (0.736975400)
+	Elected:  Date (0.736999950)
+	Elected:  Eggplant (0.739816350)
+	Elected:  Fig (0.739816350)
+	Elected:  Grape (0.766813300)
+	Elected:  Hazelnut (0.766813300)
+	Elected:  Jalapeno (1.613261400)
+	Elected:  Kiwi (1.613261400)
+	Elected:  Litchi (8.984105225)
+	Hopeful:  Mushroom (8.984105225)
 	Hopeful:  Nut (0.000000000)
 	Hopeful:  Orange (0.000000000)
 	Hopeful:  Pear (0.000000000)
@@ -613,24 +606,24 @@ Action: Elect: Litchi
 	Hopeful:  P (0.000000000)
 	Hopeful:  Q (0.000000000)
 	Hopeful:  R (0.000000000)
-	Quota: 0.693969065
-	Votes: 25.676855400
-	Residual: 974.323144600
+	Quota: 0.733942906
+	Votes: 27.155887500
+	Residual: 972.844112500
 	Total: 1000.000000000
-	Surplus: 18.737175470
+	Surplus: 19.897114715
 Action: Elect: Mushroom
-	Elected:  Apple (0.693970025)
-	Elected:  Banana (0.693969475)
-	Elected:  Cherry (0.693972975)
-	Elected:  Date (0.693972975)
-	Elected:  Eggplant (0.694182050)
-	Elected:  Fig (0.694182050)
-	Elected:  Grape (0.707722250)
-	Elected:  Hazelnut (0.707722250)
-	Elected:  Jalapeno (1.443036550)
-	Elected:  Kiwi (1.443036550)
-	Elected:  Litchi (8.605544125)
-	Elected:  Mushroom (8.605544125)
+	Elected:  Apple (0.736959800)
+	Elected:  Banana (0.736959800)
+	Elected:  Cherry (0.736975400)
+	Elected:  Date (0.736999950)
+	Elected:  Eggplant (0.739816350)
+	Elected:  Fig (0.739816350)
+	Elected:  Grape (0.766813300)
+	Elected:  Hazelnut (0.766813300)
+	Elected:  Jalapeno (1.613261400)
+	Elected:  Kiwi (1.613261400)
+	Elected:  Litchi (8.984105225)
+	Elected:  Mushroom (8.984105225)
 	Hopeful:  Nut (0.000000000)
 	Hopeful:  Orange (0.000000000)
 	Hopeful:  Pear (0.000000000)
@@ -657,33 +650,33 @@ Action: Elect: Mushroom
 	Hopeful:  P (0.000000000)
 	Hopeful:  Q (0.000000000)
 	Hopeful:  R (0.000000000)
-	Quota: 0.693969065
-	Votes: 25.676855400
-	Residual: 974.323144600
+	Quota: 0.733942906
+	Votes: 27.155887500
+	Residual: 972.844112500
 	Total: 1000.000000000
-	Surplus: 18.737175470
+	Surplus: 19.897114715
 Action: Iterate (elected)
-	Quota: 0.693969065
-	Votes: 25.676855400
-	Residual: 974.323144600
+	Quota: 0.733942906
+	Votes: 27.155887500
+	Residual: 972.844112500
 	Total: 1000.000000000
-	Surplus: 17.349226620
-Round 8:
+	Surplus: 18.348572628
+Round 7:
 Action: Elect: Nut
-	Elected:  Apple (0.693970025)
-	Elected:  Banana (0.693969100)
-	Elected:  Cherry (0.693969150)
-	Elected:  Date (0.693969150)
-	Elected:  Eggplant (0.693972675)
-	Elected:  Fig (0.693972675)
-	Elected:  Grape (0.694212325)
-	Elected:  Hazelnut (0.694212325)
-	Elected:  Jalapeno (0.708890175)
-	Elected:  Kiwi (0.708890175)
-	Elected:  Litchi (1.447731050)
-	Elected:  Mushroom (1.447731050)
-	Elected:  Nut (7.905682750)
-	Hopeful:  Orange (7.905682750)
+	Elected:  Apple (0.733945750)
+	Elected:  Banana (0.733945750)
+	Elected:  Cherry (0.733946750)
+	Elected:  Date (0.733948450)
+	Elected:  Eggplant (0.734134125)
+	Elected:  Fig (0.734134125)
+	Elected:  Grape (0.734965475)
+	Elected:  Hazelnut (0.734965475)
+	Elected:  Jalapeno (0.753223725)
+	Elected:  Kiwi (0.753223725)
+	Elected:  Litchi (1.548844775)
+	Elected:  Mushroom (1.548844775)
+	Elected:  Nut (8.334466000)
+	Hopeful:  Orange (8.334466000)
 	Hopeful:  Pear (0.000000000)
 	Hopeful:  Quinoa (0.000000000)
 	Hopeful:  Radish (0.000000000)
@@ -708,26 +701,26 @@ Action: Elect: Nut
 	Hopeful:  P (0.000000000)
 	Hopeful:  Q (0.000000000)
 	Hopeful:  R (0.000000000)
-	Quota: 0.693969065
-	Votes: 25.676855375
-	Residual: 974.323144625
+	Quota: 0.733704187
+	Votes: 27.147054900
+	Residual: 972.852945100
 	Total: 1000.000000000
-	Surplus: 17.349226620
+	Surplus: 18.348572628
 Action: Elect: Orange
-	Elected:  Apple (0.693970025)
-	Elected:  Banana (0.693969100)
-	Elected:  Cherry (0.693969150)
-	Elected:  Date (0.693969150)
-	Elected:  Eggplant (0.693972675)
-	Elected:  Fig (0.693972675)
-	Elected:  Grape (0.694212325)
-	Elected:  Hazelnut (0.694212325)
-	Elected:  Jalapeno (0.708890175)
-	Elected:  Kiwi (0.708890175)
-	Elected:  Litchi (1.447731050)
-	Elected:  Mushroom (1.447731050)
-	Elected:  Nut (7.905682750)
-	Elected:  Orange (7.905682750)
+	Elected:  Apple (0.733945750)
+	Elected:  Banana (0.733945750)
+	Elected:  Cherry (0.733946750)
+	Elected:  Date (0.733948450)
+	Elected:  Eggplant (0.734134125)
+	Elected:  Fig (0.734134125)
+	Elected:  Grape (0.734965475)
+	Elected:  Hazelnut (0.734965475)
+	Elected:  Jalapeno (0.753223725)
+	Elected:  Kiwi (0.753223725)
+	Elected:  Litchi (1.548844775)
+	Elected:  Mushroom (1.548844775)
+	Elected:  Nut (8.334466000)
+	Elected:  Orange (8.334466000)
 	Hopeful:  Pear (0.000000000)
 	Hopeful:  Quinoa (0.000000000)
 	Hopeful:  Radish (0.000000000)
@@ -752,35 +745,35 @@ Action: Elect: Orange
 	Hopeful:  P (0.000000000)
 	Hopeful:  Q (0.000000000)
 	Hopeful:  R (0.000000000)
-	Quota: 0.693969065
-	Votes: 25.676855375
-	Residual: 974.323144625
+	Quota: 0.733704187
+	Votes: 27.147054900
+	Residual: 972.852945100
 	Total: 1000.000000000
-	Surplus: 17.349226620
+	Surplus: 18.348572628
 Action: Iterate (elected)
-	Quota: 0.693969065
-	Votes: 25.676855375
-	Residual: 974.323144625
+	Quota: 0.733704187
+	Votes: 27.147054900
+	Residual: 972.852945100
 	Total: 1000.000000000
-	Surplus: 15.961288465
-Round 9:
+	Surplus: 16.875196282
+Round 8:
 Action: Elect: Pear
-	Elected:  Apple (0.693970025)
-	Elected:  Banana (0.693969100)
-	Elected:  Cherry (0.693969100)
-	Elected:  Date (0.693969100)
-	Elected:  Eggplant (0.693969150)
-	Elected:  Fig (0.693969150)
-	Elected:  Grape (0.693973375)
-	Elected:  Hazelnut (0.693973375)
-	Elected:  Jalapeno (0.694252575)
-	Elected:  Kiwi (0.694252575)
-	Elected:  Litchi (0.710277950)
-	Elected:  Mushroom (0.710277950)
-	Elected:  Nut (1.453304875)
-	Elected:  Orange (1.453304875)
-	Elected:  Pear (7.204711050)
-	Hopeful:  Quinoa (7.204711050)
+	Elected:  Apple (0.733705750)
+	Elected:  Banana (0.733705750)
+	Elected:  Cherry (0.733704950)
+	Elected:  Date (0.733704675)
+	Elected:  Eggplant (0.733718875)
+	Elected:  Fig (0.733718875)
+	Elected:  Grape (0.733760450)
+	Elected:  Hazelnut (0.733760450)
+	Elected:  Jalapeno (0.734174150)
+	Elected:  Kiwi (0.734174150)
+	Elected:  Litchi (0.751727250)
+	Elected:  Mushroom (0.751727250)
+	Elected:  Nut (1.540486725)
+	Elected:  Orange (1.540486725)
+	Elected:  Pear (7.611897425)
+	Hopeful:  Quinoa (7.611897425)
 	Hopeful:  Radish (0.000000000)
 	Hopeful:  Soy (0.000000000)
 	Hopeful:  Tomato (0.000000000)
@@ -803,28 +796,28 @@ Action: Elect: Pear
 	Hopeful:  P (0.000000000)
 	Hopeful:  Q (0.000000000)
 	Hopeful:  R (0.000000000)
-	Quota: 0.693969062
-	Votes: 25.676855275
-	Residual: 974.323144725
+	Quota: 0.733685159
+	Votes: 27.146350875
+	Residual: 972.853649125
 	Total: 1000.000000000
-	Surplus: 15.961288465
+	Surplus: 16.875196282
 Action: Elect: Quinoa
-	Elected:  Apple (0.693970025)
-	Elected:  Banana (0.693969100)
-	Elected:  Cherry (0.693969100)
-	Elected:  Date (0.693969100)
-	Elected:  Eggplant (0.693969150)
-	Elected:  Fig (0.693969150)
-	Elected:  Grape (0.693973375)
-	Elected:  Hazelnut (0.693973375)
-	Elected:  Jalapeno (0.694252575)
-	Elected:  Kiwi (0.694252575)
-	Elected:  Litchi (0.710277950)
-	Elected:  Mushroom (0.710277950)
-	Elected:  Nut (1.453304875)
-	Elected:  Orange (1.453304875)
-	Elected:  Pear (7.204711050)
-	Elected:  Quinoa (7.204711050)
+	Elected:  Apple (0.733705750)
+	Elected:  Banana (0.733705750)
+	Elected:  Cherry (0.733704950)
+	Elected:  Date (0.733704675)
+	Elected:  Eggplant (0.733718875)
+	Elected:  Fig (0.733718875)
+	Elected:  Grape (0.733760450)
+	Elected:  Hazelnut (0.733760450)
+	Elected:  Jalapeno (0.734174150)
+	Elected:  Kiwi (0.734174150)
+	Elected:  Litchi (0.751727250)
+	Elected:  Mushroom (0.751727250)
+	Elected:  Nut (1.540486725)
+	Elected:  Orange (1.540486725)
+	Elected:  Pear (7.611897425)
+	Elected:  Quinoa (7.611897425)
 	Hopeful:  Radish (0.000000000)
 	Hopeful:  Soy (0.000000000)
 	Hopeful:  Tomato (0.000000000)
@@ -847,37 +840,37 @@ Action: Elect: Quinoa
 	Hopeful:  P (0.000000000)
 	Hopeful:  Q (0.000000000)
 	Hopeful:  R (0.000000000)
-	Quota: 0.693969062
-	Votes: 25.676855275
-	Residual: 974.323144725
+	Quota: 0.733685159
+	Votes: 27.146350875
+	Residual: 972.853649125
 	Total: 1000.000000000
-	Surplus: 15.961288465
+	Surplus: 16.875196282
 Action: Iterate (elected)
-	Quota: 0.693969062
-	Votes: 25.676855275
-	Residual: 974.323144725
+	Quota: 0.733685159
+	Votes: 27.146350875
+	Residual: 972.853649125
 	Total: 1000.000000000
-	Surplus: 14.573350283
-Round 10:
+	Surplus: 15.407388331
+Round 9:
 Action: Elect: Radish
-	Elected:  Apple (0.693970025)
-	Elected:  Banana (0.693969100)
-	Elected:  Cherry (0.693969075)
-	Elected:  Date (0.693969075)
-	Elected:  Eggplant (0.693969100)
-	Elected:  Fig (0.693969100)
-	Elected:  Grape (0.693969150)
-	Elected:  Hazelnut (0.693969150)
-	Elected:  Jalapeno (0.693974450)
-	Elected:  Kiwi (0.693974450)
-	Elected:  Litchi (0.694304100)
-	Elected:  Mushroom (0.694304100)
-	Elected:  Nut (0.711948175)
-	Elected:  Orange (0.711948175)
-	Elected:  Pear (1.460013850)
-	Elected:  Quinoa (1.460013850)
-	Elected:  Radish (6.502310175)
-	Hopeful:  Soy (6.502310175)
+	Elected:  Apple (0.733686750)
+	Elected:  Banana (0.733686750)
+	Elected:  Cherry (0.733686975)
+	Elected:  Date (0.733685250)
+	Elected:  Eggplant (0.733686375)
+	Elected:  Fig (0.733686375)
+	Elected:  Grape (0.733689225)
+	Elected:  Hazelnut (0.733689225)
+	Elected:  Jalapeno (0.733701775)
+	Elected:  Kiwi (0.733701775)
+	Elected:  Litchi (0.734076125)
+	Elected:  Mushroom (0.734076125)
+	Elected:  Nut (0.752874575)
+	Elected:  Orange (0.752874575)
+	Elected:  Pear (1.544512500)
+	Elected:  Quinoa (1.544512500)
+	Elected:  Radish (6.873234675)
+	Hopeful:  Soy (6.873234675)
 	Hopeful:  Tomato (0.000000000)
 	Hopeful:  Vanilla (0.000000000)
 	Hopeful:  A (0.000000000)
@@ -898,30 +891,30 @@ Action: Elect: Radish
 	Hopeful:  P (0.000000000)
 	Hopeful:  Q (0.000000000)
 	Hopeful:  R (0.000000000)
-	Quota: 0.693969062
-	Votes: 25.676855275
-	Residual: 974.323144725
+	Quota: 0.733683682
+	Votes: 27.146296225
+	Residual: 972.853703775
 	Total: 1000.000000000
-	Surplus: 14.573350283
+	Surplus: 15.407388331
 Action: Elect: Soy
-	Elected:  Apple (0.693970025)
-	Elected:  Banana (0.693969100)
-	Elected:  Cherry (0.693969075)
-	Elected:  Date (0.693969075)
-	Elected:  Eggplant (0.693969100)
-	Elected:  Fig (0.693969100)
-	Elected:  Grape (0.693969150)
-	Elected:  Hazelnut (0.693969150)
-	Elected:  Jalapeno (0.693974450)
-	Elected:  Kiwi (0.693974450)
-	Elected:  Litchi (0.694304100)
-	Elected:  Mushroom (0.694304100)
-	Elected:  Nut (0.711948175)
-	Elected:  Orange (0.711948175)
-	Elected:  Pear (1.460013850)
-	Elected:  Quinoa (1.460013850)
-	Elected:  Radish (6.502310175)
-	Elected:  Soy (6.502310175)
+	Elected:  Apple (0.733686750)
+	Elected:  Banana (0.733686750)
+	Elected:  Cherry (0.733686975)
+	Elected:  Date (0.733685250)
+	Elected:  Eggplant (0.733686375)
+	Elected:  Fig (0.733686375)
+	Elected:  Grape (0.733689225)
+	Elected:  Hazelnut (0.733689225)
+	Elected:  Jalapeno (0.733701775)
+	Elected:  Kiwi (0.733701775)
+	Elected:  Litchi (0.734076125)
+	Elected:  Mushroom (0.734076125)
+	Elected:  Nut (0.752874575)
+	Elected:  Orange (0.752874575)
+	Elected:  Pear (1.544512500)
+	Elected:  Quinoa (1.544512500)
+	Elected:  Radish (6.873234675)
+	Elected:  Soy (6.873234675)
 	Hopeful:  Tomato (0.000000000)
 	Hopeful:  Vanilla (0.000000000)
 	Hopeful:  A (0.000000000)
@@ -942,39 +935,39 @@ Action: Elect: Soy
 	Hopeful:  P (0.000000000)
 	Hopeful:  Q (0.000000000)
 	Hopeful:  R (0.000000000)
-	Quota: 0.693969062
-	Votes: 25.676855275
-	Residual: 974.323144725
+	Quota: 0.733683682
+	Votes: 27.146296225
+	Residual: 972.853703775
 	Total: 1000.000000000
-	Surplus: 14.573350283
+	Surplus: 15.407388331
 Action: Iterate (elected)
-	Quota: 0.693969062
-	Votes: 25.676855275
-	Residual: 974.323144725
+	Quota: 0.733683682
+	Votes: 27.146296225
+	Residual: 972.853703775
 	Total: 1000.000000000
-	Surplus: 13.185412159
-Round 11:
+	Surplus: 13.939989949
+Round 10:
 Action: Elect: Tomato
-	Elected:  Apple (0.693970025)
-	Elected:  Banana (0.693969100)
-	Elected:  Cherry (0.693969075)
-	Elected:  Date (0.693969075)
-	Elected:  Eggplant (0.693969075)
-	Elected:  Fig (0.693969075)
-	Elected:  Grape (0.693969100)
-	Elected:  Hazelnut (0.693969100)
-	Elected:  Jalapeno (0.693969175)
-	Elected:  Kiwi (0.693969175)
-	Elected:  Litchi (0.693975925)
-	Elected:  Mushroom (0.693975925)
-	Elected:  Nut (0.694370925)
-	Elected:  Orange (0.694370925)
-	Elected:  Pear (0.713994825)
-	Elected:  Quinoa (0.713994825)
-	Elected:  Radish (1.468234775)
-	Elected:  Soy (1.468234775)
-	Elected:  Tomato (5.798005125)
-	Hopeful:  Vanilla (5.798005125)
+	Elected:  Apple (0.733684750)
+	Elected:  Banana (0.733684750)
+	Elected:  Cherry (0.733685975)
+	Elected:  Date (0.733683700)
+	Elected:  Eggplant (0.733683775)
+	Elected:  Fig (0.733683775)
+	Elected:  Grape (0.733684025)
+	Elected:  Hazelnut (0.733684025)
+	Elected:  Jalapeno (0.733684625)
+	Elected:  Kiwi (0.733684625)
+	Elected:  Litchi (0.733693150)
+	Elected:  Mushroom (0.733693150)
+	Elected:  Nut (0.734116875)
+	Elected:  Orange (0.734116875)
+	Elected:  Pear (0.754900875)
+	Elected:  Quinoa (0.754900875)
+	Elected:  Radish (1.552500725)
+	Elected:  Soy (1.552500725)
+	Elected:  Tomato (6.129512000)
+	Hopeful:  Vanilla (6.129512000)
 	Hopeful:  A (0.000000000)
 	Hopeful:  B (0.000000000)
 	Hopeful:  C (0.000000000)
@@ -993,32 +986,32 @@ Action: Elect: Tomato
 	Hopeful:  P (0.000000000)
 	Hopeful:  Q (0.000000000)
 	Hopeful:  R (0.000000000)
-	Quota: 0.693969058
-	Votes: 25.676855125
-	Residual: 974.323144875
+	Quota: 0.733683548
+	Votes: 27.146291275
+	Residual: 972.853708725
 	Total: 1000.000000000
-	Surplus: 13.185412159
+	Surplus: 13.939989949
 Action: Elect: Vanilla
-	Elected:  Apple (0.693970025)
-	Elected:  Banana (0.693969100)
-	Elected:  Cherry (0.693969075)
-	Elected:  Date (0.693969075)
-	Elected:  Eggplant (0.693969075)
-	Elected:  Fig (0.693969075)
-	Elected:  Grape (0.693969100)
-	Elected:  Hazelnut (0.693969100)
-	Elected:  Jalapeno (0.693969175)
-	Elected:  Kiwi (0.693969175)
-	Elected:  Litchi (0.693975925)
-	Elected:  Mushroom (0.693975925)
-	Elected:  Nut (0.694370925)
-	Elected:  Orange (0.694370925)
-	Elected:  Pear (0.713994825)
-	Elected:  Quinoa (0.713994825)
-	Elected:  Radish (1.468234775)
-	Elected:  Soy (1.468234775)
-	Elected:  Tomato (5.798005125)
-	Elected:  Vanilla (5.798005125)
+	Elected:  Apple (0.733684750)
+	Elected:  Banana (0.733684750)
+	Elected:  Cherry (0.733685975)
+	Elected:  Date (0.733683700)
+	Elected:  Eggplant (0.733683775)
+	Elected:  Fig (0.733683775)
+	Elected:  Grape (0.733684025)
+	Elected:  Hazelnut (0.733684025)
+	Elected:  Jalapeno (0.733684625)
+	Elected:  Kiwi (0.733684625)
+	Elected:  Litchi (0.733693150)
+	Elected:  Mushroom (0.733693150)
+	Elected:  Nut (0.734116875)
+	Elected:  Orange (0.734116875)
+	Elected:  Pear (0.754900875)
+	Elected:  Quinoa (0.754900875)
+	Elected:  Radish (1.552500725)
+	Elected:  Soy (1.552500725)
+	Elected:  Tomato (6.129512000)
+	Elected:  Vanilla (6.129512000)
 	Hopeful:  A (0.000000000)
 	Hopeful:  B (0.000000000)
 	Hopeful:  C (0.000000000)
@@ -1037,41 +1030,41 @@ Action: Elect: Vanilla
 	Hopeful:  P (0.000000000)
 	Hopeful:  Q (0.000000000)
 	Hopeful:  R (0.000000000)
-	Quota: 0.693969058
-	Votes: 25.676855125
-	Residual: 974.323144875
+	Quota: 0.733683548
+	Votes: 27.146291275
+	Residual: 972.853708725
 	Total: 1000.000000000
-	Surplus: 13.185412159
+	Surplus: 13.939989949
 Action: Iterate (elected)
-	Quota: 0.693969058
-	Votes: 25.676855125
-	Residual: 974.323144875
+	Quota: 0.733683548
+	Votes: 27.146291275
+	Residual: 972.853708725
 	Total: 1000.000000000
-	Surplus: 11.797473965
-Round 12:
+	Surplus: 12.472620315
+Round 11:
 Action: Elect: A
-	Elected:  Apple (0.693970025)
-	Elected:  Banana (0.693969100)
-	Elected:  Cherry (0.693969075)
-	Elected:  Date (0.693969075)
-	Elected:  Eggplant (0.693969100)
-	Elected:  Fig (0.693969100)
-	Elected:  Grape (0.693969075)
-	Elected:  Hazelnut (0.693969075)
-	Elected:  Jalapeno (0.693969100)
-	Elected:  Kiwi (0.693969100)
-	Elected:  Litchi (0.693969200)
-	Elected:  Mushroom (0.693969200)
-	Elected:  Nut (0.693978025)
-	Elected:  Orange (0.693978025)
-	Elected:  Pear (0.694459875)
-	Elected:  Quinoa (0.694459875)
-	Elected:  Radish (0.716559275)
-	Elected:  Soy (0.716559275)
-	Elected:  Tomato (1.478531800)
-	Elected:  Vanilla (1.478531800)
-	Elected:  A (5.091083475)
-	Hopeful:  B (5.091083475)
+	Elected:  Apple (0.733684750)
+	Elected:  Banana (0.733684750)
+	Elected:  Cherry (0.733684975)
+	Elected:  Date (0.733683600)
+	Elected:  Eggplant (0.733683625)
+	Elected:  Fig (0.733683625)
+	Elected:  Grape (0.733683575)
+	Elected:  Hazelnut (0.733683575)
+	Elected:  Jalapeno (0.733683625)
+	Elected:  Kiwi (0.733683625)
+	Elected:  Litchi (0.733683875)
+	Elected:  Mushroom (0.733683875)
+	Elected:  Nut (0.733693450)
+	Elected:  Orange (0.733693450)
+	Elected:  Pear (0.734204500)
+	Elected:  Quinoa (0.734204500)
+	Elected:  Radish (0.757579050)
+	Elected:  Soy (0.757579050)
+	Elected:  Tomato (1.563213450)
+	Elected:  Vanilla (1.563213450)
+	Elected:  A (5.382350925)
+	Hopeful:  B (5.382350925)
 	Hopeful:  C (0.000000000)
 	Hopeful:  D (0.000000000)
 	Hopeful:  E (0.000000000)
@@ -1088,34 +1081,34 @@ Action: Elect: A
 	Hopeful:  P (0.000000000)
 	Hopeful:  Q (0.000000000)
 	Hopeful:  R (0.000000000)
-	Quota: 0.693969058
-	Votes: 25.676855125
-	Residual: 974.323144875
+	Quota: 0.733683520
+	Votes: 27.146290225
+	Residual: 972.853709775
 	Total: 1000.000000000
-	Surplus: 11.797473965
+	Surplus: 12.472620315
 Action: Elect: B
-	Elected:  Apple (0.693970025)
-	Elected:  Banana (0.693969100)
-	Elected:  Cherry (0.693969075)
-	Elected:  Date (0.693969075)
-	Elected:  Eggplant (0.693969100)
-	Elected:  Fig (0.693969100)
-	Elected:  Grape (0.693969075)
-	Elected:  Hazelnut (0.693969075)
-	Elected:  Jalapeno (0.693969100)
-	Elected:  Kiwi (0.693969100)
-	Elected:  Litchi (0.693969200)
-	Elected:  Mushroom (0.693969200)
-	Elected:  Nut (0.693978025)
-	Elected:  Orange (0.693978025)
-	Elected:  Pear (0.694459875)
-	Elected:  Quinoa (0.694459875)
-	Elected:  Radish (0.716559275)
-	Elected:  Soy (0.716559275)
-	Elected:  Tomato (1.478531800)
-	Elected:  Vanilla (1.478531800)
-	Elected:  A (5.091083475)
-	Elected:  B (5.091083475)
+	Elected:  Apple (0.733684750)
+	Elected:  Banana (0.733684750)
+	Elected:  Cherry (0.733684975)
+	Elected:  Date (0.733683600)
+	Elected:  Eggplant (0.733683625)
+	Elected:  Fig (0.733683625)
+	Elected:  Grape (0.733683575)
+	Elected:  Hazelnut (0.733683575)
+	Elected:  Jalapeno (0.733683625)
+	Elected:  Kiwi (0.733683625)
+	Elected:  Litchi (0.733683875)
+	Elected:  Mushroom (0.733683875)
+	Elected:  Nut (0.733693450)
+	Elected:  Orange (0.733693450)
+	Elected:  Pear (0.734204500)
+	Elected:  Quinoa (0.734204500)
+	Elected:  Radish (0.757579050)
+	Elected:  Soy (0.757579050)
+	Elected:  Tomato (1.563213450)
+	Elected:  Vanilla (1.563213450)
+	Elected:  A (5.382350925)
+	Elected:  B (5.382350925)
 	Hopeful:  C (0.000000000)
 	Hopeful:  D (0.000000000)
 	Hopeful:  E (0.000000000)
@@ -1132,43 +1125,43 @@ Action: Elect: B
 	Hopeful:  P (0.000000000)
 	Hopeful:  Q (0.000000000)
 	Hopeful:  R (0.000000000)
-	Quota: 0.693969058
-	Votes: 25.676855125
-	Residual: 974.323144875
+	Quota: 0.733683520
+	Votes: 27.146290225
+	Residual: 972.853709775
 	Total: 1000.000000000
-	Surplus: 11.797473965
+	Surplus: 12.472620315
 Action: Iterate (elected)
-	Quota: 0.693969058
-	Votes: 25.676855125
-	Residual: 974.323144875
+	Quota: 0.733683520
+	Votes: 27.146290225
+	Residual: 972.853709775
 	Total: 1000.000000000
-	Surplus: 10.409535849
-Round 13:
+	Surplus: 11.005252785
+Round 12:
 Action: Elect: C
-	Elected:  Apple (0.693970025)
-	Elected:  Banana (0.693969100)
-	Elected:  Cherry (0.693969075)
-	Elected:  Date (0.693969075)
-	Elected:  Eggplant (0.693969075)
-	Elected:  Fig (0.693969075)
-	Elected:  Grape (0.693969075)
-	Elected:  Hazelnut (0.693969075)
-	Elected:  Jalapeno (0.693969075)
-	Elected:  Kiwi (0.693969075)
-	Elected:  Litchi (0.693969075)
-	Elected:  Mushroom (0.693969075)
-	Elected:  Nut (0.693969275)
-	Elected:  Orange (0.693969275)
-	Elected:  Pear (0.693981000)
-	Elected:  Quinoa (0.693981000)
-	Elected:  Radish (0.694581675)
-	Elected:  Soy (0.694581675)
-	Elected:  Tomato (0.719862950)
-	Elected:  Vanilla (0.719862950)
-	Elected:  A (1.491782650)
-	Elected:  B (1.491782650)
-	Elected:  C (4.380435050)
-	Hopeful:  D (4.380435050)
+	Elected:  Apple (0.733684750)
+	Elected:  Banana (0.733684750)
+	Elected:  Cherry (0.733684975)
+	Elected:  Date (0.733683550)
+	Elected:  Eggplant (0.733683550)
+	Elected:  Fig (0.733683550)
+	Elected:  Grape (0.733683575)
+	Elected:  Hazelnut (0.733683575)
+	Elected:  Jalapeno (0.733683575)
+	Elected:  Kiwi (0.733683575)
+	Elected:  Litchi (0.733683575)
+	Elected:  Mushroom (0.733683575)
+	Elected:  Nut (0.733683775)
+	Elected:  Orange (0.733683775)
+	Elected:  Pear (0.733696275)
+	Elected:  Quinoa (0.733696275)
+	Elected:  Radish (0.734331775)
+	Elected:  Soy (0.734331775)
+	Elected:  Tomato (0.761063125)
+	Elected:  Vanilla (0.761063125)
+	Elected:  A (1.577175950)
+	Elected:  B (1.577175950)
+	Elected:  C (4.631090925)
+	Hopeful:  D (4.631090925)
 	Hopeful:  E (0.000000000)
 	Hopeful:  F (0.000000000)
 	Hopeful:  G (0.000000000)
@@ -1183,36 +1176,36 @@ Action: Elect: C
 	Hopeful:  P (0.000000000)
 	Hopeful:  Q (0.000000000)
 	Hopeful:  R (0.000000000)
-	Quota: 0.693969057
-	Votes: 25.676855075
-	Residual: 974.323144925
+	Quota: 0.733683520
+	Votes: 27.146290225
+	Residual: 972.853709775
 	Total: 1000.000000000
-	Surplus: 10.409535849
+	Surplus: 11.005252785
 Action: Elect: D
-	Elected:  Apple (0.693970025)
-	Elected:  Banana (0.693969100)
-	Elected:  Cherry (0.693969075)
-	Elected:  Date (0.693969075)
-	Elected:  Eggplant (0.693969075)
-	Elected:  Fig (0.693969075)
-	Elected:  Grape (0.693969075)
-	Elected:  Hazelnut (0.693969075)
-	Elected:  Jalapeno (0.693969075)
-	Elected:  Kiwi (0.693969075)
-	Elected:  Litchi (0.693969075)
-	Elected:  Mushroom (0.693969075)
-	Elected:  Nut (0.693969275)
-	Elected:  Orange (0.693969275)
-	Elected:  Pear (0.693981000)
-	Elected:  Quinoa (0.693981000)
-	Elected:  Radish (0.694581675)
-	Elected:  Soy (0.694581675)
-	Elected:  Tomato (0.719862950)
-	Elected:  Vanilla (0.719862950)
-	Elected:  A (1.491782650)
-	Elected:  B (1.491782650)
-	Elected:  C (4.380435050)
-	Elected:  D (4.380435050)
+	Elected:  Apple (0.733684750)
+	Elected:  Banana (0.733684750)
+	Elected:  Cherry (0.733684975)
+	Elected:  Date (0.733683550)
+	Elected:  Eggplant (0.733683550)
+	Elected:  Fig (0.733683550)
+	Elected:  Grape (0.733683575)
+	Elected:  Hazelnut (0.733683575)
+	Elected:  Jalapeno (0.733683575)
+	Elected:  Kiwi (0.733683575)
+	Elected:  Litchi (0.733683575)
+	Elected:  Mushroom (0.733683575)
+	Elected:  Nut (0.733683775)
+	Elected:  Orange (0.733683775)
+	Elected:  Pear (0.733696275)
+	Elected:  Quinoa (0.733696275)
+	Elected:  Radish (0.734331775)
+	Elected:  Soy (0.734331775)
+	Elected:  Tomato (0.761063125)
+	Elected:  Vanilla (0.761063125)
+	Elected:  A (1.577175950)
+	Elected:  B (1.577175950)
+	Elected:  C (4.631090925)
+	Elected:  D (4.631090925)
 	Hopeful:  E (0.000000000)
 	Hopeful:  F (0.000000000)
 	Hopeful:  G (0.000000000)
@@ -1227,45 +1220,45 @@ Action: Elect: D
 	Hopeful:  P (0.000000000)
 	Hopeful:  Q (0.000000000)
 	Hopeful:  R (0.000000000)
-	Quota: 0.693969057
-	Votes: 25.676855075
-	Residual: 974.323144925
+	Quota: 0.733683520
+	Votes: 27.146290225
+	Residual: 972.853709775
 	Total: 1000.000000000
-	Surplus: 10.409535849
+	Surplus: 11.005252785
 Action: Iterate (elected)
-	Quota: 0.693969057
-	Votes: 25.676855075
-	Residual: 974.323144925
+	Quota: 0.733683520
+	Votes: 27.146290225
+	Residual: 972.853709775
 	Total: 1000.000000000
-	Surplus: 9.021597707
-Round 14:
+	Surplus: 9.537885745
+Round 13:
 Action: Elect: E
-	Elected:  Apple (0.693970025)
-	Elected:  Banana (0.693969100)
-	Elected:  Cherry (0.693969075)
-	Elected:  Date (0.693969075)
-	Elected:  Eggplant (0.693969075)
-	Elected:  Fig (0.693969075)
-	Elected:  Grape (0.693969075)
-	Elected:  Hazelnut (0.693969075)
-	Elected:  Jalapeno (0.693969075)
-	Elected:  Kiwi (0.693969075)
-	Elected:  Litchi (0.693969075)
-	Elected:  Mushroom (0.693969075)
-	Elected:  Nut (0.693969050)
-	Elected:  Orange (0.693969050)
-	Elected:  Pear (0.693969350)
-	Elected:  Quinoa (0.693969350)
-	Elected:  Radish (0.693985525)
-	Elected:  Soy (0.693985525)
-	Elected:  Tomato (0.694754575)
-	Elected:  Vanilla (0.694754575)
-	Elected:  A (0.724272200)
-	Elected:  B (0.724272200)
-	Elected:  C (1.509420975)
-	Elected:  D (1.509420975)
-	Elected:  E (3.664240825)
-	Hopeful:  F (3.664240825)
+	Elected:  Apple (0.733684750)
+	Elected:  Banana (0.733684750)
+	Elected:  Cherry (0.733684975)
+	Elected:  Date (0.733683550)
+	Elected:  Eggplant (0.733683550)
+	Elected:  Fig (0.733683550)
+	Elected:  Grape (0.733683525)
+	Elected:  Hazelnut (0.733683525)
+	Elected:  Jalapeno (0.733683550)
+	Elected:  Kiwi (0.733683550)
+	Elected:  Litchi (0.733683575)
+	Elected:  Mushroom (0.733683575)
+	Elected:  Nut (0.733683575)
+	Elected:  Orange (0.733683575)
+	Elected:  Pear (0.733683850)
+	Elected:  Quinoa (0.733683850)
+	Elected:  Radish (0.733700975)
+	Elected:  Soy (0.733700975)
+	Elected:  Tomato (0.734514200)
+	Elected:  Vanilla (0.734514200)
+	Elected:  A (0.765722250)
+	Elected:  B (0.765722250)
+	Elected:  C (1.595809950)
+	Elected:  D (1.595809950)
+	Elected:  E (3.873927125)
+	Hopeful:  F (3.873927125)
 	Hopeful:  G (0.000000000)
 	Hopeful:  H (0.000000000)
 	Hopeful:  I (0.000000000)
@@ -1278,38 +1271,38 @@ Action: Elect: E
 	Hopeful:  P (0.000000000)
 	Hopeful:  Q (0.000000000)
 	Hopeful:  R (0.000000000)
-	Quota: 0.693969051
-	Votes: 25.676854875
-	Residual: 974.323145125
+	Quota: 0.733683521
+	Votes: 27.146290275
+	Residual: 972.853709725
 	Total: 1000.000000000
-	Surplus: 9.021597707
+	Surplus: 9.537885745
 Action: Elect: F
-	Elected:  Apple (0.693970025)
-	Elected:  Banana (0.693969100)
-	Elected:  Cherry (0.693969075)
-	Elected:  Date (0.693969075)
-	Elected:  Eggplant (0.693969075)
-	Elected:  Fig (0.693969075)
-	Elected:  Grape (0.693969075)
-	Elected:  Hazelnut (0.693969075)
-	Elected:  Jalapeno (0.693969075)
-	Elected:  Kiwi (0.693969075)
-	Elected:  Litchi (0.693969075)
-	Elected:  Mushroom (0.693969075)
-	Elected:  Nut (0.693969050)
-	Elected:  Orange (0.693969050)
-	Elected:  Pear (0.693969350)
-	Elected:  Quinoa (0.693969350)
-	Elected:  Radish (0.693985525)
-	Elected:  Soy (0.693985525)
-	Elected:  Tomato (0.694754575)
-	Elected:  Vanilla (0.694754575)
-	Elected:  A (0.724272200)
-	Elected:  B (0.724272200)
-	Elected:  C (1.509420975)
-	Elected:  D (1.509420975)
-	Elected:  E (3.664240825)
-	Elected:  F (3.664240825)
+	Elected:  Apple (0.733684750)
+	Elected:  Banana (0.733684750)
+	Elected:  Cherry (0.733684975)
+	Elected:  Date (0.733683550)
+	Elected:  Eggplant (0.733683550)
+	Elected:  Fig (0.733683550)
+	Elected:  Grape (0.733683525)
+	Elected:  Hazelnut (0.733683525)
+	Elected:  Jalapeno (0.733683550)
+	Elected:  Kiwi (0.733683550)
+	Elected:  Litchi (0.733683575)
+	Elected:  Mushroom (0.733683575)
+	Elected:  Nut (0.733683575)
+	Elected:  Orange (0.733683575)
+	Elected:  Pear (0.733683850)
+	Elected:  Quinoa (0.733683850)
+	Elected:  Radish (0.733700975)
+	Elected:  Soy (0.733700975)
+	Elected:  Tomato (0.734514200)
+	Elected:  Vanilla (0.734514200)
+	Elected:  A (0.765722250)
+	Elected:  B (0.765722250)
+	Elected:  C (1.595809950)
+	Elected:  D (1.595809950)
+	Elected:  E (3.873927125)
+	Elected:  F (3.873927125)
 	Hopeful:  G (0.000000000)
 	Hopeful:  H (0.000000000)
 	Hopeful:  I (0.000000000)
@@ -1322,47 +1315,47 @@ Action: Elect: F
 	Hopeful:  P (0.000000000)
 	Hopeful:  Q (0.000000000)
 	Hopeful:  R (0.000000000)
-	Quota: 0.693969051
-	Votes: 25.676854875
-	Residual: 974.323145125
+	Quota: 0.733683521
+	Votes: 27.146290275
+	Residual: 972.853709725
 	Total: 1000.000000000
-	Surplus: 9.021597707
+	Surplus: 9.537885745
 Action: Iterate (elected)
-	Quota: 0.693969051
-	Votes: 25.676854875
-	Residual: 974.323145125
+	Quota: 0.733683521
+	Votes: 27.146290275
+	Residual: 972.853709725
 	Total: 1000.000000000
-	Surplus: 7.633659549
-Round 15:
+	Surplus: 8.070518729
+Round 14:
 Action: Elect: G
-	Elected:  Apple (0.693970025)
-	Elected:  Banana (0.693969100)
-	Elected:  Cherry (0.693969075)
-	Elected:  Date (0.693969075)
-	Elected:  Eggplant (0.693969075)
-	Elected:  Fig (0.693969075)
-	Elected:  Grape (0.693969075)
-	Elected:  Hazelnut (0.693969075)
-	Elected:  Jalapeno (0.693969075)
-	Elected:  Kiwi (0.693969075)
-	Elected:  Litchi (0.693969075)
-	Elected:  Mushroom (0.693969075)
-	Elected:  Nut (0.693969100)
-	Elected:  Orange (0.693969100)
-	Elected:  Pear (0.693969075)
-	Elected:  Quinoa (0.693969075)
-	Elected:  Radish (0.693969500)
-	Elected:  Soy (0.693969500)
-	Elected:  Tomato (0.693992625)
-	Elected:  Vanilla (0.693992625)
-	Elected:  A (0.695011475)
-	Elected:  B (0.695011475)
-	Elected:  C (0.730437950)
-	Elected:  D (0.730437950)
-	Elected:  E (1.533929925)
-	Elected:  F (1.533929925)
-	Elected:  G (2.939332875)
-	Hopeful:  H (2.939332875)
+	Elected:  Apple (0.733684750)
+	Elected:  Banana (0.733684750)
+	Elected:  Cherry (0.733684975)
+	Elected:  Date (0.733683550)
+	Elected:  Eggplant (0.733683550)
+	Elected:  Fig (0.733683550)
+	Elected:  Grape (0.733683550)
+	Elected:  Hazelnut (0.733683550)
+	Elected:  Jalapeno (0.733683550)
+	Elected:  Kiwi (0.733683550)
+	Elected:  Litchi (0.733683525)
+	Elected:  Mushroom (0.733683525)
+	Elected:  Nut (0.733683525)
+	Elected:  Orange (0.733683525)
+	Elected:  Pear (0.733683550)
+	Elected:  Quinoa (0.733683550)
+	Elected:  Radish (0.733684025)
+	Elected:  Soy (0.733684025)
+	Elected:  Tomato (0.733708450)
+	Elected:  Vanilla (0.733708450)
+	Elected:  A (0.734785675)
+	Elected:  B (0.734785675)
+	Elected:  C (0.772240050)
+	Elected:  D (0.772240050)
+	Elected:  E (1.621717050)
+	Elected:  F (1.621717050)
+	Elected:  G (3.107539575)
+	Hopeful:  H (3.107539575)
 	Hopeful:  I (0.000000000)
 	Hopeful:  J (0.000000000)
 	Hopeful:  K (0.000000000)
@@ -1373,40 +1366,40 @@ Action: Elect: G
 	Hopeful:  P (0.000000000)
 	Hopeful:  Q (0.000000000)
 	Hopeful:  R (0.000000000)
-	Quota: 0.693969053
-	Votes: 25.676854925
-	Residual: 974.323145075
+	Quota: 0.733683519
+	Votes: 27.146290175
+	Residual: 972.853709825
 	Total: 1000.000000000
-	Surplus: 7.633659549
+	Surplus: 8.070518729
 Action: Elect: H
-	Elected:  Apple (0.693970025)
-	Elected:  Banana (0.693969100)
-	Elected:  Cherry (0.693969075)
-	Elected:  Date (0.693969075)
-	Elected:  Eggplant (0.693969075)
-	Elected:  Fig (0.693969075)
-	Elected:  Grape (0.693969075)
-	Elected:  Hazelnut (0.693969075)
-	Elected:  Jalapeno (0.693969075)
-	Elected:  Kiwi (0.693969075)
-	Elected:  Litchi (0.693969075)
-	Elected:  Mushroom (0.693969075)
-	Elected:  Nut (0.693969100)
-	Elected:  Orange (0.693969100)
-	Elected:  Pear (0.693969075)
-	Elected:  Quinoa (0.693969075)
-	Elected:  Radish (0.693969500)
-	Elected:  Soy (0.693969500)
-	Elected:  Tomato (0.693992625)
-	Elected:  Vanilla (0.693992625)
-	Elected:  A (0.695011475)
-	Elected:  B (0.695011475)
-	Elected:  C (0.730437950)
-	Elected:  D (0.730437950)
-	Elected:  E (1.533929925)
-	Elected:  F (1.533929925)
-	Elected:  G (2.939332875)
-	Elected:  H (2.939332875)
+	Elected:  Apple (0.733684750)
+	Elected:  Banana (0.733684750)
+	Elected:  Cherry (0.733684975)
+	Elected:  Date (0.733683550)
+	Elected:  Eggplant (0.733683550)
+	Elected:  Fig (0.733683550)
+	Elected:  Grape (0.733683550)
+	Elected:  Hazelnut (0.733683550)
+	Elected:  Jalapeno (0.733683550)
+	Elected:  Kiwi (0.733683550)
+	Elected:  Litchi (0.733683525)
+	Elected:  Mushroom (0.733683525)
+	Elected:  Nut (0.733683525)
+	Elected:  Orange (0.733683525)
+	Elected:  Pear (0.733683550)
+	Elected:  Quinoa (0.733683550)
+	Elected:  Radish (0.733684025)
+	Elected:  Soy (0.733684025)
+	Elected:  Tomato (0.733708450)
+	Elected:  Vanilla (0.733708450)
+	Elected:  A (0.734785675)
+	Elected:  B (0.734785675)
+	Elected:  C (0.772240050)
+	Elected:  D (0.772240050)
+	Elected:  E (1.621717050)
+	Elected:  F (1.621717050)
+	Elected:  G (3.107539575)
+	Elected:  H (3.107539575)
 	Hopeful:  I (0.000000000)
 	Hopeful:  J (0.000000000)
 	Hopeful:  K (0.000000000)
@@ -1417,49 +1410,49 @@ Action: Elect: H
 	Hopeful:  P (0.000000000)
 	Hopeful:  Q (0.000000000)
 	Hopeful:  R (0.000000000)
-	Quota: 0.693969053
-	Votes: 25.676854925
-	Residual: 974.323145075
+	Quota: 0.733683519
+	Votes: 27.146290175
+	Residual: 972.853709825
 	Total: 1000.000000000
-	Surplus: 7.633659549
+	Surplus: 8.070518729
 Action: Iterate (elected)
-	Quota: 0.693969053
-	Votes: 25.676854925
-	Residual: 974.323145075
+	Quota: 0.733683519
+	Votes: 27.146290175
+	Residual: 972.853709825
 	Total: 1000.000000000
-	Surplus: 6.245721441
-Round 16:
+	Surplus: 6.603151643
+Round 15:
 Action: Elect: I
-	Elected:  Apple (0.693970025)
-	Elected:  Banana (0.693969100)
-	Elected:  Cherry (0.693969075)
-	Elected:  Date (0.693969075)
-	Elected:  Eggplant (0.693969075)
-	Elected:  Fig (0.693969075)
-	Elected:  Grape (0.693969075)
-	Elected:  Hazelnut (0.693969075)
-	Elected:  Jalapeno (0.693969075)
-	Elected:  Kiwi (0.693969075)
-	Elected:  Litchi (0.693969075)
-	Elected:  Mushroom (0.693969075)
-	Elected:  Nut (0.693969050)
-	Elected:  Orange (0.693969050)
-	Elected:  Pear (0.693969075)
-	Elected:  Quinoa (0.693969075)
-	Elected:  Radish (0.693969100)
-	Elected:  Soy (0.693969100)
-	Elected:  Tomato (0.693969775)
-	Elected:  Vanilla (0.693969775)
-	Elected:  A (0.694004425)
-	Elected:  B (0.694004425)
-	Elected:  C (0.695416250)
-	Elected:  D (0.695416250)
-	Elected:  E (0.739631275)
-	Elected:  F (0.739631275)
-	Elected:  G (1.569895725)
-	Elected:  H (1.569895725)
-	Elected:  I (2.199787800)
-	Hopeful:  J (2.199787800)
+	Elected:  Apple (0.733684750)
+	Elected:  Banana (0.733684750)
+	Elected:  Cherry (0.733684975)
+	Elected:  Date (0.733683550)
+	Elected:  Eggplant (0.733683550)
+	Elected:  Fig (0.733683550)
+	Elected:  Grape (0.733683550)
+	Elected:  Hazelnut (0.733683550)
+	Elected:  Jalapeno (0.733683550)
+	Elected:  Kiwi (0.733683550)
+	Elected:  Litchi (0.733683575)
+	Elected:  Mushroom (0.733683575)
+	Elected:  Nut (0.733683550)
+	Elected:  Orange (0.733683550)
+	Elected:  Pear (0.733683525)
+	Elected:  Quinoa (0.733683525)
+	Elected:  Radish (0.733683550)
+	Elected:  Soy (0.733683550)
+	Elected:  Tomato (0.733684275)
+	Elected:  Vanilla (0.733684275)
+	Elected:  A (0.733720900)
+	Elected:  B (0.733720900)
+	Elected:  C (0.735213575)
+	Elected:  D (0.735213575)
+	Elected:  E (0.781959225)
+	Elected:  F (0.781959225)
+	Elected:  G (1.659739525)
+	Elected:  H (1.659739525)
+	Elected:  I (2.325673725)
+	Hopeful:  J (2.325673725)
 	Hopeful:  K (0.000000000)
 	Hopeful:  L (0.000000000)
 	Hopeful:  M (0.000000000)
@@ -1468,42 +1461,42 @@ Action: Elect: I
 	Hopeful:  P (0.000000000)
 	Hopeful:  Q (0.000000000)
 	Hopeful:  R (0.000000000)
-	Quota: 0.693969050
-	Votes: 25.676854825
-	Residual: 974.323145175
+	Quota: 0.733683519
+	Votes: 27.146290175
+	Residual: 972.853709825
 	Total: 1000.000000000
-	Surplus: 6.245721441
+	Surplus: 6.603151643
 Action: Elect: J
-	Elected:  Apple (0.693970025)
-	Elected:  Banana (0.693969100)
-	Elected:  Cherry (0.693969075)
-	Elected:  Date (0.693969075)
-	Elected:  Eggplant (0.693969075)
-	Elected:  Fig (0.693969075)
-	Elected:  Grape (0.693969075)
-	Elected:  Hazelnut (0.693969075)
-	Elected:  Jalapeno (0.693969075)
-	Elected:  Kiwi (0.693969075)
-	Elected:  Litchi (0.693969075)
-	Elected:  Mushroom (0.693969075)
-	Elected:  Nut (0.693969050)
-	Elected:  Orange (0.693969050)
-	Elected:  Pear (0.693969075)
-	Elected:  Quinoa (0.693969075)
-	Elected:  Radish (0.693969100)
-	Elected:  Soy (0.693969100)
-	Elected:  Tomato (0.693969775)
-	Elected:  Vanilla (0.693969775)
-	Elected:  A (0.694004425)
-	Elected:  B (0.694004425)
-	Elected:  C (0.695416250)
-	Elected:  D (0.695416250)
-	Elected:  E (0.739631275)
-	Elected:  F (0.739631275)
-	Elected:  G (1.569895725)
-	Elected:  H (1.569895725)
-	Elected:  I (2.199787800)
-	Elected:  J (2.199787800)
+	Elected:  Apple (0.733684750)
+	Elected:  Banana (0.733684750)
+	Elected:  Cherry (0.733684975)
+	Elected:  Date (0.733683550)
+	Elected:  Eggplant (0.733683550)
+	Elected:  Fig (0.733683550)
+	Elected:  Grape (0.733683550)
+	Elected:  Hazelnut (0.733683550)
+	Elected:  Jalapeno (0.733683550)
+	Elected:  Kiwi (0.733683550)
+	Elected:  Litchi (0.733683575)
+	Elected:  Mushroom (0.733683575)
+	Elected:  Nut (0.733683550)
+	Elected:  Orange (0.733683550)
+	Elected:  Pear (0.733683525)
+	Elected:  Quinoa (0.733683525)
+	Elected:  Radish (0.733683550)
+	Elected:  Soy (0.733683550)
+	Elected:  Tomato (0.733684275)
+	Elected:  Vanilla (0.733684275)
+	Elected:  A (0.733720900)
+	Elected:  B (0.733720900)
+	Elected:  C (0.735213575)
+	Elected:  D (0.735213575)
+	Elected:  E (0.781959225)
+	Elected:  F (0.781959225)
+	Elected:  G (1.659739525)
+	Elected:  H (1.659739525)
+	Elected:  I (2.325673725)
+	Elected:  J (2.325673725)
 	Hopeful:  K (0.000000000)
 	Hopeful:  L (0.000000000)
 	Hopeful:  M (0.000000000)
@@ -1512,430 +1505,430 @@ Action: Elect: J
 	Hopeful:  P (0.000000000)
 	Hopeful:  Q (0.000000000)
 	Hopeful:  R (0.000000000)
-	Quota: 0.693969050
-	Votes: 25.676854825
-	Residual: 974.323145175
+	Quota: 0.733683519
+	Votes: 27.146290175
+	Residual: 972.853709825
 	Total: 1000.000000000
-	Surplus: 6.245721441
+	Surplus: 6.603151643
 Action: Iterate (elected)
-	Quota: 0.693969050
-	Votes: 25.676854825
-	Residual: 974.323145175
+	Quota: 0.733683519
+	Votes: 27.146290175
+	Residual: 972.853709825
 	Total: 1000.000000000
-	Surplus: 4.857783325
-Round 17:
+	Surplus: 5.135784605
+Round 16:
 Action: Elect: K
-	Elected:  Apple (0.693970025)
-	Elected:  Banana (0.693969100)
-	Elected:  Cherry (0.693969075)
-	Elected:  Date (0.693969075)
-	Elected:  Eggplant (0.693969075)
-	Elected:  Fig (0.693969075)
-	Elected:  Grape (0.693969075)
-	Elected:  Hazelnut (0.693969075)
-	Elected:  Jalapeno (0.693969075)
-	Elected:  Kiwi (0.693969075)
-	Elected:  Litchi (0.693969075)
-	Elected:  Mushroom (0.693969075)
-	Elected:  Nut (0.693969100)
-	Elected:  Orange (0.693969100)
-	Elected:  Pear (0.693969075)
-	Elected:  Quinoa (0.693969075)
-	Elected:  Radish (0.693969075)
-	Elected:  Soy (0.693969075)
-	Elected:  Tomato (0.693969075)
-	Elected:  Vanilla (0.693969075)
-	Elected:  A (0.693970250)
-	Elected:  B (0.693970250)
-	Elected:  C (0.694025475)
-	Elected:  D (0.694025475)
-	Elected:  E (0.696106675)
-	Elected:  F (0.696106675)
-	Elected:  G (0.754688750)
-	Elected:  H (0.754688750)
-	Elected:  I (1.626115725)
-	Elected:  J (1.626115725)
-	Elected:  K (1.433829275)
-	Hopeful:  L (1.433829275)
+	Elected:  Apple (0.733684750)
+	Elected:  Banana (0.733684750)
+	Elected:  Cherry (0.733684975)
+	Elected:  Date (0.733683550)
+	Elected:  Eggplant (0.733683550)
+	Elected:  Fig (0.733683550)
+	Elected:  Grape (0.733683550)
+	Elected:  Hazelnut (0.733683550)
+	Elected:  Jalapeno (0.733683550)
+	Elected:  Kiwi (0.733683550)
+	Elected:  Litchi (0.733683525)
+	Elected:  Mushroom (0.733683525)
+	Elected:  Nut (0.733683525)
+	Elected:  Orange (0.733683525)
+	Elected:  Pear (0.733683525)
+	Elected:  Quinoa (0.733683525)
+	Elected:  Radish (0.733683550)
+	Elected:  Soy (0.733683550)
+	Elected:  Tomato (0.733683550)
+	Elected:  Vanilla (0.733683550)
+	Elected:  A (0.733684800)
+	Elected:  B (0.733684800)
+	Elected:  C (0.733743150)
+	Elected:  D (0.733743150)
+	Elected:  E (0.735943475)
+	Elected:  F (0.735943475)
+	Elected:  G (0.797878325)
+	Elected:  H (0.797878325)
+	Elected:  I (1.719176350)
+	Elected:  J (1.719176350)
+	Elected:  K (1.515881550)
+	Hopeful:  L (1.515881550)
 	Hopeful:  M (0.000000000)
 	Hopeful:  N (0.000000000)
 	Hopeful:  O (0.000000000)
 	Hopeful:  P (0.000000000)
 	Hopeful:  Q (0.000000000)
 	Hopeful:  R (0.000000000)
-	Quota: 0.693969050
-	Votes: 25.676854825
-	Residual: 974.323145175
+	Quota: 0.733683513
+	Votes: 27.146289975
+	Residual: 972.853710025
 	Total: 1000.000000000
-	Surplus: 4.857783325
+	Surplus: 5.135784605
 Action: Elect: L
-	Elected:  Apple (0.693970025)
-	Elected:  Banana (0.693969100)
-	Elected:  Cherry (0.693969075)
-	Elected:  Date (0.693969075)
-	Elected:  Eggplant (0.693969075)
-	Elected:  Fig (0.693969075)
-	Elected:  Grape (0.693969075)
-	Elected:  Hazelnut (0.693969075)
-	Elected:  Jalapeno (0.693969075)
-	Elected:  Kiwi (0.693969075)
-	Elected:  Litchi (0.693969075)
-	Elected:  Mushroom (0.693969075)
-	Elected:  Nut (0.693969100)
-	Elected:  Orange (0.693969100)
-	Elected:  Pear (0.693969075)
-	Elected:  Quinoa (0.693969075)
-	Elected:  Radish (0.693969075)
-	Elected:  Soy (0.693969075)
-	Elected:  Tomato (0.693969075)
-	Elected:  Vanilla (0.693969075)
-	Elected:  A (0.693970250)
-	Elected:  B (0.693970250)
-	Elected:  C (0.694025475)
-	Elected:  D (0.694025475)
-	Elected:  E (0.696106675)
-	Elected:  F (0.696106675)
-	Elected:  G (0.754688750)
-	Elected:  H (0.754688750)
-	Elected:  I (1.626115725)
-	Elected:  J (1.626115725)
-	Elected:  K (1.433829275)
-	Elected:  L (1.433829275)
+	Elected:  Apple (0.733684750)
+	Elected:  Banana (0.733684750)
+	Elected:  Cherry (0.733684975)
+	Elected:  Date (0.733683550)
+	Elected:  Eggplant (0.733683550)
+	Elected:  Fig (0.733683550)
+	Elected:  Grape (0.733683550)
+	Elected:  Hazelnut (0.733683550)
+	Elected:  Jalapeno (0.733683550)
+	Elected:  Kiwi (0.733683550)
+	Elected:  Litchi (0.733683525)
+	Elected:  Mushroom (0.733683525)
+	Elected:  Nut (0.733683525)
+	Elected:  Orange (0.733683525)
+	Elected:  Pear (0.733683525)
+	Elected:  Quinoa (0.733683525)
+	Elected:  Radish (0.733683550)
+	Elected:  Soy (0.733683550)
+	Elected:  Tomato (0.733683550)
+	Elected:  Vanilla (0.733683550)
+	Elected:  A (0.733684800)
+	Elected:  B (0.733684800)
+	Elected:  C (0.733743150)
+	Elected:  D (0.733743150)
+	Elected:  E (0.735943475)
+	Elected:  F (0.735943475)
+	Elected:  G (0.797878325)
+	Elected:  H (0.797878325)
+	Elected:  I (1.719176350)
+	Elected:  J (1.719176350)
+	Elected:  K (1.515881550)
+	Elected:  L (1.515881550)
 	Hopeful:  M (0.000000000)
 	Hopeful:  N (0.000000000)
 	Hopeful:  O (0.000000000)
 	Hopeful:  P (0.000000000)
 	Hopeful:  Q (0.000000000)
 	Hopeful:  R (0.000000000)
-	Quota: 0.693969050
-	Votes: 25.676854825
-	Residual: 974.323145175
+	Quota: 0.733683513
+	Votes: 27.146289975
+	Residual: 972.853710025
 	Total: 1000.000000000
-	Surplus: 4.857783325
+	Surplus: 5.135784605
 Action: Iterate (elected)
-	Quota: 0.693969050
-	Votes: 25.676854825
-	Residual: 974.323145175
+	Quota: 0.733683513
+	Votes: 27.146289975
+	Residual: 972.853710025
 	Total: 1000.000000000
-	Surplus: 3.469845225
-Round 18:
+	Surplus: 3.668417559
+Round 17:
 Action: Elect: M
-	Elected:  Apple (0.693970025)
-	Elected:  Banana (0.693969100)
-	Elected:  Cherry (0.693969075)
-	Elected:  Date (0.693969075)
-	Elected:  Eggplant (0.693969075)
-	Elected:  Fig (0.693969075)
-	Elected:  Grape (0.693969075)
-	Elected:  Hazelnut (0.693969075)
-	Elected:  Jalapeno (0.693969075)
-	Elected:  Kiwi (0.693969075)
-	Elected:  Litchi (0.693969075)
-	Elected:  Mushroom (0.693969075)
-	Elected:  Nut (0.693969100)
-	Elected:  Orange (0.693969100)
-	Elected:  Pear (0.693969075)
-	Elected:  Quinoa (0.693969075)
-	Elected:  Radish (0.693969075)
-	Elected:  Soy (0.693969075)
-	Elected:  Tomato (0.693969050)
-	Elected:  Vanilla (0.693969050)
-	Elected:  A (0.693969075)
-	Elected:  B (0.693969075)
-	Elected:  C (0.693969150)
-	Elected:  D (0.693969150)
-	Elected:  E (0.693973450)
-	Elected:  F (0.693973450)
-	Elected:  G (0.694159800)
-	Elected:  H (0.694159800)
-	Elected:  I (0.700439500)
-	Elected:  J (0.700439500)
-	Elected:  K (0.856327600)
-	Elected:  L (0.856327600)
-	Elected:  M (1.565897600)
-	Hopeful:  N (1.565897600)
+	Elected:  Apple (0.733684750)
+	Elected:  Banana (0.733684750)
+	Elected:  Cherry (0.733684975)
+	Elected:  Date (0.733683550)
+	Elected:  Eggplant (0.733683550)
+	Elected:  Fig (0.733683550)
+	Elected:  Grape (0.733683550)
+	Elected:  Hazelnut (0.733683550)
+	Elected:  Jalapeno (0.733683550)
+	Elected:  Kiwi (0.733683550)
+	Elected:  Litchi (0.733683525)
+	Elected:  Mushroom (0.733683525)
+	Elected:  Nut (0.733683525)
+	Elected:  Orange (0.733683525)
+	Elected:  Pear (0.733683525)
+	Elected:  Quinoa (0.733683525)
+	Elected:  Radish (0.733683525)
+	Elected:  Soy (0.733683525)
+	Elected:  Tomato (0.733683550)
+	Elected:  Vanilla (0.733683550)
+	Elected:  A (0.733683525)
+	Elected:  B (0.733683525)
+	Elected:  C (0.733683600)
+	Elected:  D (0.733683600)
+	Elected:  E (0.733688175)
+	Elected:  F (0.733688175)
+	Elected:  G (0.733885200)
+	Elected:  H (0.733885200)
+	Elected:  I (0.740524300)
+	Elected:  J (0.740524300)
+	Elected:  K (0.905334050)
+	Elected:  L (0.905334050)
+	Elected:  M (1.655508850)
+	Hopeful:  N (1.655508850)
 	Hopeful:  O (0.000000000)
 	Hopeful:  P (0.000000000)
 	Hopeful:  Q (0.000000000)
 	Hopeful:  R (0.000000000)
-	Quota: 0.693969050
-	Votes: 25.676854825
-	Residual: 974.323145175
+	Quota: 0.733683515
+	Votes: 27.146290025
+	Residual: 972.853709975
 	Total: 1000.000000000
-	Surplus: 2.225921371
+	Surplus: 2.353312059
 Action: Elect: N
-	Elected:  Apple (0.693970025)
-	Elected:  Banana (0.693969100)
-	Elected:  Cherry (0.693969075)
-	Elected:  Date (0.693969075)
-	Elected:  Eggplant (0.693969075)
-	Elected:  Fig (0.693969075)
-	Elected:  Grape (0.693969075)
-	Elected:  Hazelnut (0.693969075)
-	Elected:  Jalapeno (0.693969075)
-	Elected:  Kiwi (0.693969075)
-	Elected:  Litchi (0.693969075)
-	Elected:  Mushroom (0.693969075)
-	Elected:  Nut (0.693969100)
-	Elected:  Orange (0.693969100)
-	Elected:  Pear (0.693969075)
-	Elected:  Quinoa (0.693969075)
-	Elected:  Radish (0.693969075)
-	Elected:  Soy (0.693969075)
-	Elected:  Tomato (0.693969050)
-	Elected:  Vanilla (0.693969050)
-	Elected:  A (0.693969075)
-	Elected:  B (0.693969075)
-	Elected:  C (0.693969150)
-	Elected:  D (0.693969150)
-	Elected:  E (0.693973450)
-	Elected:  F (0.693973450)
-	Elected:  G (0.694159800)
-	Elected:  H (0.694159800)
-	Elected:  I (0.700439500)
-	Elected:  J (0.700439500)
-	Elected:  K (0.856327600)
-	Elected:  L (0.856327600)
-	Elected:  M (1.565897600)
-	Elected:  N (1.565897600)
+	Elected:  Apple (0.733684750)
+	Elected:  Banana (0.733684750)
+	Elected:  Cherry (0.733684975)
+	Elected:  Date (0.733683550)
+	Elected:  Eggplant (0.733683550)
+	Elected:  Fig (0.733683550)
+	Elected:  Grape (0.733683550)
+	Elected:  Hazelnut (0.733683550)
+	Elected:  Jalapeno (0.733683550)
+	Elected:  Kiwi (0.733683550)
+	Elected:  Litchi (0.733683525)
+	Elected:  Mushroom (0.733683525)
+	Elected:  Nut (0.733683525)
+	Elected:  Orange (0.733683525)
+	Elected:  Pear (0.733683525)
+	Elected:  Quinoa (0.733683525)
+	Elected:  Radish (0.733683525)
+	Elected:  Soy (0.733683525)
+	Elected:  Tomato (0.733683550)
+	Elected:  Vanilla (0.733683550)
+	Elected:  A (0.733683525)
+	Elected:  B (0.733683525)
+	Elected:  C (0.733683600)
+	Elected:  D (0.733683600)
+	Elected:  E (0.733688175)
+	Elected:  F (0.733688175)
+	Elected:  G (0.733885200)
+	Elected:  H (0.733885200)
+	Elected:  I (0.740524300)
+	Elected:  J (0.740524300)
+	Elected:  K (0.905334050)
+	Elected:  L (0.905334050)
+	Elected:  M (1.655508850)
+	Elected:  N (1.655508850)
 	Hopeful:  O (0.000000000)
 	Hopeful:  P (0.000000000)
 	Hopeful:  Q (0.000000000)
 	Hopeful:  R (0.000000000)
-	Quota: 0.693969050
-	Votes: 25.676854825
-	Residual: 974.323145175
+	Quota: 0.733683515
+	Votes: 27.146290025
+	Residual: 972.853709975
 	Total: 1000.000000000
-	Surplus: 2.225921371
+	Surplus: 2.353312059
 Action: Iterate (elected)
-	Quota: 0.693969050
-	Votes: 25.676854825
-	Residual: 974.323145175
+	Quota: 0.733683515
+	Votes: 27.146290025
+	Residual: 972.853709975
 	Total: 1000.000000000
-	Surplus: 2.081907125
-Round 19:
+	Surplus: 2.201050515
+Round 18:
 Action: Elect: O
-	Elected:  Apple (0.693970025)
-	Elected:  Banana (0.693969100)
-	Elected:  Cherry (0.693969075)
-	Elected:  Date (0.693969075)
-	Elected:  Eggplant (0.693969075)
-	Elected:  Fig (0.693969075)
-	Elected:  Grape (0.693969075)
-	Elected:  Hazelnut (0.693969075)
-	Elected:  Jalapeno (0.693969075)
-	Elected:  Kiwi (0.693969075)
-	Elected:  Litchi (0.693969075)
-	Elected:  Mushroom (0.693969075)
-	Elected:  Nut (0.693969100)
-	Elected:  Orange (0.693969100)
-	Elected:  Pear (0.693969075)
-	Elected:  Quinoa (0.693969075)
-	Elected:  Radish (0.693969025)
-	Elected:  Soy (0.693969025)
-	Elected:  Tomato (0.693969075)
-	Elected:  Vanilla (0.693969075)
-	Elected:  A (0.693969050)
-	Elected:  B (0.693969050)
-	Elected:  C (0.693969050)
-	Elected:  D (0.693969050)
-	Elected:  E (0.693969050)
-	Elected:  F (0.693969050)
-	Elected:  G (0.693969600)
-	Elected:  H (0.693969600)
-	Elected:  I (0.693999375)
-	Elected:  J (0.693999375)
-	Elected:  K (0.695449250)
-	Elected:  L (0.695449250)
-	Elected:  M (0.782682150)
-	Elected:  N (0.782682150)
-	Elected:  O (0.950728600)
-	Hopeful:  P (0.950728600)
+	Elected:  Apple (0.733684750)
+	Elected:  Banana (0.733684750)
+	Elected:  Cherry (0.733684975)
+	Elected:  Date (0.733683550)
+	Elected:  Eggplant (0.733683550)
+	Elected:  Fig (0.733683550)
+	Elected:  Grape (0.733683550)
+	Elected:  Hazelnut (0.733683550)
+	Elected:  Jalapeno (0.733683550)
+	Elected:  Kiwi (0.733683550)
+	Elected:  Litchi (0.733683525)
+	Elected:  Mushroom (0.733683525)
+	Elected:  Nut (0.733683525)
+	Elected:  Orange (0.733683525)
+	Elected:  Pear (0.733683525)
+	Elected:  Quinoa (0.733683525)
+	Elected:  Radish (0.733683525)
+	Elected:  Soy (0.733683525)
+	Elected:  Tomato (0.733683550)
+	Elected:  Vanilla (0.733683550)
+	Elected:  A (0.733683525)
+	Elected:  B (0.733683525)
+	Elected:  C (0.733683525)
+	Elected:  D (0.733683525)
+	Elected:  E (0.733683550)
+	Elected:  F (0.733683550)
+	Elected:  G (0.733684100)
+	Elected:  H (0.733684100)
+	Elected:  I (0.733715550)
+	Elected:  J (0.733715550)
+	Elected:  K (0.735248400)
+	Elected:  L (0.735248400)
+	Elected:  M (0.827473650)
+	Elected:  N (0.827473650)
+	Elected:  O (1.005135350)
+	Hopeful:  P (1.005135350)
 	Hopeful:  Q (0.000000000)
 	Hopeful:  R (0.000000000)
-	Quota: 0.693969046
-	Votes: 25.676854675
-	Residual: 974.323145325
+	Quota: 0.733683512
+	Votes: 27.146289925
+	Residual: 972.853710075
 	Total: 1000.000000000
-	Surplus: 1.016346411
+	Surplus: 1.074512883
 Action: Elect: P
-	Elected:  Apple (0.693970025)
-	Elected:  Banana (0.693969100)
-	Elected:  Cherry (0.693969075)
-	Elected:  Date (0.693969075)
-	Elected:  Eggplant (0.693969075)
-	Elected:  Fig (0.693969075)
-	Elected:  Grape (0.693969075)
-	Elected:  Hazelnut (0.693969075)
-	Elected:  Jalapeno (0.693969075)
-	Elected:  Kiwi (0.693969075)
-	Elected:  Litchi (0.693969075)
-	Elected:  Mushroom (0.693969075)
-	Elected:  Nut (0.693969100)
-	Elected:  Orange (0.693969100)
-	Elected:  Pear (0.693969075)
-	Elected:  Quinoa (0.693969075)
-	Elected:  Radish (0.693969025)
-	Elected:  Soy (0.693969025)
-	Elected:  Tomato (0.693969075)
-	Elected:  Vanilla (0.693969075)
-	Elected:  A (0.693969050)
-	Elected:  B (0.693969050)
-	Elected:  C (0.693969050)
-	Elected:  D (0.693969050)
-	Elected:  E (0.693969050)
-	Elected:  F (0.693969050)
-	Elected:  G (0.693969600)
-	Elected:  H (0.693969600)
-	Elected:  I (0.693999375)
-	Elected:  J (0.693999375)
-	Elected:  K (0.695449250)
-	Elected:  L (0.695449250)
-	Elected:  M (0.782682150)
-	Elected:  N (0.782682150)
-	Elected:  O (0.950728600)
-	Elected:  P (0.950728600)
+	Elected:  Apple (0.733684750)
+	Elected:  Banana (0.733684750)
+	Elected:  Cherry (0.733684975)
+	Elected:  Date (0.733683550)
+	Elected:  Eggplant (0.733683550)
+	Elected:  Fig (0.733683550)
+	Elected:  Grape (0.733683550)
+	Elected:  Hazelnut (0.733683550)
+	Elected:  Jalapeno (0.733683550)
+	Elected:  Kiwi (0.733683550)
+	Elected:  Litchi (0.733683525)
+	Elected:  Mushroom (0.733683525)
+	Elected:  Nut (0.733683525)
+	Elected:  Orange (0.733683525)
+	Elected:  Pear (0.733683525)
+	Elected:  Quinoa (0.733683525)
+	Elected:  Radish (0.733683525)
+	Elected:  Soy (0.733683525)
+	Elected:  Tomato (0.733683550)
+	Elected:  Vanilla (0.733683550)
+	Elected:  A (0.733683525)
+	Elected:  B (0.733683525)
+	Elected:  C (0.733683525)
+	Elected:  D (0.733683525)
+	Elected:  E (0.733683550)
+	Elected:  F (0.733683550)
+	Elected:  G (0.733684100)
+	Elected:  H (0.733684100)
+	Elected:  I (0.733715550)
+	Elected:  J (0.733715550)
+	Elected:  K (0.735248400)
+	Elected:  L (0.735248400)
+	Elected:  M (0.827473650)
+	Elected:  N (0.827473650)
+	Elected:  O (1.005135350)
+	Elected:  P (1.005135350)
 	Hopeful:  Q (0.000000000)
 	Hopeful:  R (0.000000000)
-	Quota: 0.693969046
-	Votes: 25.676854675
-	Residual: 974.323145325
+	Quota: 0.733683512
+	Votes: 27.146289925
+	Residual: 972.853710075
 	Total: 1000.000000000
-	Surplus: 1.016346411
+	Surplus: 1.074512883
 Action: Iterate (elected)
-	Quota: 0.693969046
-	Votes: 25.676854675
-	Residual: 974.323145325
+	Quota: 0.733683512
+	Votes: 27.146289925
+	Residual: 972.853710075
 	Total: 1000.000000000
-	Surplus: 0.693969019
+	Surplus: 0.733683493
 Action: Defeat remaining: Q
-	Elected:  Apple (0.693970025)
-	Elected:  Banana (0.693969100)
-	Elected:  Cherry (0.693969075)
-	Elected:  Date (0.693969075)
-	Elected:  Eggplant (0.693969075)
-	Elected:  Fig (0.693969075)
-	Elected:  Grape (0.693969075)
-	Elected:  Hazelnut (0.693969075)
-	Elected:  Jalapeno (0.693969075)
-	Elected:  Kiwi (0.693969075)
-	Elected:  Litchi (0.693969075)
-	Elected:  Mushroom (0.693969075)
-	Elected:  Nut (0.693969100)
-	Elected:  Orange (0.693969100)
-	Elected:  Pear (0.693969075)
-	Elected:  Quinoa (0.693969075)
-	Elected:  Radish (0.693969025)
-	Elected:  Soy (0.693969025)
-	Elected:  Tomato (0.693969075)
-	Elected:  Vanilla (0.693969075)
-	Elected:  A (0.693969050)
-	Elected:  B (0.693969050)
-	Elected:  C (0.693969050)
-	Elected:  D (0.693969050)
-	Elected:  E (0.693969050)
-	Elected:  F (0.693969050)
-	Elected:  G (0.693969600)
-	Elected:  H (0.693969600)
-	Elected:  I (0.693999375)
-	Elected:  J (0.693999375)
-	Elected:  K (0.695449250)
-	Elected:  L (0.695449250)
-	Elected:  M (0.782682150)
-	Elected:  N (0.782682150)
-	Elected:  O (0.950728600)
-	Elected:  P (0.950728600)
+	Elected:  Apple (0.733684750)
+	Elected:  Banana (0.733684750)
+	Elected:  Cherry (0.733684975)
+	Elected:  Date (0.733683550)
+	Elected:  Eggplant (0.733683550)
+	Elected:  Fig (0.733683550)
+	Elected:  Grape (0.733683550)
+	Elected:  Hazelnut (0.733683550)
+	Elected:  Jalapeno (0.733683550)
+	Elected:  Kiwi (0.733683550)
+	Elected:  Litchi (0.733683525)
+	Elected:  Mushroom (0.733683525)
+	Elected:  Nut (0.733683525)
+	Elected:  Orange (0.733683525)
+	Elected:  Pear (0.733683525)
+	Elected:  Quinoa (0.733683525)
+	Elected:  Radish (0.733683525)
+	Elected:  Soy (0.733683525)
+	Elected:  Tomato (0.733683550)
+	Elected:  Vanilla (0.733683550)
+	Elected:  A (0.733683525)
+	Elected:  B (0.733683525)
+	Elected:  C (0.733683525)
+	Elected:  D (0.733683525)
+	Elected:  E (0.733683550)
+	Elected:  F (0.733683550)
+	Elected:  G (0.733684100)
+	Elected:  H (0.733684100)
+	Elected:  I (0.733715550)
+	Elected:  J (0.733715550)
+	Elected:  K (0.735248400)
+	Elected:  L (0.735248400)
+	Elected:  M (0.827473650)
+	Elected:  N (0.827473650)
+	Elected:  O (1.005135350)
+	Elected:  P (1.005135350)
 	Hopeful:  R (0.000000000)
 	Defeated: Q (0.000000000)
-	Quota: 0.693969046
-	Votes: 25.676854675
-	Residual: 974.323145325
+	Quota: 0.733683512
+	Votes: 27.146289925
+	Residual: 972.853710075
 	Total: 1000.000000000
-	Surplus: 0.693969019
+	Surplus: 0.733683493
 Action: Defeat remaining: R
-	Elected:  Apple (0.693970025)
-	Elected:  Banana (0.693969100)
-	Elected:  Cherry (0.693969075)
-	Elected:  Date (0.693969075)
-	Elected:  Eggplant (0.693969075)
-	Elected:  Fig (0.693969075)
-	Elected:  Grape (0.693969075)
-	Elected:  Hazelnut (0.693969075)
-	Elected:  Jalapeno (0.693969075)
-	Elected:  Kiwi (0.693969075)
-	Elected:  Litchi (0.693969075)
-	Elected:  Mushroom (0.693969075)
-	Elected:  Nut (0.693969100)
-	Elected:  Orange (0.693969100)
-	Elected:  Pear (0.693969075)
-	Elected:  Quinoa (0.693969075)
-	Elected:  Radish (0.693969025)
-	Elected:  Soy (0.693969025)
-	Elected:  Tomato (0.693969075)
-	Elected:  Vanilla (0.693969075)
-	Elected:  A (0.693969050)
-	Elected:  B (0.693969050)
-	Elected:  C (0.693969050)
-	Elected:  D (0.693969050)
-	Elected:  E (0.693969050)
-	Elected:  F (0.693969050)
-	Elected:  G (0.693969600)
-	Elected:  H (0.693969600)
-	Elected:  I (0.693999375)
-	Elected:  J (0.693999375)
-	Elected:  K (0.695449250)
-	Elected:  L (0.695449250)
-	Elected:  M (0.782682150)
-	Elected:  N (0.782682150)
-	Elected:  O (0.950728600)
-	Elected:  P (0.950728600)
+	Elected:  Apple (0.733684750)
+	Elected:  Banana (0.733684750)
+	Elected:  Cherry (0.733684975)
+	Elected:  Date (0.733683550)
+	Elected:  Eggplant (0.733683550)
+	Elected:  Fig (0.733683550)
+	Elected:  Grape (0.733683550)
+	Elected:  Hazelnut (0.733683550)
+	Elected:  Jalapeno (0.733683550)
+	Elected:  Kiwi (0.733683550)
+	Elected:  Litchi (0.733683525)
+	Elected:  Mushroom (0.733683525)
+	Elected:  Nut (0.733683525)
+	Elected:  Orange (0.733683525)
+	Elected:  Pear (0.733683525)
+	Elected:  Quinoa (0.733683525)
+	Elected:  Radish (0.733683525)
+	Elected:  Soy (0.733683525)
+	Elected:  Tomato (0.733683550)
+	Elected:  Vanilla (0.733683550)
+	Elected:  A (0.733683525)
+	Elected:  B (0.733683525)
+	Elected:  C (0.733683525)
+	Elected:  D (0.733683525)
+	Elected:  E (0.733683550)
+	Elected:  F (0.733683550)
+	Elected:  G (0.733684100)
+	Elected:  H (0.733684100)
+	Elected:  I (0.733715550)
+	Elected:  J (0.733715550)
+	Elected:  K (0.735248400)
+	Elected:  L (0.735248400)
+	Elected:  M (0.827473650)
+	Elected:  N (0.827473650)
+	Elected:  O (1.005135350)
+	Elected:  P (1.005135350)
 	Defeated: Q, R (0.000000000)
-	Quota: 0.693969046
-	Votes: 25.676854675
-	Residual: 974.323145325
+	Quota: 0.733683512
+	Votes: 27.146289925
+	Residual: 972.853710075
 	Total: 1000.000000000
-	Surplus: 0.693969019
+	Surplus: 0.733683493
 Action: Count Complete
-	Elected:  Apple (0.693970025)
-	Elected:  Banana (0.693969100)
-	Elected:  Cherry (0.693969075)
-	Elected:  Date (0.693969075)
-	Elected:  Eggplant (0.693969075)
-	Elected:  Fig (0.693969075)
-	Elected:  Grape (0.693969075)
-	Elected:  Hazelnut (0.693969075)
-	Elected:  Jalapeno (0.693969075)
-	Elected:  Kiwi (0.693969075)
-	Elected:  Litchi (0.693969075)
-	Elected:  Mushroom (0.693969075)
-	Elected:  Nut (0.693969100)
-	Elected:  Orange (0.693969100)
-	Elected:  Pear (0.693969075)
-	Elected:  Quinoa (0.693969075)
-	Elected:  Radish (0.693969025)
-	Elected:  Soy (0.693969025)
-	Elected:  Tomato (0.693969075)
-	Elected:  Vanilla (0.693969075)
-	Elected:  A (0.693969050)
-	Elected:  B (0.693969050)
-	Elected:  C (0.693969050)
-	Elected:  D (0.693969050)
-	Elected:  E (0.693969050)
-	Elected:  F (0.693969050)
-	Elected:  G (0.693969600)
-	Elected:  H (0.693969600)
-	Elected:  I (0.693999375)
-	Elected:  J (0.693999375)
-	Elected:  K (0.695449250)
-	Elected:  L (0.695449250)
-	Elected:  M (0.782682150)
-	Elected:  N (0.782682150)
-	Elected:  O (0.950728600)
-	Elected:  P (0.950728600)
+	Elected:  Apple (0.733684750)
+	Elected:  Banana (0.733684750)
+	Elected:  Cherry (0.733684975)
+	Elected:  Date (0.733683550)
+	Elected:  Eggplant (0.733683550)
+	Elected:  Fig (0.733683550)
+	Elected:  Grape (0.733683550)
+	Elected:  Hazelnut (0.733683550)
+	Elected:  Jalapeno (0.733683550)
+	Elected:  Kiwi (0.733683550)
+	Elected:  Litchi (0.733683525)
+	Elected:  Mushroom (0.733683525)
+	Elected:  Nut (0.733683525)
+	Elected:  Orange (0.733683525)
+	Elected:  Pear (0.733683525)
+	Elected:  Quinoa (0.733683525)
+	Elected:  Radish (0.733683525)
+	Elected:  Soy (0.733683525)
+	Elected:  Tomato (0.733683550)
+	Elected:  Vanilla (0.733683550)
+	Elected:  A (0.733683525)
+	Elected:  B (0.733683525)
+	Elected:  C (0.733683525)
+	Elected:  D (0.733683525)
+	Elected:  E (0.733683550)
+	Elected:  F (0.733683550)
+	Elected:  G (0.733684100)
+	Elected:  H (0.733684100)
+	Elected:  I (0.733715550)
+	Elected:  J (0.733715550)
+	Elected:  K (0.735248400)
+	Elected:  L (0.735248400)
+	Elected:  M (0.827473650)
+	Elected:  N (0.827473650)
+	Elected:  O (1.005135350)
+	Elected:  P (1.005135350)
 	Defeated: Q, R (0.000000000)
-	Quota: 0.693969046
-	Votes: 25.676854675
-	Residual: 974.323145325
+	Quota: 0.733683512
+	Votes: 27.146289925
+	Residual: 972.853710075
 	Total: 1000.000000000
-	Surplus: 0.693969019
+	Surplus: 0.733683493
 
