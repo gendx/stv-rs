@@ -54,8 +54,15 @@ sleep 15
 echo "[*] Comparing commits for each scenario"
 benchmark "${INDEX_COMMITS}" "1k-fixed9"          fixed9    ""          "testdata/ballots/random/rand_hypergeometric.blt"
 benchmark "${INDEX_COMMITS}" "1k-lexico-fixed9"   fixed9    ""          "testdata/shuffle_ballots/rand_sorted_lexicographically.blt"
-benchmark "${INDEX_COMMITS}" "1k-equalize-fixed9" fixed9    --equalize  "testdata/ballots/random/rand_hypergeometric.blt"
-benchmark "${INDEX_COMMITS}" "1k-bigfixed9"       bigfixed9 ""          "testdata/ballots/random/rand_hypergeometric.blt"
+benchmark "${INDEX_COMMITS}" "5k-fixed9"          fixed9    ""          "testdata/ballots/random/rand_mixed_5k.blt"
 benchmark "${INDEX_COMMITS}" "skewed-fixed9"      fixed9    ""          "testdata/ballots/skewed.blt"
+
+benchmark "${INDEX_COMMITS}" "1k-bigfixed9"       bigfixed9 ""          "testdata/ballots/random/rand_hypergeometric.blt"
+
+benchmark "${INDEX_COMMITS}" "1k-equalize-fixed9" fixed9    --equalize  "testdata/ballots/random/rand_hypergeometric.blt"
+benchmark "${INDEX_COMMITS}" "5k-equalize-fixed9" fixed9    --equalize  "testdata/ballots/random/rand_mixed_5k.blt"
+
+benchmark "${INDEX_COMMITS}" "10k-fixed9"         fixed9    ""          "testdata/ballots/random/rand_hypergeometric_10k.blt"
 benchmark "${INDEX_COMMITS}" "10k-lexico-fixed9"  fixed9    ""          "testdata/shuffle_ballots/rand_10k_sorted_lexicographically.blt"
+benchmark "${INDEX_COMMITS}" "100k-fixed9"        fixed9    ""          "testdata/ballots/random/rand_hypergeometric_100k.blt"
 benchmark "${INDEX_COMMITS}" "100k-lexico-fixed9" fixed9    ""          "testdata/shuffle_ballots/rand_100k_sorted_lexicographically.blt"
