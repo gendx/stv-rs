@@ -6,7 +6,7 @@
 [![Minimum Rust 1.73.0](https://img.shields.io/badge/rust-1.73.0%2B-orange.svg?logo=rust)](https://releases.rs/docs/1.73.0/)
 [![Dependencies](https://deps.rs/repo/github/gendx/stv-rs/status.svg)](https://deps.rs/repo/github/gendx/stv-rs)
 [![Codecov](https://codecov.io/gh/gendx/stv-rs/branch/main/graph/badge.svg?token=JB5S8MYBZ0)](https://codecov.io/gh/gendx/stv-rs)
-[![Lines of Code](https://tokei.rs/b1/github/gendx/stv-rs?category=code)](https://github.com/XAMPPRocky/tokei_rs)
+[![Lines of Code](https://www.aschey.tech/tokei/github/gendx/stv-rs?category=code)](https://github.com/aschey/vercel-tokei)
 [![Build Status](https://github.com/gendx/stv-rs/workflows/Build/badge.svg)](https://github.com/gendx/stv-rs/actions/workflows/build.yml)
 [![Test Status](https://github.com/gendx/stv-rs/workflows/Tests/badge.svg)](https://github.com/gendx/stv-rs/actions/workflows/tests.yml)
 [![Integration tests Status](https://github.com/gendx/stv-rs/workflows/Integration%20tests/badge.svg)](https://github.com/gendx/stv-rs/actions/workflows/integration.yml)
