@@ -25,8 +25,8 @@ pub mod log_tester {
     }
 
     thread_local! {
-        static ACTIVE: Cell<bool> = Cell::new(false);
-        static LOGS: RefCell<VecDeque<LogRecord>> = RefCell::new(VecDeque::new());
+        static ACTIVE: Cell<bool> = const { Cell::new(false) };
+        static LOGS: RefCell<VecDeque<LogRecord>> = const { RefCell::new(VecDeque::new()) };
     }
 
     pub struct ThreadLocalLogger;

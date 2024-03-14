@@ -148,7 +148,7 @@ fn write_candidate(
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::types::{Ballot, Candidate, ElectionBuilder};
+    use crate::types::{Ballot, ElectionBuilder};
 
     fn test_election_builder() -> ElectionBuilder {
         Election::builder()

@@ -187,7 +187,7 @@ impl SubAssign for BigFixedDecimal9 {
 impl MulAssign for BigFixedDecimal9 {
     fn mul_assign(&mut self, rhs: Self) {
         let ratio = BigRational::new(self.0.clone().mul(rhs.0), BigInt::from(Self::FACTOR));
-        self.0 = ratio.floor().numer().clone();
+        self.0.clone_from(ratio.floor().numer());
     }
 }
 
@@ -204,13 +204,13 @@ impl SubAssign<&'_ Self> for BigFixedDecimal9 {
 impl MulAssign<&'_ Self> for BigFixedDecimal9 {
     fn mul_assign(&mut self, rhs: &'_ Self) {
         let ratio = BigRational::new(self.0.clone().mul(&rhs.0), BigInt::from(Self::FACTOR));
-        self.0 = ratio.floor().numer().clone();
+        self.0.clone_from(ratio.floor().numer());
     }
 }
 impl DivAssign<&'_ BigInt> for BigFixedDecimal9 {
     fn div_assign(&mut self, rhs: &'_ BigInt) {
         let ratio = BigRational::new(self.0.clone(), rhs.clone());
-        self.0 = ratio.floor().numer().clone();
+        self.0.clone_from(ratio.floor().numer());
     }
 }
 
