@@ -10,14 +10,18 @@ fi
 ./tools/check-inputs.sh
 
 function build_commits() {
-    local BEGIN=$1
-    local END=$2
+    local BEFORE=$1
+    local AFTER=$2
 
     echo "[*] Listing commits"
-    git log "${BEGIN}..${END}" --reverse --format=oneline
-    mapfile -t COMMITS < <(git log "${BEGIN}..${END}" --reverse --format=oneline | cut -d' ' -f1)
+    git log "${BEFORE}..${AFTER}" --reverse --format=oneline | head -1
+    mapfile -t BEFORE_COMMIT < <(git log "${BEFORE}..${AFTER}" --reverse --format=oneline | head -1 | cut -d' ' -f1)
+    git log "${AFTER}~..${AFTER}" --reverse --format=oneline
+    mapfile -t AFTER_COMMIT < <(git log "${AFTER}~..${AFTER}" --reverse --format=oneline | cut -d' ' -f1)
 
-    echo "[*] Building at all commits"
+    COMMITS=( "${BEFORE_COMMIT[@]}" "${AFTER_COMMIT[@]}" )
+
+    echo "[*] Building before/after commits"
     ./tools/build-all-commits.sh "${COMMITS[@]}"
 }
 
@@ -45,15 +49,14 @@ function benchmark() {
     local EQUALIZE=$4
     local INPUT=$5
 
-    ./tools/benchmark-compare-commits.sh "${INDEX_COMMITS}" "${ARITHMETIC}" "${EQUALIZE}" "${INPUT}" 2>&1 | tee "compare-commits.${TITLE}.log"
+    ./tools/benchmark-compare-before-after.sh "${INDEX_COMMITS}" "${ARITHMETIC}" "${EQUALIZE}" "${INPUT}" 2>&1 | tee "compare-before-after.${TITLE}.log"
 }
-
 
 build_commits main HEAD
 index_commits "${COMMITS[@]}"
 sleep 15
 
-echo "[*] Comparing commits for each scenario"
+echo "[*] Comparing before/after for each scenario"
 benchmark "${INDEX_COMMITS}" "2x10-bigfixed9"     bigfixed9 ""          "testdata/ballots/random/rand_2x10.blt"
 benchmark "${INDEX_COMMITS}" "2x10-approx"        approx    ""          "testdata/ballots/random/rand_2x10.blt"
 benchmark "${INDEX_COMMITS}" "5x4-bigfixed9"      bigfixed9 ""          "testdata/ballots/random/rand_5x4.blt"

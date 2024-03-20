@@ -7,6 +7,8 @@ if [ ! -e "${HOME}/.cargo/bin/hyperfine" ] && [ ! -e "/usr/bin/hyperfine" ]; the
     exit 42
 fi
 
+./tools/check-inputs.sh
+
 BEGIN=main
 END=HEAD
 
