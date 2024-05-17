@@ -34,8 +34,9 @@ jobs:
       - name: Generate code coverage
         run: cargo llvm-cov --verbose --release --all-features --workspace --lcov --output-path lcov.info
       - name: Upload to Codecov
-        uses: codecov/codecov-action@v3.1.0
+        uses: codecov/codecov-action@v4
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           files: lcov.info
           verbose: true
           fail_ci_if_error: true
