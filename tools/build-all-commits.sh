@@ -27,7 +27,7 @@ do
             echo "Compiling 'bin/stv-rs-${COMMIT}'"
             git checkout "${COMMIT}"
             git status
-            cargo +nightly build --release
+            cargo build --release
             cp target/release/stv-rs "bin/stv-rs-${COMMIT}"
         fi
         ln -s "stv-rs-${COMMIT}" "bin/stv-rs-${INDEX}-${COMMIT}"

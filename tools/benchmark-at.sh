@@ -7,7 +7,7 @@ if [ -e "${HOME}/.cargo/bin/hyperfine" ]; then
 elif [ -e "/usr/bin/hyperfine" ]; then
     HYPERFINE_PATH=/usr/bin/hyperfine
 else
-    echo "Hyperfine is not installed. Please install it with 'apt install hyperfine' or 'cargo +nightly install hyperfine'."
+    echo "Hyperfine is not installed. Please install it with 'apt install hyperfine' or 'cargo install hyperfine'."
     exit 42
 fi
 

@@ -5,7 +5,7 @@ set -eux
 BALLOT_FILE=testdata/ballots/random/rand_hypergeometric.blt
 ARITHMETIC=fixed9
 
-RUSTFLAGS='-C force-frame-pointers=y' cargo +nightly build --release
+RUSTFLAGS='-C force-frame-pointers=y' cargo build --release
 BINARY=./target/release/stv-rs
 sleep 5
 

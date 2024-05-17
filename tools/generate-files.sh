@@ -4,7 +4,7 @@ set -eux
 
 SEED=43
 
-cargo +nightly build --release
+cargo build --release
 cargo +nightly build --release --examples
 
 # Help
