@@ -463,6 +463,14 @@ mod test {
         testi_mul_is_commutative,
     );
 
+    #[cfg(not(any(feature = "checked_i64", overflow_checks)))]
+    big_integer_tests!(
+        Integer64,
+        None,
+        testi_add_is_associative,
+        testi_mul_is_associative,
+        testi_mul_is_distributive,
+    );
     #[cfg(feature = "checked_i64")]
     big_integer_tests!(
         Integer64,
@@ -471,13 +479,12 @@ mod test {
         testi_mul_is_associative => fail(r"called `Option::unwrap()` on a `None` value"),
         testi_mul_is_distributive,
     );
-
-    #[cfg(not(feature = "checked_i64"))]
+    #[cfg(all(not(feature = "checked_i64"), overflow_checks))]
     big_integer_tests!(
         Integer64,
         None,
         testi_add_is_associative,
-        testi_mul_is_associative,
+        testi_mul_is_associative => fail(r"attempt to multiply with overflow"),
         testi_mul_is_distributive,
     );
 

@@ -809,7 +809,7 @@ mod test {
 
     all_numeric_tests!(exact, BigInt, BigRational, test_pascal_100,);
     all_numeric_tests!(approx_rational, BigInt, ApproxRational, test_pascal_100,);
-    #[cfg(not(feature = "checked_i64"))]
+    #[cfg(not(any(feature = "checked_i64", overflow_checks)))]
     all_numeric_tests!(fixed, Integer64, FixedDecimal9, test_pascal_100,);
     #[cfg(feature = "checked_i64")]
     all_numeric_tests!(
@@ -818,12 +818,21 @@ mod test {
         FixedDecimal9,
         test_pascal_100 => fail(r"called `Option::unwrap()` on a `None` value"),
     );
+    #[cfg(all(not(feature = "checked_i64"), overflow_checks))]
+    all_numeric_tests!(
+        fixed,
+        Integer64,
+        FixedDecimal9,
+        test_pascal_100 => fail(r"attempt to add with overflow"),
+    );
     all_numeric_tests!(fixed_big, BigInt, BigFixedDecimal9, test_pascal_100,);
 
     mod ratio_i64 {
         use super::*;
         base_numeric_tests!(i64, Ratio<i64>);
+        #[cfg(not(overflow_checks))]
         numeric_tests!(i64, Ratio<i64>, test_pascal_100,);
+        #[cfg(not(overflow_checks))]
         all_numeric_benches!(i64, Ratio<i64>);
     }
 

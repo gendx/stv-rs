@@ -1,0 +1,41 @@
+on: [push, pull_request]
+name: Tests with -C overflow-checks
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      RUSTFLAGS: "-D warnings -Coverflow-checks=yes"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@nightly
+
+      - name: Create Cargo.lock file
+        run: cargo generate-lockfile
+      - name: Cache Cargo registry
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/registry
+          key: cargo-registry-${{ hashFiles('Cargo.toml') }}-${{ hashFiles('Cargo.lock') }}
+          restore-keys: |
+            cargo-registry-${{ hashFiles('Cargo.toml') }}
+            cargo-registry
+
+      - name: Check Cargo version
+        run: cargo -V | tee cargo.version.txt
+      - name: Cache Cargo target
+        uses: actions/cache@v4
+        with:
+          path: target
+          key: cargo-target-overflow-checks-${{ hashFiles('cargo.version.txt') }}-${{ hashFiles('Cargo.toml') }}-${{ hashFiles('Cargo.lock') }}
+          restore-keys: |
+            cargo-target-overflow-checks-${{ hashFiles('cargo.version.txt') }}-${{ hashFiles('Cargo.toml') }}
+            cargo-target-overflow-checks-${{ hashFiles('cargo.version.txt') }}
+
+      - name: Tests without features
+        run: cargo test --verbose --release --all --no-default-features
+      - name: Tests examples without features
+        run: cargo test --verbose --release --examples --no-default-features
+      - name: Tests with default features
+        run: cargo test --verbose --release --all
+      - name: Tests examples with default features
+        run: cargo test --verbose --release --examples

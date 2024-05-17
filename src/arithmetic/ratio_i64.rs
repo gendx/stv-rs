@@ -13,9 +13,9 @@
 // limitations under the License.
 
 mod test {
-    use crate::{
-        big_integer_tests, big_numeric_tests, integer_tests, numeric_benchmarks, numeric_tests,
-    };
+    #[cfg(not(overflow_checks))]
+    use crate::big_numeric_tests;
+    use crate::{big_integer_tests, integer_tests, numeric_benchmarks, numeric_tests};
     use num::rational::Ratio;
 
     integer_tests!(
@@ -32,11 +32,20 @@ mod test {
         testi_mul_is_commutative,
     );
 
+    #[cfg(not(overflow_checks))]
     big_integer_tests!(
         i64,
         None,
         testi_add_is_associative,
         testi_mul_is_associative,
+        testi_mul_is_distributive,
+    );
+
+    #[cfg(overflow_checks)]
+    big_integer_tests!(
+        i64,
+        None,
+        testi_add_is_associative,
         testi_mul_is_distributive,
     );
 
@@ -72,6 +81,7 @@ mod test {
         test_assign,
     );
 
+    #[cfg(not(overflow_checks))]
     big_numeric_tests!(
         i64,
         Ratio<i64>,
