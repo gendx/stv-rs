@@ -4,7 +4,7 @@ jobs:
   coverage:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@nightly
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@cargo-llvm-cov
@@ -12,7 +12,7 @@ jobs:
       - name: Create Cargo.lock file
         run: cargo generate-lockfile
       - name: Cache Cargo registry
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.cargo/registry
           key: cargo-registry-${{ hashFiles('Cargo.toml') }}-${{ hashFiles('Cargo.lock') }}
@@ -23,7 +23,7 @@ jobs:
       - name: Check Cargo version
         run: cargo -V | tee cargo.version.txt
       - name: Cache Cargo target
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: target
           key: cargo-target-coverage-${{ hashFiles('cargo.version.txt') }}-${{ hashFiles('Cargo.toml') }}-${{ hashFiles('Cargo.lock') }}

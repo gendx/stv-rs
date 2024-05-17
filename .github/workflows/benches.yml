@@ -18,13 +18,13 @@ jobs:
       RUSTFLAGS: "-D warnings ${{ matrix.flags }}"
       CARGO_UNSTABLE_SPARSE_REGISTRY: true
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@nightly
 
       - name: Create Cargo.lock file
         run: cargo generate-lockfile
       - name: Cache Cargo registry
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.cargo/registry
           key: cargo-registry-${{ hashFiles('Cargo.toml') }}-${{ hashFiles('Cargo.lock') }}
@@ -43,7 +43,7 @@ jobs:
         if: ${{ matrix.cpu != 'native' }}
         run: echo "Default CPU" > cpuinfo.txt
       - name: Cache Cargo target
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: target
           key: cargo-target-bench-${{ matrix.cpu }}-${{ hashFiles('cpuinfo.txt') }}-${{ hashFiles('cargo.version.txt') }}-${{ hashFiles('Cargo.toml') }}-${{ hashFiles('Cargo.lock') }}

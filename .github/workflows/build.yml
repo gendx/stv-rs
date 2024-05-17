@@ -15,7 +15,7 @@ jobs:
       RUSTFLAGS: "-D warnings"
       CARGO_UNSTABLE_SPARSE_REGISTRY: true
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.rust }}
@@ -23,7 +23,7 @@ jobs:
       - name: Create Cargo.lock file
         run: cargo generate-lockfile
       - name: Cache Cargo registry
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.cargo/registry
           key: cargo-registry-${{ hashFiles('Cargo.toml') }}-${{ hashFiles('Cargo.lock') }}
@@ -34,7 +34,7 @@ jobs:
       - name: Check Cargo version
         run: cargo -V | tee cargo.version.txt
       - name: Cache Cargo target
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: target
           key: cargo-target-debug-${{ hashFiles('cargo.version.txt') }}-${{ hashFiles('Cargo.toml') }}-${{ hashFiles('Cargo.lock') }}
