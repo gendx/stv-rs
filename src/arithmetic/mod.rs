@@ -32,9 +32,11 @@ use std::fmt::{Debug, Display};
 use std::iter::{Product, Sum};
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
-/// Trait representing integer arithmetic. This is a lighter version of the
-/// `Integer` trait provided by the [`num` crate](https://crates.io/crates/num),
-/// here we only consider the arithmetic operations needed for STV.
+/// Trait representing integer arithmetic.
+///
+/// This is a lighter version of the `Integer` trait provided by the
+/// [`num` crate](https://crates.io/crates/num), here we only consider the
+/// arithmetic operations needed for STV.
 pub trait Integer:
     Clone
     + Debug
@@ -52,6 +54,7 @@ where
     /// Obtains an integer from a primitive `usize` integer.
     fn from_usize(i: usize) -> Self;
 
+    /// Returns a set of positive values to use for testing.
     #[cfg(test)]
     fn get_positive_test_values() -> Vec<Self>;
 }
@@ -140,6 +143,7 @@ where
     /// arithmetic, to avoid complexity explosion of rational numbers.
     fn div_up_as_keep_factor(&self, rhs: &Self) -> Self;
 
+    /// Returns a set of positive values to use for testing.
     #[cfg(test)]
     fn get_positive_test_values() -> Vec<Self>;
 }
@@ -171,6 +175,7 @@ pub(crate) mod test {
     use std::hint::black_box;
     use std::marker::PhantomData;
 
+    /// Generates test functions for the given list of integer tests.
     #[macro_export]
     macro_rules! integer_tests {
         ( $typei:ty, ) => {};
@@ -193,6 +198,7 @@ pub(crate) mod test {
         };
     }
 
+    /// Generates test functions for the given list of large integer tests.
     #[macro_export]
     macro_rules! big_integer_tests {
         ( $typei:ty, $num_samples:expr, ) => {};
@@ -215,6 +221,8 @@ pub(crate) mod test {
         };
     }
 
+    /// Generates test functions for the given list of numeric tests
+    /// (parametrized by a pair of integer-rational types).
     #[macro_export]
     macro_rules! numeric_tests {
         ( $typei:ty, $typer:ty, ) => {};
@@ -237,6 +245,8 @@ pub(crate) mod test {
         };
     }
 
+    /// Generates test functions for the given list of large numeric tests
+    /// (parametrized by a pair of integer-rational types).
     #[macro_export]
     macro_rules! big_numeric_tests {
         ( $typei:ty, $typer:ty, $num_samples:expr, ) => {};
@@ -259,6 +269,8 @@ pub(crate) mod test {
         };
     }
 
+    /// Generates benchmark functions for the given list of numeric tests
+    /// (parametrized by a pair of integer-rational types).
     #[macro_export]
     macro_rules! numeric_benchmarks {
         ( $typei:ty, $typer:ty, ) => {};
