@@ -89,6 +89,11 @@ struct MeekParams {
     #[arg(long)]
     disable_work_stealing: bool,
 
+    /// Maximal length of a serial run of items. Ignored if `--parallel` isn't
+    /// set to "rayon".
+    #[arg(long)]
+    max_serial_len: Option<NonZeroUsize>,
+
     /// Enable a bug-fix in the surplus calculation, preventing it from being
     /// negative. Results may differ from Droop.py, but this prevents
     /// crashes.
@@ -202,6 +207,7 @@ impl Cli {
                     meek_params.parallel,
                     meek_params.num_threads,
                     meek_params.disable_work_stealing,
+                    meek_params.max_serial_len,
                     meek_params.force_positive_surplus,
                     meek_params.equalize,
                 )?;
@@ -273,6 +279,7 @@ mod test {
                     disable_work_stealing: false,
                     force_positive_surplus: false,
                     equalize: false,
+                    max_serial_len: None,
                 })
             }
         );
@@ -323,6 +330,7 @@ mod test {
                     disable_work_stealing: true,
                     force_positive_surplus: true,
                     equalize: true,
+                    max_serial_len: None,
                 }),
             }
         );
@@ -360,6 +368,7 @@ mod test {
                     disable_work_stealing: true,
                     force_positive_surplus: true,
                     equalize: true,
+                    max_serial_len: None,
                 }),
             }
         );
@@ -437,6 +446,7 @@ mod test {
                 disable_work_stealing: false,
                 force_positive_surplus: false,
                 equalize,
+                max_serial_len: None,
             }),
         }
     }

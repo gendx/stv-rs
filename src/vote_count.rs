@@ -110,10 +110,13 @@ where
         parallel: Parallel,
         thread_pool: Option<&ThreadPool<'_, I, R>>,
         pascal: Option<&[Vec<I>]>,
+        max_serial_len: Option<usize>,
     ) -> Self {
         let vote_accumulator = match parallel {
             Parallel::No => Self::accumulate_votes_serial(election, keep_factors, pascal),
-            Parallel::Rayon => Self::accumulate_votes_rayon(election, keep_factors, pascal),
+            Parallel::Rayon => {
+                Self::accumulate_votes_rayon(election, keep_factors, pascal, max_serial_len)
+            }
             Parallel::Custom => thread_pool.unwrap().accumulate_votes(keep_factors),
         };
 
@@ -141,22 +144,53 @@ where
         election: &Election,
         keep_factors: &[R],
         pascal: Option<&[Vec<I>]>,
+        max_serial_len: Option<usize>,
     ) -> VoteAccumulator<I, R> {
-        election
-            .ballots
-            .par_iter()
-            .enumerate()
-            .fold_with(
-                VoteAccumulator::new(election.num_candidates),
-                |mut vote_accumulator, (i, ballot)| {
-                    Self::process_ballot(&mut vote_accumulator, keep_factors, pascal, i, ballot);
-                    vote_accumulator
-                },
-            )
-            .reduce(
-                || VoteAccumulator::new(election.num_candidates),
-                |a, b| a.reduce(b),
-            )
+        match max_serial_len {
+            None => election
+                .ballots
+                .par_iter()
+                .enumerate()
+                .fold_with(
+                    VoteAccumulator::new(election.num_candidates),
+                    |mut vote_accumulator, (i, ballot)| {
+                        Self::process_ballot(
+                            &mut vote_accumulator,
+                            keep_factors,
+                            pascal,
+                            i,
+                            ballot,
+                        );
+                        vote_accumulator
+                    },
+                )
+                .reduce(
+                    || VoteAccumulator::new(election.num_candidates),
+                    |a, b| a.reduce(b),
+                ),
+            Some(max_len) => election
+                .ballots
+                .par_iter()
+                .with_max_len(max_len)
+                .enumerate()
+                .fold_with(
+                    VoteAccumulator::new(election.num_candidates),
+                    |mut vote_accumulator, (i, ballot)| {
+                        Self::process_ballot(
+                            &mut vote_accumulator,
+                            keep_factors,
+                            pascal,
+                            i,
+                            ballot,
+                        );
+                        vote_accumulator
+                    },
+                )
+                .reduce(
+                    || VoteAccumulator::new(election.num_candidates),
+                    |a, b| a.reduce(b),
+                ),
+        }
     }
 }
 
@@ -1071,11 +1105,13 @@ mod test {
                     Parallel::No,
                     None,
                     None,
+                    None,
                 );
                 let vote_count_parallel = VoteCount::<I, R>::count_votes(
                     &election,
                     &keep_factors,
                     Parallel::Rayon,
+                    None,
                     None,
                     None,
                 );
@@ -1103,6 +1139,7 @@ mod test {
                     Parallel::No,
                     None,
                     None,
+                    None,
                 );
 
                 for num_threads in 1..=10 {
@@ -1119,6 +1156,7 @@ mod test {
                             &keep_factors,
                             Parallel::Custom,
                             Some(&thread_pool),
+                            None,
                             None,
                         );
                         assert_eq!(
@@ -1664,6 +1702,7 @@ mod test {
                     black_box(&election),
                     black_box(&keep_factors),
                     parallel,
+                    None,
                     None,
                     None,
                 )

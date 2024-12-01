@@ -38,6 +38,7 @@ pub fn stv_droop<I, R>(
     parallel: Parallel,
     num_threads: Option<NonZeroUsize>,
     disable_work_stealing: bool,
+    max_serial_len: Option<NonZeroUsize>,
     force_positive_surplus: bool,
     equalize: bool,
 ) -> io::Result<ElectionResult>
@@ -76,6 +77,7 @@ where
                 force_positive_surplus,
                 pascal,
                 None,
+                None,
             );
             state.run(stdout, package_name, omega_exponent)
         }
@@ -95,6 +97,7 @@ where
                 force_positive_surplus,
                 pascal,
                 None,
+                max_serial_len.map(|x| x.into()),
             );
             state.run(stdout, package_name, omega_exponent)
         }
@@ -130,6 +133,7 @@ where
                 force_positive_surplus,
                 pascal,
                 Some(thread_pool),
+                None,
             );
             state.run(stdout, package_name, omega_exponent)
         }),
@@ -201,6 +205,7 @@ pub struct State<'scope, 'e, I, R> {
     /// enabled.
     pascal: Option<&'e [Vec<I>]>,
     thread_pool: Option<ThreadPool<'scope, I, R>>,
+    max_serial_len: Option<usize>,
     _phantom: PhantomData<I>,
 }
 
@@ -225,6 +230,7 @@ where
         force_positive_surplus: bool,
         pascal: Option<&'a [Vec<I>]>,
         thread_pool: Option<ThreadPool<'scope, I, R>>,
+        max_serial_len: Option<usize>,
     ) -> State<'scope, 'a, I, R> {
         State {
             election,
@@ -250,6 +256,7 @@ where
             force_positive_surplus,
             pascal,
             thread_pool,
+            max_serial_len,
             _phantom: PhantomData,
         }
     }
@@ -337,6 +344,7 @@ where
             self.parallel,
             self.thread_pool.as_ref(),
             self.pascal,
+            self.max_serial_len,
         )
     }
 
@@ -936,6 +944,7 @@ mod test {
                 force_positive_surplus: self.force_positive_surplus.unwrap(),
                 pascal: self.pascal.unwrap(),
                 thread_pool: None,
+                max_serial_len: None,
                 _phantom: PhantomData,
             }
         }
@@ -1061,6 +1070,7 @@ mod test {
             parallel,
             None,
             false,
+            None,
             false,
             false,
         )
@@ -1288,6 +1298,7 @@ Action: Count Complete
             parallel,
             None,
             false,
+            None,
             false,
             true,
         )
@@ -1454,6 +1465,7 @@ Action: Count Complete
             Parallel::No,
             None,
             false,
+            None,
             false,
             false,
         )
@@ -1603,6 +1615,7 @@ Action: Count Complete
             Parallel::Custom,
             /* num_threads = */ Some(NonZeroUsize::new(2).unwrap()),
             false,
+            None,
             false,
             false,
         );
@@ -1621,6 +1634,7 @@ Action: Count Complete
                 Parallel::Custom,
                 /* num_threads = */ Some(NonZeroUsize::new(2).unwrap()),
                 false,
+                None,
                 false,
                 false,
             )
@@ -1739,7 +1753,15 @@ Action: Count Complete
             ])
             .build();
         let omega_exponent = 6;
-        let state = State::new(&election, omega_exponent, Parallel::No, false, None, None);
+        let state = State::new(
+            &election,
+            omega_exponent,
+            Parallel::No,
+            false,
+            None,
+            None,
+            None,
+        );
 
         let mut buf = Vec::new();
         let count = state
