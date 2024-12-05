@@ -205,7 +205,7 @@ pub struct State<'scope, 'e, I, R> {
 }
 
 #[cfg(test)]
-impl<'scope, 'e, I, R> State<'scope, 'e, I, R> {
+impl<'e, I, R> State<'_, 'e, I, R> {
     fn builder() -> test::StateBuilder<'e, I, R> {
         test::StateBuilder::default()
     }
@@ -829,7 +829,7 @@ mod test {
         _phantom: PhantomData<I>,
     }
 
-    impl<'e, I, R> Default for StateBuilder<'e, I, R> {
+    impl<I, R> Default for StateBuilder<'_, I, R> {
         fn default() -> Self {
             StateBuilder {
                 election: None,
