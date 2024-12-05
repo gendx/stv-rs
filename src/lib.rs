@@ -12,9 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! Single Transferable Vote implementation in Rust. The Meek algorithm is
-//! implemented in the corresponding module.
-
+#![doc = include_str!("../README.md")]
 #![forbid(missing_docs, unsafe_code)]
 #![cfg_attr(test, feature(test, cfg_overflow_checks, iter_array_chunks))]
 
