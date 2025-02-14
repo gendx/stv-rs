@@ -1,12 +1,15 @@
 Traceback (most recent call last):
   File "/home/runner/work/stv-rs/stv-rs/droop/Droop.py", line 172, in <module>
     report = main(eoptions)
+             ^^^^^^^^^^^^^^
   File "/home/runner/work/stv-rs/stv-rs/droop/Droop.py", line 96, in main
     countElection(E, reps)
   File "/home/runner/work/stv-rs/stv-rs/droop/Droop.py", line 87, in countElection
     E.count()
   File "/home/runner/work/stv-rs/stv-rs/droop/droop/election.py", line 139, in count
     self.postCheck()    # post-election sanity check
-  File "/home/runner/work/stv-rs/stv-rs/droop/droop/election.py", line 146, in postCheck
-    nElected < self.nSeats and nElected == nEligible)
+    ^^^^^^^^^^^^^^^^
+  File "/home/runner/work/stv-rs/stv-rs/droop/droop/election.py", line 145, in postCheck
+    assert(nElected == self.nSeats or
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
 AssertionError

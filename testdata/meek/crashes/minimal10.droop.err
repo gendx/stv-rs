@@ -1,14 +1,18 @@
 Traceback (most recent call last):
   File "/home/runner/work/stv-rs/stv-rs/droop/Droop.py", line 172, in <module>
     report = main(eoptions)
+             ^^^^^^^^^^^^^^
   File "/home/runner/work/stv-rs/stv-rs/droop/Droop.py", line 96, in main
     countElection(E, reps)
   File "/home/runner/work/stv-rs/stv-rs/droop/Droop.py", line 87, in countElection
     E.count()
   File "/home/runner/work/stv-rs/stv-rs/droop/droop/election.py", line 133, in count
     self.rule.count()   ### count the election ###
+    ^^^^^^^^^^^^^^^^^
   File "/home/runner/work/stv-rs/stv-rs/droop/droop/rules/meek.py", line 403, in count
     low_candidate = breakTie(E, low_candidates, 'defeat')
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   File "/home/runner/work/stv-rs/stv-rs/droop/droop/rules/meek.py", line 145, in breakTie
     t = C.byTieOrder(tied)[0]
+        ~~~~~~~~~~~~~~~~~~^^^
 IndexError: list index out of range
