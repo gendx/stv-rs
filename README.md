@@ -21,7 +21,8 @@ For now, only
 [Meek's counting method](https://en.wikipedia.org/wiki/Counting_single_transferable_votes#Meek)
 is implemented.
 
-You can find more details in the following blog article: [STV-rs: Single Transferable Vote implementation in Rust](https://gendignoux.com/blog/2023/03/27/single-transferable-vote.html).
+You can find more details in the following blog article:
+[STV-rs: Single Transferable Vote implementation in Rust](https://gendignoux.com/blog/2023/03/27/single-transferable-vote.html).
 
 ## Usage
 
@@ -51,26 +52,25 @@ $ RUST_LOG=$LOG_LEVEL cargo run \
 You can control the arithmetic used to count votes via the `--arithmetic`
 command-line flag. The following implementations are available.
 
--   `fixed9`: Each arithmetic operation is rounded to 9 decimal places. Rounding
-    is downwards except for explicitly-marked operations (computing keep
-    factors). This is backed by Rust's `i64` and therefore might overflow.
-    Compiling with the `checked_i64` feature (enabled by default) will trap
-    integer overflows and make the program panic, rather than continuing with
-    incorrect numbers.
--   `bigfixed9`: Same as `fixed9`, but this is backed by a big integer type
-    (from the [`num` crate](https://crates.io/crates/num)) and therefore won't
-    overflow. On the flip side, this will be slower than `fixed9`.
--   `float64`: Use 64-bit floating-point arithmetic (Rust's `f64`). Generally
-    fast but more brittle to reproduce, because the rounding introduced by
-    floating-point arithmetic means that basic properties such as
-    [associativity](https://en.wikipedia.org/wiki/Associative_property) and
-    [distributivity](https://en.wikipedia.org/wiki/Distributive_property) don't
-    hold.
--   `exact`: Use exact rational numbers without rounding. The computational
-    complexity is generally too high to complete more than a few rounds.
--   `approx`: Use exact rational numbers within each STV round, but then round
-    the Meek keep factors after each round, to avoid computational complexity
-    explosion.
+- `fixed9`: Each arithmetic operation is rounded to 9 decimal places. Rounding
+  is downwards except for explicitly-marked operations (computing keep factors).
+  This is backed by Rust's `i64` and therefore might overflow. Compiling with
+  the `checked_i64` feature (enabled by default) will trap integer overflows and
+  make the program panic, rather than continuing with incorrect numbers.
+- `bigfixed9`: Same as `fixed9`, but this is backed by a big integer type (from
+  the [`num` crate](https://crates.io/crates/num)) and therefore won't overflow.
+  On the flip side, this will be slower than `fixed9`.
+- `float64`: Use 64-bit floating-point arithmetic (Rust's `f64`). Generally fast
+  but more brittle to reproduce, because the rounding introduced by
+  floating-point arithmetic means that basic properties such as
+  [associativity](https://en.wikipedia.org/wiki/Associative_property) and
+  [distributivity](https://en.wikipedia.org/wiki/Distributive_property) don't
+  hold.
+- `exact`: Use exact rational numbers without rounding. The computational
+  complexity is generally too high to complete more than a few rounds.
+- `approx`: Use exact rational numbers within each STV round, but then round the
+  Meek keep factors after each round, to avoid computational complexity
+  explosion.
 
 ### Equalized counting
 
@@ -80,8 +80,8 @@ equally-ranked candidates.
 
 For example, the ballot `a b=c` becomes a superposition of `a b c` (with weight
 1/2) and `a c b` (with weight 1/2). Likewise, the ballot `a b=c=d` is counted as
-a superposition of 6 ballots, each with weight 1/6: `a b c d`, `a b d c`, `a c b
-d`, `a c d b`, `a d b c`, `a d c b`.
+a superposition of 6 ballots, each with weight 1/6: `a b c d`, `a b d c`,
+`a c b d`, `a c d b`, `a d b c`, `a d c b`.
 
 ### Log levels
 
@@ -92,10 +92,9 @@ controlled by setting the `$RUST_LOG` environment variable.
 
 The log levels will provide the following information.
 
--   `info`: Print high-level results: election setup, elected/defeated
-    candidates.
--   `debug`: `info` + print debug information about each STV round.
--   `trace`: `debug` + print how each ballot is counted in each round.
+- `info`: Print high-level results: election setup, elected/defeated candidates.
+- `debug`: `info` + print debug information about each STV round.
+- `trace`: `debug` + print how each ballot is counted in each round.
 
 For more advanced logging control, please check the
 [`env_logger` crate documentation](https://crates.io/crates/env_logger).
@@ -126,15 +125,15 @@ automatically schedule and spread the work across available CPU cores
 
 Here is a non-exhaustive list of STV implementations.
 
--   Python:
-    -   [Droop.py](https://github.com/jklundell/droop).
--   Rust:
-    -   [OpenTally](https://yingtongli.me/git/OpenTally)
-        ([website](https://yingtongli.me/opentally/)),
-    -   [wybr](https://gitlab.com/mbq/wybr)
-        ([crates.io](https://crates.io/crates/wybr)),
-    -   [tallystick](https://github.com/phayes/tallystick)
-        ([crates.io](https://crates.io/crates/tallystick)).
+- Python:
+  - [Droop.py](https://github.com/jklundell/droop).
+- Rust:
+  - [OpenTally](https://yingtongli.me/git/OpenTally)
+    ([website](https://yingtongli.me/opentally/)),
+  - [wybr](https://gitlab.com/mbq/wybr)
+    ([crates.io](https://crates.io/crates/wybr)),
+  - [tallystick](https://github.com/phayes/tallystick)
+    ([crates.io](https://crates.io/crates/tallystick)).
 
 ## Contributing
 
