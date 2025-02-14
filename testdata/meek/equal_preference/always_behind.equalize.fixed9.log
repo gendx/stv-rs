@@ -1,0 +1,90 @@
+
+Election: Example election where date is never favored over cherry (nor any other fruit)
+
+	Implementation: STV-rs (equalized counting)
+	Rule: Meek Parametric (omega = 1/10^6)
+	Arithmetic: fixed-point decimal arithmetic (9 places)
+	Seats: 3
+	Ballots: 199
+	Quota: 49.750000001
+	Omega: 0.000001000
+
+	Add eligible: apple
+	Add eligible: banana
+	Add eligible: cherry
+	Add eligible: date
+Action: Begin Count
+	Hopeful:  apple (99.333333333)
+	Hopeful:  banana (99.333333333)
+	Hopeful:  cherry (0.333333333)
+	Hopeful:  date (0.000000000)
+	Quota: 49.750000001
+	Votes: 198.999999999
+	Residual: 0.000000000
+	Total: 198.999999999
+	Surplus: 0.000000000
+Round 1:
+Action: Elect: apple
+	Elected:  apple (99.333333333)
+	Hopeful:  banana (99.333333333)
+	Hopeful:  cherry (0.333333333)
+	Hopeful:  date (0.000000000)
+	Quota: 49.750000000
+	Votes: 198.999999999
+	Residual: 0.000000001
+	Total: 199.000000000
+	Surplus: 0.000000000
+Action: Elect: banana
+	Elected:  apple (99.333333333)
+	Elected:  banana (99.333333333)
+	Hopeful:  cherry (0.333333333)
+	Hopeful:  date (0.000000000)
+	Quota: 49.750000000
+	Votes: 198.999999999
+	Residual: 0.000000001
+	Total: 199.000000000
+	Surplus: 0.000000000
+Action: Iterate (elected)
+	Quota: 49.750000000
+	Votes: 198.999999999
+	Residual: 0.000000001
+	Total: 199.000000000
+	Surplus: 99.166666666
+Round 2:
+Action: Elect: cherry
+	Elected:  apple (1.246737089)
+	Elected:  banana (1.246737089)
+	Elected:  cherry (0.987522052)
+	Hopeful:  date (0.000000000)
+	Quota: 0.870249058
+	Votes: 3.480996230
+	Residual: 195.519003770
+	Total: 199.000000000
+	Surplus: 1.513442850
+Action: Iterate (elected)
+	Quota: 0.870249058
+	Votes: 3.480996230
+	Residual: 195.519003770
+	Total: 199.000000000
+	Surplus: 0.870249056
+Action: Defeat remaining: date
+	Elected:  apple (1.246737089)
+	Elected:  banana (1.246737089)
+	Elected:  cherry (0.987522052)
+	Defeated: date (0.000000000)
+	Quota: 0.870249058
+	Votes: 3.480996230
+	Residual: 195.519003770
+	Total: 199.000000000
+	Surplus: 0.870249056
+Action: Count Complete
+	Elected:  apple (1.246737089)
+	Elected:  banana (1.246737089)
+	Elected:  cherry (0.987522052)
+	Defeated: date (0.000000000)
+	Quota: 0.870249058
+	Votes: 3.480996230
+	Residual: 195.519003770
+	Total: 199.000000000
+	Surplus: 0.870249056
+

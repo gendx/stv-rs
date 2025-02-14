@@ -1,0 +1,12 @@
+4 3
+[nick apple banana cherry date]
+[tie apple banana cherry date]
+99 apple 0
+99 banana 0
+1 apple=banana=cherry date 0
+0
+"apple"
+"banana"
+"cherry"
+"date"
+"Example election where date is never favored over cherry (nor any other fruit)"

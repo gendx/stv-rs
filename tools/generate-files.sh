@@ -79,6 +79,7 @@ for FILE in \
   bigint/ballot_count_overflows \
   bigint/ballot_sum_overflows \
   bigint/rand_hypergeometric_many \
+  equal_preference/always_behind \
   equal_preference/equal_preference \
   random/rand_2x10 \
   random/rand_5x4 \
@@ -95,6 +96,7 @@ done
 
 # Meek
 for FILE in \
+  equal_preference/always_behind \
   equal_preference/equal_preference \
   equal_preference/equal_preference_droop \
   equal_preference/equal_preference_equalize \
