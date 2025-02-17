@@ -626,8 +626,8 @@ where
                 // remaining power being 1 minus the used power, because that would round up the
                 // remaining power and potentially giving more votes to candidates further in
                 // the ballot.
-                // TODO: Multiplication is not associative! Calculate this product in a
-                // deterministic and fair way.
+                // TODO: Multiplication is not associative for all arithmetic backends!
+                // Calculate this product in a deterministic and fair way.
                 let remaining_power: R = ranking_unused_factors.into_iter().product();
                 voting_power *= remaining_power;
             }

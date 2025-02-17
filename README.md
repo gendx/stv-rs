@@ -47,6 +47,57 @@ $ RUST_LOG=$LOG_LEVEL cargo run \
   --equalize
 ```
 
+### Recommended parameters
+
+In terms of correctness, there is no particular recommendation for `--parallel`
+as all three options should behave the same: `no` is the simplest
+implementation, `rayon` and `custom` leverage multi-threading (`custom` should
+be the fastest) but their implementations also use more code.
+
+To count an election with Meek's method, the following sets of parameters are
+recommended.
+
+- If the election doesn't allow ranking multiple candidates equally:
+  `--arithmetic=bigfixed9` or `--arithmetic=approx`.
+- If the election allows ranking multiple candidates equally:
+  `--arithmetic=approx --equalize`.
+
+Rationale:
+
+- Using `--arithmetic=fixed9` can lead to integer overflows if there are too
+  many ballots. These can either crash the program when overflow checks are
+  active (leading to no election result) or be silently ignored causing
+  completely invalid results or further crashes in the program. A better
+  alternative is `--arithmetic=bigfixed9`, which uses a big-integer backend to
+  avoid any integer overflow.
+- Using `--arithmetic=float64` makes the results dependent on the order of
+  ballots in the input file. Additionally, combining it with any parallelism
+  (via the `--parallel` flag) makes them non-deterministic at all from one
+  execution to the next. These issues are because floating-point arithmetic
+  isn't [associative](https://en.wikipedia.org/wiki/Associative_property).
+- Using `--arithmetic=exact`, while not incorrect in itself, causes the
+  algorithm complexity to explode (except for trivially small election inputs),
+  leading to no result at all. A better alternative is `--arithmetic=approx`,
+  which uses exact arithmetic to sum the ballots, but rounds the keep factors at
+  each iteration.
+- Counting ballots containing equally-ranked candidates without the `--equalize`
+  flag uses an incorrect algorithm inherited from
+  [Droop.py](https://github.com/jklundell/droop), where candidates ranked
+  further in a ballot receive more votes than they should. This can for example
+  lead to outcomes where a candidate never favored is nonetheless elected
+  ([example](https://github.com/gendx/stv-rs/blob/main/testdata/ballots/equal_preference/always_behind.blt)).
+  A technical explanation can be found in
+  [this blog post](https://gendignoux.com/blog/2023/03/27/single-transferable-vote.html#prior-art-drooppy).
+  Additionally, the complexity can be exponential when ballots contain many sets
+  of equally-ranked candidates
+  ([example](https://github.com/gendx/stv-rs/blob/main/testdata/ballots/skewed.blt)).
+- Lastly, the algorithm used by `--equalize` assumes that the multiplication
+  operation is
+  [associative](https://en.wikipedia.org/wiki/Associative_property), otherwise
+  the results can change when changing the order of candidates in the input.
+  Multiplication is unfortunately not associative for `--arithmetic=bigfixed9`,
+  therefore `--arithmetic=approx` should be used.
+
 ### Arithmetic implementations
 
 You can control the arithmetic used to count votes via the `--arithmetic`

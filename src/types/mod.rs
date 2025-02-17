@@ -50,6 +50,11 @@ impl Election {
         ElectionBuilder::default()
     }
 
+    /// Returns true if any ballot contains candidates ranked equally.
+    pub fn has_any_tied_ballot(&self) -> bool {
+        self.ballots.iter().any(|b| b.has_tie())
+    }
+
     pub(crate) fn debug_allocations(&self) {
         if !log_enabled!(Debug) {
             return;
