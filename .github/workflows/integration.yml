@@ -100,7 +100,7 @@ jobs:
 
       - name: Check output
         run: |
-          target/release/stv-rs ${{ matrix.flags }} | diff -s man/${{ matrix.file }}.txt -
+          target/release/stv-rs ${{ matrix.flags }} | diff -u -s man/${{ matrix.file }}.txt -
 
   random_ballots_tests:
     needs: build
@@ -146,7 +146,7 @@ jobs:
 
       - name: Check generated ballot
         run: |
-          target/release/examples/random_ballots --seed=43 --ballot-pattern=${{ matrix.pattern }} --num-ballots=${{ matrix.num_ballots }} ${{ matrix.cli }} | diff -s testdata/ballots/${{ matrix.file }}.blt -
+          target/release/examples/random_ballots --seed=43 --ballot-pattern=${{ matrix.pattern }} --num-ballots=${{ matrix.num_ballots }} ${{ matrix.cli }} | diff -u -s testdata/ballots/${{ matrix.file }}.blt -
 
   meek_tests:
     needs: build
@@ -202,19 +202,19 @@ jobs:
 
       - name: Check STV-rs output (ballot from stdin)
         run: |
-          target/release/stv-rs --arithmetic fixed9 meek --parallel=${{ matrix.parallel }} < testdata/ballots/${{ matrix.file }}.blt | diff -s testdata/meek/${{ matrix.file }}.fixed9.log -
+          target/release/stv-rs --arithmetic fixed9 meek --parallel=${{ matrix.parallel }} < testdata/ballots/${{ matrix.file }}.blt | diff -u -s testdata/meek/${{ matrix.file }}.fixed9.log -
       - name: Check STV-rs output (ballot from CLI)
         run: |
-          target/release/stv-rs --arithmetic fixed9 --input testdata/ballots/${{ matrix.file }}.blt meek --parallel=${{ matrix.parallel }} | diff -s testdata/meek/${{ matrix.file }}.fixed9.log -
+          target/release/stv-rs --arithmetic fixed9 --input testdata/ballots/${{ matrix.file }}.blt meek --parallel=${{ matrix.parallel }} | diff -u -s testdata/meek/${{ matrix.file }}.fixed9.log -
       - name: Check STV-rs output (equalized counting)
         run: |
-          target/release/stv-rs --arithmetic fixed9 --input testdata/ballots/${{ matrix.file }}.blt meek --parallel=${{ matrix.parallel }} --equalize | diff -s testdata/meek/${{ matrix.file }}.equalize.fixed9.log -
+          target/release/stv-rs --arithmetic fixed9 --input testdata/ballots/${{ matrix.file }}.blt meek --parallel=${{ matrix.parallel }} --equalize | diff -u -s testdata/meek/${{ matrix.file }}.equalize.fixed9.log -
       - name: Check Droop output
         if: matrix.droop == true && matrix.parallel == 'rayon'
         run: |
           sed -i "s/Implementation: STV-rs/Droop package: droop v0.14/g" testdata/meek/${{ matrix.file }}.fixed9.log
-          python3 droop/Droop.py meek fixed precision=9 omega=6 defeat_batch=none testdata/ballots/${{ matrix.file }}.blt 2> droop.err | diff -s testdata/meek/${{ matrix.file }}.fixed9.log -
-          echo -n "" | diff -s - droop.err
+          python3 droop/Droop.py meek fixed precision=9 omega=6 defeat_batch=none testdata/ballots/${{ matrix.file }}.blt 2> droop.err | diff -u -s testdata/meek/${{ matrix.file }}.fixed9.log -
+          echo -n "" | diff -u -s - droop.err
 
   arithmetic_tests:
     needs: build
@@ -255,10 +255,10 @@ jobs:
 
       - name: Check STV-rs output
         run: |
-          target/release/stv-rs --arithmetic ${{ matrix.arithmetic }} --input testdata/ballots/${{ matrix.file }}.blt meek --parallel=${{ matrix.parallel }} | diff -s testdata/meek/${{ matrix.file }}.${{ matrix.suffix }}.log -
+          target/release/stv-rs --arithmetic ${{ matrix.arithmetic }} --input testdata/ballots/${{ matrix.file }}.blt meek --parallel=${{ matrix.parallel }} | diff -u -s testdata/meek/${{ matrix.file }}.${{ matrix.suffix }}.log -
       - name: Check STV-rs output (equalized counting)
         run: |
-          target/release/stv-rs --arithmetic ${{ matrix.arithmetic }} --input testdata/ballots/${{ matrix.file }}.blt meek --parallel=${{ matrix.parallel }} --equalize | diff -s testdata/meek/${{ matrix.file }}.equalize.${{ matrix.suffix }}.log -
+          target/release/stv-rs --arithmetic ${{ matrix.arithmetic }} --input testdata/ballots/${{ matrix.file }}.blt meek --parallel=${{ matrix.parallel }} --equalize | diff -u -s testdata/meek/${{ matrix.file }}.equalize.${{ matrix.suffix }}.log -
 
   plurality_tests:
     needs: build
@@ -288,7 +288,7 @@ jobs:
 
       - name: Check STV-rs output
         run: |
-          target/release/stv-rs --arithmetic fixed9 plurality < testdata/ballots/${{ matrix.file }}.blt | diff -s testdata/plurality_block_voting/${{ matrix.file }}.fixed9.log -
+          target/release/stv-rs --arithmetic fixed9 plurality < testdata/ballots/${{ matrix.file }}.blt | diff -u -s testdata/plurality_block_voting/${{ matrix.file }}.fixed9.log -
 
   histogram_tests:
     needs: build
@@ -324,7 +324,7 @@ jobs:
 
       - name: Check histogram output
         run: |
-          target/release/examples/histogram < testdata/ballots/${{ matrix.file }}.blt | diff -s testdata/histogram/${{ matrix.file }}.csv -
+          target/release/examples/histogram < testdata/ballots/${{ matrix.file }}.blt | diff -u -s testdata/histogram/${{ matrix.file }}.csv -
 
   surplus_tests:
     needs: build
@@ -352,7 +352,7 @@ jobs:
 
       - name: Check STV-rs output
         run: |
-          target/release/stv-rs --arithmetic fixed9 --input testdata/ballots/${{ matrix.file }}.blt meek --parallel=${{ matrix.parallel }} --force-positive-surplus | diff -s testdata/meek/${{ matrix.output }}.fixed9.log -
+          target/release/stv-rs --arithmetic fixed9 --input testdata/ballots/${{ matrix.file }}.blt meek --parallel=${{ matrix.parallel }} --force-positive-surplus | diff -u -s testdata/meek/${{ matrix.output }}.fixed9.log -
 
   numeric_tests:
     needs: build
@@ -388,13 +388,13 @@ jobs:
 
       - name: Check numeric ballot
         run: |
-          target/release/examples/remove_nicknames ${{ matrix.flags }} < testdata/ballots/${{ matrix.src }}.blt | diff -s testdata/numeric/${{ matrix.file }}.blt -
+          target/release/examples/remove_nicknames ${{ matrix.flags }} < testdata/ballots/${{ matrix.src }}.blt | diff -u -s testdata/numeric/${{ matrix.file }}.blt -
       - name: Check Droop output
         if: ${{ matrix.flags == '' }}
         run: |
           sed -i "s/Implementation: STV-rs/Droop package: droop v0.14/g" testdata/meek/${{ matrix.src }}.fixed9.log
-          python3 droop/Droop.py meek fixed precision=9 omega=6 defeat_batch=none testdata/numeric/${{ matrix.file }}.blt 2> droop.err | diff -s testdata/meek/${{ matrix.src }}.fixed9.log -
-          echo -n "" | diff -s - droop.err
+          python3 droop/Droop.py meek fixed precision=9 omega=6 defeat_batch=none testdata/numeric/${{ matrix.file }}.blt 2> droop.err | diff -u -s testdata/meek/${{ matrix.src }}.fixed9.log -
+          echo -n "" | diff -u -s - droop.err
 
   shuffle_tests:
     needs: build
@@ -431,7 +431,7 @@ jobs:
 
       - name: Check shuffled ballot
         run: |
-          target/release/examples/shuffle_ballots --strategy=${{ matrix.strategy }} < testdata/ballots/${{ matrix.src }}.blt | diff -s testdata/shuffle_ballots/${{ matrix.file }}.blt -
+          target/release/examples/shuffle_ballots --strategy=${{ matrix.strategy }} < testdata/ballots/${{ matrix.src }}.blt | diff -u -s testdata/shuffle_ballots/${{ matrix.file }}.blt -
 
   bigint_tests:
     needs: build
@@ -473,27 +473,27 @@ jobs:
         if: ${{ matrix.equalize == false }}
         run: |
           target/release/stv-rs --arithmetic fixed9 --input testdata/ballots/${{ matrix.file }}.blt meek --num-threads=1 --parallel=${{ matrix.parallel }} > stv.log 2> stv.err || true
-          diff -s testdata/meek/${{ matrix.file }}.fixed9.log stv.log
-          diff -s testdata/meek/${{ matrix.file }}.fixed9${{ matrix.error_suffix }}.err stv.err
+          diff -u -s testdata/meek/${{ matrix.file }}.fixed9.log stv.log
+          diff -u -s testdata/meek/${{ matrix.file }}.fixed9${{ matrix.error_suffix }}.err stv.err
       - name: Check STV-rs output (big integer)
         if: ${{ matrix.equalize == false }}
         run: |
           target/release/stv-rs --arithmetic bigfixed9 --input testdata/ballots/${{ matrix.file }}.blt meek --num-threads=1 --parallel=${{ matrix.parallel }} > stv.log 2> stv.err || true
-          diff -s testdata/meek/${{ matrix.file }}.bigfixed9.log stv.log
-          diff -s testdata/meek/${{ matrix.file }}.bigfixed9.err stv.err
+          diff -u -s testdata/meek/${{ matrix.file }}.bigfixed9.log stv.log
+          diff -u -s testdata/meek/${{ matrix.file }}.bigfixed9.err stv.err
 
       - name: Check STV-rs output (equalized counting)
         if: ${{ matrix.equalize == true }}
         run: |
           target/release/stv-rs --arithmetic fixed9 --input testdata/ballots/${{ matrix.file }}.blt meek --equalize --num-threads=1 --parallel=${{ matrix.parallel }} > stv.log 2> stv.err || true
-          diff -s testdata/meek/${{ matrix.file }}.equalize.fixed9.log stv.log
-          diff -s testdata/meek/${{ matrix.file }}.equalize.fixed9${{ matrix.error_suffix }}.err stv.err
+          diff -u -s testdata/meek/${{ matrix.file }}.equalize.fixed9.log stv.log
+          diff -u -s testdata/meek/${{ matrix.file }}.equalize.fixed9${{ matrix.error_suffix }}.err stv.err
       - name: Check STV-rs output (equalized counting, big integer)
         if: ${{ matrix.equalize == true }}
         run: |
           target/release/stv-rs --arithmetic bigfixed9 --input testdata/ballots/${{ matrix.file }}.blt meek --equalize --num-threads=1 --parallel=${{ matrix.parallel }} > stv.log 2> stv.err || true
-          diff -s testdata/meek/${{ matrix.file }}.equalize.bigfixed9.log stv.log
-          diff -s testdata/meek/${{ matrix.file }}.equalize.bigfixed9.err stv.err
+          diff -u -s testdata/meek/${{ matrix.file }}.equalize.bigfixed9.log stv.log
+          diff -u -s testdata/meek/${{ matrix.file }}.equalize.bigfixed9.err stv.err
 
   crash_fixed9_tests:
     needs: build
@@ -521,10 +521,10 @@ jobs:
 
       - name: Check STV-rs output
         run: |
-          target/release/stv-rs --arithmetic fixed9 --input testdata/ballots/${{ matrix.file }}.blt meek --parallel=${{ matrix.parallel }} --force-positive-surplus | diff -s testdata/meek/${{ matrix.file }}.fixed9.log -
+          target/release/stv-rs --arithmetic fixed9 --input testdata/ballots/${{ matrix.file }}.blt meek --parallel=${{ matrix.parallel }} --force-positive-surplus | diff -u -s testdata/meek/${{ matrix.file }}.fixed9.log -
       - name: Check STV-rs output (equalized counting)
         run: |
-          target/release/stv-rs --arithmetic fixed9 --input testdata/ballots/${{ matrix.file }}.blt meek --parallel=${{ matrix.parallel }} --force-positive-surplus --equalize | diff -s testdata/meek/${{ matrix.file }}.equalize.fixed9.log -
+          target/release/stv-rs --arithmetic fixed9 --input testdata/ballots/${{ matrix.file }}.blt meek --parallel=${{ matrix.parallel }} --force-positive-surplus --equalize | diff -u -s testdata/meek/${{ matrix.file }}.equalize.fixed9.log -
 
   crash_droop_tests:
     strategy:
@@ -545,5 +545,5 @@ jobs:
       - name: Check that Droop fails
         run: |
           python3 droop/Droop.py meek fixed precision=9 omega=6 defeat_batch=none testdata/ballots/${{ matrix.file }}.blt > droop.log 2> droop.err || true
-          diff -s testdata/meek/${{ matrix.file }}.droop.err droop.err
-          echo -n "" | diff -s - droop.log
+          diff -u -s testdata/meek/${{ matrix.file }}.droop.err droop.err
+          echo -n "" | diff -u -s - droop.log
