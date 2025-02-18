@@ -35,4 +35,4 @@ checked_i64 = []
 log_parallelism = []
 
 [package.metadata.docs.rs]
-rustdoc-args = ["--document-private-items"]
+rustdoc-args = ["--document-private-items", "--generate-link-to-definition"]
