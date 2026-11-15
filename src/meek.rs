@@ -29,7 +29,7 @@ use std::time::Instant;
 
 /// Runs an election according to Meek's rules. This aims to produce
 /// reproducible results w.r.t. Droop.py.
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments)]
 pub fn stv_droop<I, R>(
     stdout: &mut impl io::Write,
     election: &Election,

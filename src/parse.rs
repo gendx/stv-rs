@@ -195,7 +195,7 @@ pub fn parse_election(
 
     // This block intentionally clones the ballots into themselves to obtain a
     // more efficient memory layout, which conflicts with this lint.
-    #[allow(clippy::assigning_clones)]
+    #[expect(clippy::assigning_clones)]
     if options.optimize_layout {
         ballots.sort_by(|a, b| {
             let ita = a.order().map(|rank| rank.len());

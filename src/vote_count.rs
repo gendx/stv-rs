@@ -701,7 +701,6 @@ where
     ///   this function.
     /// - `pascal_row`: row of Pascal's triangle with `n` elements, where `n` is
     ///   the length of the `ranking_unused_factors` array.
-    #[allow(clippy::needless_range_loop)]
     fn polyweights(ranking_unused_factors: &[R], skip: usize, pascal_row: &[I]) -> R {
         let n = ranking_unused_factors.len() - 1;
         let poly = expand_polynomial(ranking_unused_factors, skip);
@@ -729,7 +728,7 @@ where
 /// associative (e.g. due to rounding). For example, the last output coefficient
 /// `p[n]` is computed as `a * b * ... * z` (in this order), so re-ordering `(a,
 /// b, ..., z)` can lead to a different result in case of non-associativity.
-#[allow(clippy::needless_range_loop)]
+#[expect(clippy::needless_range_loop)]
 fn expand_polynomial<I, R>(coefficients: &[R], skip: usize) -> Vec<R>
 where
     I: Integer,

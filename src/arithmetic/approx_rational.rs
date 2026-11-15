@@ -285,7 +285,6 @@ impl Denom {
 
 impl Mul<&'_ Denom> for &'_ Denom {
     type Output = Denom;
-    #[allow(clippy::needless_range_loop)]
     fn mul(self, rhs: &'_ Denom) -> Denom {
         let mut primes = [0; Denom::NUM_PRIMES];
         for i in 0..Denom::NUM_PRIMES {
@@ -402,7 +401,7 @@ impl Mul<BigInt> for ApproxRational {
 }
 impl Div<BigInt> for ApproxRational {
     type Output = Self;
-    #[allow(clippy::suspicious_arithmetic_impl)]
+    #[expect(clippy::suspicious_arithmetic_impl)]
     fn div(self, rhs: BigInt) -> Self {
         ApproxRational {
             num: self.num,
@@ -487,7 +486,7 @@ impl Mul<&'_ BigInt> for &'_ ApproxRational {
 }
 impl Div<&'_ BigInt> for &'_ ApproxRational {
     type Output = ApproxRational;
-    #[allow(clippy::suspicious_arithmetic_impl)]
+    #[expect(clippy::suspicious_arithmetic_impl)]
     fn div(self, rhs: &'_ BigInt) -> ApproxRational {
         ApproxRational {
             num: self.num.clone(),
@@ -536,7 +535,7 @@ impl MulAssign<&'_ Self> for ApproxRational {
     }
 }
 impl DivAssign<&'_ BigInt> for ApproxRational {
-    #[allow(clippy::suspicious_op_assign_impl)]
+    #[expect(clippy::suspicious_op_assign_impl)]
     fn div_assign(&mut self, rhs: &'_ BigInt) {
         self.denom = &self.denom * &Denom::decompose(rhs.clone());
     }

@@ -318,7 +318,6 @@ pub(crate) mod test {
             })
         }
 
-        #[allow(clippy::eq_op)]
         pub fn testi_add_is_commutative() {
             let test_values = I::get_positive_test_values();
             Self::loopi_check2(&test_values, |a, b| {
@@ -348,7 +347,7 @@ pub(crate) mod test {
             });
         }
 
-        #[allow(clippy::eq_op)]
+        #[expect(clippy::eq_op)]
         pub fn testi_sub_self() {
             let test_values = I::get_positive_test_values();
             Self::loopi_check1(&test_values, |a| {
@@ -528,7 +527,6 @@ pub(crate) mod test {
             })
         }
 
-        #[allow(clippy::eq_op)]
         pub fn test_add_is_commutative() {
             let test_values = R::get_positive_test_values();
             Self::loop_check2(&test_values, |a, b| {
@@ -554,7 +552,7 @@ pub(crate) mod test {
             });
         }
 
-        #[allow(clippy::eq_op)]
+        #[expect(clippy::eq_op)]
         pub fn test_sub_self() {
             let test_values = R::get_positive_test_values();
             Self::loop_check1(&test_values, |a| {
