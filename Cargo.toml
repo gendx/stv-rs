@@ -12,6 +12,10 @@ exclude = ["man/*", "testdata/*", "tools/*", ".github/*"]
 edition = "2021"
 rust-version = "1.75.0"
 
+[package.metadata.docs.rs]
+features = ["checked_i64", "log_parallelism"]
+rustdoc-args = ["--document-private-items", "--generate-link-to-definition"]
+
 [dependencies]
 clap = { version = "4.5", features = ["derive"] }
 env_logger = "0.11"
@@ -34,5 +38,3 @@ default = ["checked_i64"]
 checked_i64 = []
 log_parallelism = []
 
-[package.metadata.docs.rs]
-rustdoc-args = ["--document-private-items", "--generate-link-to-definition"]

@@ -1,0 +1,13 @@
+on: [push, pull_request]
+name: Build documentation on nightly toolchain
+jobs:
+  rustdoc:
+    runs-on: ubuntu-latest
+    env:
+      RUSTDOCFLAGS: "-D warnings --cfg docsrs -Z unstable-options --generate-link-to-definition"
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@nightly
+
+      - name: Build documentation
+        run: cargo doc --verbose --features=checked_i64,log_parallelism --no-deps
