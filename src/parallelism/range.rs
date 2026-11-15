@@ -17,10 +17,10 @@ use log::debug;
 use log::{info, trace};
 #[cfg(feature = "log_parallelism")]
 use std::ops::AddAssign;
-use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 #[cfg(feature = "log_parallelism")]
 use std::sync::Mutex;
+use std::sync::atomic::{AtomicU64, Ordering};
 
 /// A factory for handing out ranges of items to various threads.
 pub trait RangeFactory {

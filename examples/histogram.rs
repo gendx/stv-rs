@@ -19,9 +19,9 @@
 #![forbid(missing_docs, unsafe_code)]
 
 use num::{BigInt, BigRational, ToPrimitive, Zero};
-use std::io::{stdin, stdout, BufWriter, Write};
+use std::io::{BufWriter, Write, stdin, stdout};
 use stv_rs::{
-    parse::{parse_election, ParsingOptions},
+    parse::{ParsingOptions, parse_election},
     types::Election,
 };
 

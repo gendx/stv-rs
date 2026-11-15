@@ -18,8 +18,8 @@
 //! if the `checked_i64` feature is enabled.
 
 use super::{Integer, IntegerRef, Rational, RationalRef};
-use num::traits::{One, Zero};
 use num::Integer as NumInteger;
+use num::traits::{One, Zero};
 use std::fmt::{Debug, Display};
 use std::iter::{Product, Sum};
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};

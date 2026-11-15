@@ -16,10 +16,10 @@
 //! [`i64`] and [`BigInt`], and the [`Rational`] trait for [`Ratio<I>`].
 
 use super::{Integer, IntegerRef, Rational, RationalRef};
+use num::BigInt;
 use num::bigint::ToBigInt;
 use num::rational::Ratio;
 use num::traits::{NumAssign, ToPrimitive, Zero};
-use num::BigInt;
 use std::fmt::{Debug, Display};
 
 #[cfg(test)]
@@ -123,8 +123,8 @@ mod test {
     use crate::{
         big_integer_tests, big_numeric_tests, integer_tests, numeric_benchmarks, numeric_tests,
     };
-    use num::traits::One;
     use num::BigRational;
+    use num::traits::One;
 
     fn make_ratio(num: i64, denom: i64) -> BigRational {
         BigRational::ratio_i(BigInt::from(num), BigInt::from(denom))

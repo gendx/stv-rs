@@ -19,13 +19,13 @@
 use clap::{Parser, ValueEnum};
 use rand::distributions::{Distribution, Uniform};
 use rand::seq::SliceRandom;
-use rand::{thread_rng, RngCore, SeedableRng};
+use rand::{RngCore, SeedableRng, thread_rng};
 use rand_chacha::ChaChaRng;
 use rand_distr::{Bernoulli, Beta, Binomial, Geometric, Hypergeometric};
 use std::collections::BTreeMap;
 use std::fs::File;
-use std::io::{stdout, BufWriter, Result, Write};
-use stv_rs::blt::{write_blt, CandidateFormat, WriteTieOrder};
+use std::io::{BufWriter, Result, Write, stdout};
+use stv_rs::blt::{CandidateFormat, WriteTieOrder, write_blt};
 use stv_rs::types::{Ballot, Candidate, Election, ElectionBuilder};
 
 const VEGETABLES: [&str; 20] = [

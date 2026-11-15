@@ -20,10 +20,10 @@
 
 use clap::{Parser, ValueEnum};
 use log::{debug, info};
-use std::io::{stdin, stdout, BufWriter, Write};
+use std::io::{BufWriter, Write, stdin, stdout};
 use stv_rs::{
-    blt::{write_blt, CandidateFormat, WriteTieOrder},
-    parse::{parse_election, ParsingOptions},
+    blt::{CandidateFormat, WriteTieOrder, write_blt},
+    parse::{ParsingOptions, parse_election},
     types::Election,
 };
 

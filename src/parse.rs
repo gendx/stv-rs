@@ -176,7 +176,9 @@ pub fn parse_election(
                         .collect::<Vec<_>>()
                 );
                 if options.remove_empty_ballots && ballot.is_empty() {
-                    warn!("Removing ballot that is empty or contains only withdrawn candidates: {line}");
+                    warn!(
+                        "Removing ballot that is empty or contains only withdrawn candidates: {line}"
+                    );
                 } else {
                     ballot.validate();
                     ballots.push(ballot);

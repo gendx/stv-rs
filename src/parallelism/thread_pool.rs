@@ -26,7 +26,7 @@ use log::{debug, error, warn};
     target_os = "linux"
 ))]
 use nix::{
-    sched::{sched_setaffinity, CpuSet},
+    sched::{CpuSet, sched_setaffinity},
     unistd::Pid,
 };
 use std::cell::Cell;

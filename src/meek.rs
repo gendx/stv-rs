@@ -20,7 +20,7 @@ use crate::cli::Parallel;
 use crate::parallelism::RangeStrategy;
 use crate::types::{Election, ElectionResult};
 use crate::vote_count::{self, VoteCount, VoteCountingThreadPool};
-use log::{debug, info, log_enabled, warn, Level};
+use log::{Level, debug, info, log_enabled, warn};
 use std::fmt::{self, Debug, Display};
 use std::io;
 use std::marker::PhantomData;
@@ -817,8 +817,8 @@ mod test {
     use crate::types::{Ballot, Candidate};
     use crate::util::log_tester::ThreadLocalLogger;
     use log::Level::{Debug, Info, Warn};
-    use num::traits::{One, Zero};
     use num::BigRational;
+    use num::traits::{One, Zero};
 
     pub struct StateBuilder<'e, I, R> {
         election: Option<&'e Election>,

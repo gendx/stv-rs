@@ -20,7 +20,7 @@ use clap::{ArgAction, Parser, Subcommand, ValueEnum};
 use log::warn;
 use num::{BigInt, BigRational};
 use std::fs::File;
-use std::io::{self, stdin, stdout, BufRead, BufReader, Write};
+use std::io::{self, BufRead, BufReader, Write, stdin, stdout};
 use std::num::NonZeroUsize;
 use stv_rs::{
     arithmetic::{
@@ -29,7 +29,7 @@ use stv_rs::{
     },
     cli::Parallel,
     meek::stv_droop,
-    parse::{parse_election, ParsingOptions},
+    parse::{ParsingOptions, parse_election},
     pbv::plurality_block_voting,
     types::Election,
 };
@@ -159,7 +159,9 @@ impl Cli {
     fn run_election(self, election: &Election, output: &mut impl Write) -> io::Result<()> {
         match self.arithmetic {
             Arithmetic::Fixed9 => {
-                warn!("Fixed9 arithmetic is discouraged: large elections inputs can cause integer overflows, triggering a crash or incorrect results.");
+                warn!(
+                    "Fixed9 arithmetic is discouraged: large elections inputs can cause integer overflows, triggering a crash or incorrect results."
+                );
                 self.dispatch_algorithm::<Integer64, FixedDecimal9>(election, output)
             }
             Arithmetic::Bigfixed9 => {
@@ -170,7 +172,9 @@ impl Cli {
                 self.dispatch_algorithm::<BigInt, ApproxRational>(election, output)
             }
             Arithmetic::Float64 => {
-                warn!("Floating-point arithmetic is strongly discouraged: the results can depend on the order of ballots in the input.");
+                warn!(
+                    "Floating-point arithmetic is strongly discouraged: the results can depend on the order of ballots in the input."
+                );
                 self.dispatch_algorithm::<f64, f64>(election, output)
             }
         }
@@ -192,12 +196,16 @@ impl Cli {
         match self.algorithm {
             Algorithm::Meek(meek_params) => {
                 if election.has_any_tied_ballot() && !meek_params.equalize {
-                    warn!("Using meek rules on an election with tied ballots but without --equalize is strongly discouraged: the results don't reflect voters' preferences and the algorithm can crash.");
+                    warn!(
+                        "Using meek rules on an election with tied ballots but without --equalize is strongly discouraged: the results don't reflect voters' preferences and the algorithm can crash."
+                    );
                 }
                 if meek_params.equalize {
                     match self.arithmetic {
                         Arithmetic::Fixed9 | Arithmetic::Bigfixed9 | Arithmetic::Float64 => {
-                            warn!("Using --equalize without --arithmetic=approx or --arithmetic=exact is strongly discouraged: the results can depend on the order of candidates in the input.");
+                            warn!(
+                                "Using --equalize without --arithmetic=approx or --arithmetic=exact is strongly discouraged: the results can depend on the order of candidates in the input."
+                            );
                         }
                         // Explicitly fine to use these parameters.
                         Arithmetic::Exact | Arithmetic::Approx => (),
