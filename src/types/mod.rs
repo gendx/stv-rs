@@ -234,11 +234,49 @@ impl Candidate {
     }
 }
 
+/// Round-by-round transcript of an election count.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ElectionTranscript<T> {
+    /// Final result of the election, i.e. the list of elected candidates.
+    pub result: ElectionResult,
+    /// Snapshot of the election count after each round.
+    pub rounds: Vec<RoundTranscript<T>>,
+}
+
 /// An election result.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ElectionResult {
     /// List of elected candidates, by election order.
     pub elected: Vec<usize>,
     /// List of non-elected candidates, by non-election order.
     pub not_elected: Vec<usize>,
+}
+
+/// Snapshot of the election count after a round.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RoundTranscript<T> {
+    /// Sum of the votes obtained by each candidate, weighted by the keep
+    /// factors of the previous round.
+    pub tallies: Vec<T>,
+    /// Exhausted votes that aren't attributed to any candidate.
+    pub exhausted: T,
+    /// Number of votes required to be elected.
+    pub quota: T,
+    /// Status of each candidate.
+    pub statuses: Vec<Status>,
+    /// Keep factor of each candidate after this round.
+    pub keep_factors: Vec<T>,
+}
+
+/// Status of a candidate during the vote-counting process.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Status {
+    /// Candidate that can still be either elected or defeated.
+    Candidate,
+    /// Candidate that has withdrawn from the election, and will not be elected.
+    Withdrawn,
+    /// Candidate that was elected.
+    Elected,
+    /// Candidate that was not elected.
+    NotElected,
 }

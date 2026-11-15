@@ -18,7 +18,7 @@
 use crate::arithmetic::{Integer, IntegerRef, Rational, RationalRef};
 use crate::cli::Parallel;
 use crate::parallelism::RangeStrategy;
-use crate::types::{Election, ElectionResult};
+use crate::types::{Election, ElectionResult, ElectionTranscript, RoundTranscript, Status};
 use crate::vote_count::{self, VoteCount, VoteCountingThreadPool};
 use log::{Level, debug, info, log_enabled, warn};
 use std::fmt::{self, Debug, Display};
@@ -40,7 +40,7 @@ pub fn stv_droop<I, R>(
     disable_work_stealing: bool,
     force_positive_surplus: bool,
     equalize: bool,
-) -> io::Result<ElectionResult>
+) -> io::Result<ElectionTranscript<R>>
 where
     I: Integer + Send + Sync,
     for<'a> &'a I: IntegerRef<I>,
@@ -98,8 +98,9 @@ where
             );
             state.run(stdout, package_name, omega_exponent)
         }
-        Parallel::Custom => std::thread::scope(|thread_scope| -> io::Result<ElectionResult> {
-            let num_threads: NonZeroUsize = num_threads.unwrap_or_else(|| {
+        Parallel::Custom => {
+            std::thread::scope(|thread_scope| -> io::Result<ElectionTranscript<R>> {
+                let num_threads: NonZeroUsize = num_threads.unwrap_or_else(|| {
                 let count = match std::thread::available_parallelism() {
                     Ok(num_threads) => num_threads.get(),
                     Err(e) => {
@@ -110,43 +111,31 @@ where
                 NonZeroUsize::new(count)
                     .expect("A positive number of threads must be spawned, but the available parallelism is zero threads")
             });
-            info!("Spawning {num_threads} threads");
-            let thread_pool = VoteCountingThreadPool::new(
-                thread_scope,
-                num_threads,
-                if disable_work_stealing {
-                    RangeStrategy::Fixed
-                } else {
-                    RangeStrategy::WorkStealing
-                },
-                election,
-                pascal,
-            );
+                info!("Spawning {num_threads} threads");
+                let thread_pool = VoteCountingThreadPool::new(
+                    thread_scope,
+                    num_threads,
+                    if disable_work_stealing {
+                        RangeStrategy::Fixed
+                    } else {
+                        RangeStrategy::WorkStealing
+                    },
+                    election,
+                    pascal,
+                );
 
-            let state = State::<I, R>::new(
-                election,
-                omega_exponent,
-                parallel,
-                force_positive_surplus,
-                pascal,
-                Some(thread_pool),
-            );
-            state.run(stdout, package_name, omega_exponent)
-        }),
+                let state = State::<I, R>::new(
+                    election,
+                    omega_exponent,
+                    parallel,
+                    force_positive_surplus,
+                    pascal,
+                    Some(thread_pool),
+                );
+                state.run(stdout, package_name, omega_exponent)
+            })
+        }
     }
-}
-
-/// Status of a candidate during the vote-counting process.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum Status {
-    /// Candidate that can still be either elected or defeated.
-    Candidate,
-    /// Candidate that has withdrawn from the election, and will not be elected.
-    Withdrawn,
-    /// Candidate that was elected.
-    Elected,
-    /// Candidate that was not elected.
-    NotElected,
 }
 
 /// Result of a Droop iteration.
@@ -262,11 +251,19 @@ where
         stdout: &mut impl io::Write,
         package_name: &str,
         omega_exponent: usize,
-    ) -> io::Result<ElectionResult> {
+    ) -> io::Result<ElectionTranscript<R>> {
         let beginning = Instant::now();
         let mut timestamp = beginning;
 
+        let mut rounds = Vec::new();
         let mut count = self.start_election(stdout, package_name, omega_exponent)?;
+        rounds.push(RoundTranscript {
+            tallies: count.sum.clone(),
+            exhausted: count.exhausted.clone(),
+            quota: self.threshold.clone(),
+            statuses: self.statuses.clone(),
+            keep_factors: self.keep_factors.clone(),
+        });
 
         for round in 1.. {
             if self.election_completed(stdout, round)? {
@@ -274,6 +271,13 @@ where
             }
 
             self.election_round(stdout, &mut count)?;
+            rounds.push(RoundTranscript {
+                tallies: count.sum.clone(),
+                exhausted: count.exhausted.clone(),
+                quota: self.threshold.clone(),
+                statuses: self.statuses.clone(),
+                keep_factors: self.keep_factors.clone(),
+            });
 
             if log_enabled!(Level::Debug) {
                 let now = Instant::now();
@@ -287,6 +291,13 @@ where
         }
 
         self.handle_remaining_candidates(stdout, &mut count)?;
+        rounds.push(RoundTranscript {
+            tallies: count.sum.clone(),
+            exhausted: count.exhausted.clone(),
+            quota: self.threshold.clone(),
+            statuses: self.statuses.clone(),
+            keep_factors: self.keep_factors.clone(),
+        });
 
         self.write_action(stdout, "Count Complete", &count, true)?;
 
@@ -299,9 +310,10 @@ where
             elected: self.elected,
             not_elected: self.not_elected,
         };
+        let transcript = ElectionTranscript { result, rounds };
 
         writeln!(stdout)?;
-        Ok(result)
+        Ok(transcript)
     }
 
     /// Elects a candidate, and updates the state accordingly.
@@ -1057,7 +1069,7 @@ mod test {
             .build();
 
         let mut buf = Vec::new();
-        let result = stv_droop::<Integer64, FixedDecimal9>(
+        let transcript = stv_droop::<Integer64, FixedDecimal9>(
             &mut buf,
             &election,
             "package name",
@@ -1071,10 +1083,236 @@ mod test {
         .unwrap();
 
         assert_eq!(
-            result,
-            ElectionResult {
-                elected: vec![6, 7, 8, 4, 3],
-                not_elected: vec![0, 2]
+            transcript,
+            ElectionTranscript {
+                result: ElectionResult {
+                    elected: vec![6, 7, 8, 4, 3],
+                    not_elected: vec![0, 2]
+                },
+                rounds: vec![
+                    RoundTranscript {
+                        tallies: vec![
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(0),
+                            FixedDecimal9::new(2000000000),
+                            FixedDecimal9::new(3000000000),
+                            FixedDecimal9::new(4000000000),
+                            FixedDecimal9::new(0),
+                            FixedDecimal9::new(5000000000),
+                            FixedDecimal9::new(6000000000),
+                            FixedDecimal9::new(7000000000)
+                        ],
+                        exhausted: FixedDecimal9::new(0),
+                        quota: FixedDecimal9::new(4666666667),
+                        statuses: vec![
+                            Status::Candidate,
+                            Status::Withdrawn,
+                            Status::Candidate,
+                            Status::Candidate,
+                            Status::Candidate,
+                            Status::Withdrawn,
+                            Status::Candidate,
+                            Status::Candidate,
+                            Status::Candidate
+                        ],
+                        keep_factors: vec![
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(1000000000)
+                        ]
+                    },
+                    RoundTranscript {
+                        tallies: vec![
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(0),
+                            FixedDecimal9::new(2000000000),
+                            FixedDecimal9::new(3000000000),
+                            FixedDecimal9::new(4000000000),
+                            FixedDecimal9::new(0),
+                            FixedDecimal9::new(5000000000),
+                            FixedDecimal9::new(6000000000),
+                            FixedDecimal9::new(7000000000)
+                        ],
+                        exhausted: FixedDecimal9::new(0),
+                        quota: FixedDecimal9::new(4666666667),
+                        statuses: vec![
+                            Status::Candidate,
+                            Status::Withdrawn,
+                            Status::Candidate,
+                            Status::Candidate,
+                            Status::Candidate,
+                            Status::Withdrawn,
+                            Status::Elected,
+                            Status::Elected,
+                            Status::Elected
+                        ],
+                        keep_factors: vec![
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(1000000000)
+                        ]
+                    },
+                    RoundTranscript {
+                        tallies: vec![
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(0),
+                            FixedDecimal9::new(2000000000),
+                            FixedDecimal9::new(3000000000),
+                            FixedDecimal9::new(4000000000),
+                            FixedDecimal9::new(0),
+                            FixedDecimal9::new(4000000005),
+                            FixedDecimal9::new(4000000008),
+                            FixedDecimal9::new(4000000004)
+                        ],
+                        exhausted: FixedDecimal9::new(5999999983),
+                        quota: FixedDecimal9::new(3666666670),
+                        statuses: vec![
+                            Status::Candidate,
+                            Status::Withdrawn,
+                            Status::Candidate,
+                            Status::Candidate,
+                            Status::Elected,
+                            Status::Withdrawn,
+                            Status::Elected,
+                            Status::Elected,
+                            Status::Elected
+                        ],
+                        keep_factors: vec![
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(800000001),
+                            FixedDecimal9::new(666666668),
+                            FixedDecimal9::new(571428572)
+                        ]
+                    },
+                    RoundTranscript {
+                        tallies: vec![
+                            FixedDecimal9::new(0),
+                            FixedDecimal9::new(0),
+                            FixedDecimal9::new(2000000000),
+                            FixedDecimal9::new(3000000000),
+                            FixedDecimal9::new(3000000696),
+                            FixedDecimal9::new(0),
+                            FixedDecimal9::new(3000000695),
+                            FixedDecimal9::new(3000000696),
+                            FixedDecimal9::new(3000000696)
+                        ],
+                        exhausted: FixedDecimal9::new(10999997217),
+                        quota: FixedDecimal9::new(3000000464),
+                        statuses: vec![
+                            Status::NotElected,
+                            Status::Withdrawn,
+                            Status::Candidate,
+                            Status::Candidate,
+                            Status::Elected,
+                            Status::Withdrawn,
+                            Status::Elected,
+                            Status::Elected,
+                            Status::Elected
+                        ],
+                        keep_factors: vec![
+                            FixedDecimal9::new(0),
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(750000174),
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(600000139),
+                            FixedDecimal9::new(500000116),
+                            FixedDecimal9::new(428571528)
+                        ]
+                    },
+                    RoundTranscript {
+                        tallies: vec![
+                            FixedDecimal9::new(0),
+                            FixedDecimal9::new(0),
+                            FixedDecimal9::new(2000000000),
+                            FixedDecimal9::new(3000000000),
+                            FixedDecimal9::new(3000000696),
+                            FixedDecimal9::new(0),
+                            FixedDecimal9::new(3000000695),
+                            FixedDecimal9::new(3000000696),
+                            FixedDecimal9::new(3000000696)
+                        ],
+                        exhausted: FixedDecimal9::new(10999997217),
+                        quota: FixedDecimal9::new(2833333798),
+                        statuses: vec![
+                            Status::NotElected,
+                            Status::Withdrawn,
+                            Status::Candidate,
+                            Status::Elected,
+                            Status::Elected,
+                            Status::Withdrawn,
+                            Status::Elected,
+                            Status::Elected,
+                            Status::Elected
+                        ],
+                        keep_factors: vec![
+                            FixedDecimal9::new(0),
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(750000174),
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(600000139),
+                            FixedDecimal9::new(500000116),
+                            FixedDecimal9::new(428571528)
+                        ]
+                    },
+                    RoundTranscript {
+                        tallies: vec![
+                            FixedDecimal9::new(0),
+                            FixedDecimal9::new(0),
+                            FixedDecimal9::new(0),
+                            FixedDecimal9::new(3000000000),
+                            FixedDecimal9::new(3000000696),
+                            FixedDecimal9::new(0),
+                            FixedDecimal9::new(3000000695),
+                            FixedDecimal9::new(3000000696),
+                            FixedDecimal9::new(3000000696)
+                        ],
+                        exhausted: FixedDecimal9::new(12999997217),
+                        quota: FixedDecimal9::new(2833333798),
+                        statuses: vec![
+                            Status::NotElected,
+                            Status::Withdrawn,
+                            Status::NotElected,
+                            Status::Elected,
+                            Status::Elected,
+                            Status::Withdrawn,
+                            Status::Elected,
+                            Status::Elected,
+                            Status::Elected
+                        ],
+                        keep_factors: vec![
+                            FixedDecimal9::new(0),
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(0),
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(750000174),
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(600000139),
+                            FixedDecimal9::new(500000116),
+                            FixedDecimal9::new(428571528)
+                        ]
+                    }
+                ],
             }
         );
         assert_eq!(
@@ -1284,7 +1522,7 @@ Action: Count Complete
             .build();
 
         let mut buf = Vec::new();
-        let result = stv_droop::<Integer64, FixedDecimal9>(
+        let transcript = stv_droop::<Integer64, FixedDecimal9>(
             &mut buf,
             &election,
             "package name",
@@ -1298,10 +1536,164 @@ Action: Count Complete
         .unwrap();
 
         assert_eq!(
-            result,
-            ElectionResult {
-                elected: vec![4, 3, 0],
-                not_elected: vec![1, 2]
+            transcript,
+            ElectionTranscript {
+                result: ElectionResult {
+                    elected: vec![4, 3, 0],
+                    not_elected: vec![1, 2]
+                },
+                rounds: vec![
+                    RoundTranscript {
+                        tallies: vec![
+                            FixedDecimal9::new(3000000000),
+                            FixedDecimal9::new(1500000000),
+                            FixedDecimal9::new(2500000000),
+                            FixedDecimal9::new(3500000000),
+                            FixedDecimal9::new(4500000000)
+                        ],
+                        exhausted: FixedDecimal9::new(0),
+                        quota: FixedDecimal9::new(3750000001),
+                        statuses: vec![
+                            Status::Candidate,
+                            Status::Candidate,
+                            Status::Candidate,
+                            Status::Candidate,
+                            Status::Candidate
+                        ],
+                        keep_factors: vec![
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(1000000000)
+                        ]
+                    },
+                    RoundTranscript {
+                        tallies: vec![
+                            FixedDecimal9::new(3000000000),
+                            FixedDecimal9::new(1500000000),
+                            FixedDecimal9::new(2500000000),
+                            FixedDecimal9::new(3500000000),
+                            FixedDecimal9::new(4500000000)
+                        ],
+                        exhausted: FixedDecimal9::new(0),
+                        quota: FixedDecimal9::new(3750000001),
+                        statuses: vec![
+                            Status::Candidate,
+                            Status::Candidate,
+                            Status::Candidate,
+                            Status::Candidate,
+                            Status::Elected
+                        ],
+                        keep_factors: vec![
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(1000000000)
+                        ]
+                    },
+                    RoundTranscript {
+                        tallies: vec![
+                            FixedDecimal9::new(3416666665),
+                            FixedDecimal9::new(1500000000),
+                            FixedDecimal9::new(2500000000),
+                            FixedDecimal9::new(3833333332),
+                            FixedDecimal9::new(3750000003)
+                        ],
+                        exhausted: FixedDecimal9::new(0),
+                        quota: FixedDecimal9::new(3750000001),
+                        statuses: vec![
+                            Status::Candidate,
+                            Status::Candidate,
+                            Status::Candidate,
+                            Status::Elected,
+                            Status::Elected
+                        ],
+                        keep_factors: vec![
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(833333334)
+                        ]
+                    },
+                    RoundTranscript {
+                        tallies: vec![
+                            FixedDecimal9::new(3950523544),
+                            FixedDecimal9::new(0),
+                            FixedDecimal9::new(3549475859),
+                            FixedDecimal9::new(3750000581),
+                            FixedDecimal9::new(3749999999)
+                        ],
+                        exhausted: FixedDecimal9::new(17),
+                        quota: FixedDecimal9::new(3749999996),
+                        statuses: vec![
+                            Status::Candidate,
+                            Status::NotElected,
+                            Status::Candidate,
+                            Status::Elected,
+                            Status::Elected
+                        ],
+                        keep_factors: vec![
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(0),
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(973297870),
+                            FixedDecimal9::new(823559647)
+                        ]
+                    },
+                    RoundTranscript {
+                        tallies: vec![
+                            FixedDecimal9::new(3950523544),
+                            FixedDecimal9::new(0),
+                            FixedDecimal9::new(3549475859),
+                            FixedDecimal9::new(3750000581),
+                            FixedDecimal9::new(3749999999)
+                        ],
+                        exhausted: FixedDecimal9::new(17),
+                        quota: FixedDecimal9::new(3749999996),
+                        statuses: vec![
+                            Status::Elected,
+                            Status::NotElected,
+                            Status::Candidate,
+                            Status::Elected,
+                            Status::Elected
+                        ],
+                        keep_factors: vec![
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(0),
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(973297870),
+                            FixedDecimal9::new(823559647)
+                        ]
+                    },
+                    RoundTranscript {
+                        tallies: vec![
+                            FixedDecimal9::new(4744588121),
+                            FixedDecimal9::new(0),
+                            FixedDecimal9::new(0),
+                            FixedDecimal9::new(5916055638),
+                            FixedDecimal9::new(4339356223)
+                        ],
+                        exhausted: FixedDecimal9::new(18),
+                        quota: FixedDecimal9::new(3749999996),
+                        statuses: vec![
+                            Status::Elected,
+                            Status::NotElected,
+                            Status::NotElected,
+                            Status::Elected,
+                            Status::Elected
+                        ],
+                        keep_factors: vec![
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(0),
+                            FixedDecimal9::new(0),
+                            FixedDecimal9::new(973297870),
+                            FixedDecimal9::new(823559647)
+                        ]
+                    }
+                ],
             }
         );
         assert_eq!(
@@ -1450,7 +1842,7 @@ Action: Count Complete
 
         let logger = ThreadLocalLogger::start();
         let mut buf = Vec::new();
-        let result = stv_droop::<Integer64, FixedDecimal9>(
+        let transcript = stv_droop::<Integer64, FixedDecimal9>(
             &mut buf,
             &election,
             "package name",
@@ -1464,10 +1856,102 @@ Action: Count Complete
         .unwrap();
 
         assert_eq!(
-            result,
-            ElectionResult {
-                elected: vec![0, 1],
-                not_elected: vec![2, 3]
+            transcript,
+            ElectionTranscript {
+                result: ElectionResult {
+                    elected: vec![0, 1],
+                    not_elected: vec![2, 3]
+                },
+                rounds: vec![
+                    RoundTranscript {
+                        tallies: vec![
+                            FixedDecimal9::new(2500000000),
+                            FixedDecimal9::new(1500000000),
+                            FixedDecimal9::new(0),
+                            FixedDecimal9::new(1000000000)
+                        ],
+                        exhausted: FixedDecimal9::new(0),
+                        quota: FixedDecimal9::new(1666666667),
+                        statuses: vec![
+                            Status::Candidate,
+                            Status::Candidate,
+                            Status::Candidate,
+                            Status::Candidate
+                        ],
+                        keep_factors: vec![
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(1000000000)
+                        ]
+                    },
+                    RoundTranscript {
+                        tallies: vec![
+                            FixedDecimal9::new(2500000000),
+                            FixedDecimal9::new(1500000000),
+                            FixedDecimal9::new(0),
+                            FixedDecimal9::new(1000000000)
+                        ],
+                        exhausted: FixedDecimal9::new(0),
+                        quota: FixedDecimal9::new(1666666667),
+                        statuses: vec![
+                            Status::Elected,
+                            Status::Candidate,
+                            Status::Candidate,
+                            Status::Candidate
+                        ],
+                        keep_factors: vec![
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(1000000000)
+                        ]
+                    },
+                    RoundTranscript {
+                        tallies: vec![
+                            FixedDecimal9::new(1666666665),
+                            FixedDecimal9::new(1833333332),
+                            FixedDecimal9::new(499999998),
+                            FixedDecimal9::new(1000000000)
+                        ],
+                        exhausted: FixedDecimal9::new(5),
+                        quota: FixedDecimal9::new(1666666666),
+                        statuses: vec![
+                            Status::Elected,
+                            Status::Elected,
+                            Status::Candidate,
+                            Status::Candidate
+                        ],
+                        keep_factors: vec![
+                            FixedDecimal9::new(666666667),
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(1000000000)
+                        ]
+                    },
+                    RoundTranscript {
+                        tallies: vec![
+                            FixedDecimal9::new(2333333333),
+                            FixedDecimal9::new(2166666666),
+                            FixedDecimal9::new(0),
+                            FixedDecimal9::new(0)
+                        ],
+                        exhausted: FixedDecimal9::new(500000001),
+                        quota: FixedDecimal9::new(1666666666),
+                        statuses: vec![
+                            Status::Elected,
+                            Status::Elected,
+                            Status::NotElected,
+                            Status::NotElected
+                        ],
+                        keep_factors: vec![
+                            FixedDecimal9::new(666666667),
+                            FixedDecimal9::new(1000000000),
+                            FixedDecimal9::new(0),
+                            FixedDecimal9::new(0)
+                        ]
+                    }
+                ],
             }
         );
         logger.check_logs_at_target_level(
