@@ -10,7 +10,7 @@ categories = ["command-line-utilities", "mathematics"]
 keywords = ["voting", "election", "stv", "meek"]
 exclude = ["man/*", "testdata/*", "tools/*", ".github/*"]
 edition = "2024"
-rust-version = "1.85.0"
+rust-version = "1.91.0"
 
 [package.metadata.docs.rs]
 features = ["checked_i64", "log_parallelism"]
@@ -23,6 +23,7 @@ log = "0.4"
 num = "0.4"
 rayon = "1"
 regex = "1.10"
+smart-big-rational = "0.3.1"
 
 # Platforms that support `libc::sched_setaffinity()`.
 [target.'cfg(any(target_os = "android", target_os = "dragonfly", target_os = "freebsd", target_os = "linux"))'.dependencies]
@@ -37,4 +38,3 @@ rand_distr = "0.4"
 default = ["checked_i64"]
 checked_i64 = []
 log_parallelism = []
-
