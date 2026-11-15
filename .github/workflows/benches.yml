@@ -17,13 +17,13 @@ jobs:
     env:
       RUSTFLAGS: "-D warnings ${{ matrix.flags }}"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@nightly
 
       - name: Create Cargo.lock file
         run: cargo generate-lockfile
       - name: Cache Cargo registry
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.cargo/registry
           key: cargo-registry-${{ hashFiles('Cargo.toml') }}-${{ hashFiles('Cargo.lock') }}
@@ -42,7 +42,7 @@ jobs:
         if: ${{ matrix.cpu != 'native' }}
         run: echo "Default CPU" > cpuinfo.txt
       - name: Cache Cargo target
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: target
           key: cargo-target-bench-${{ matrix.cpu }}-${{ hashFiles('cpuinfo.txt') }}-${{ hashFiles('cargo.version.txt') }}-${{ hashFiles('Cargo.toml') }}-${{ hashFiles('Cargo.lock') }}
