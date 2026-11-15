@@ -15,7 +15,6 @@
 //! Script to generate random ballot files.
 
 #![forbid(missing_docs, unsafe_code)]
-#![feature(array_windows)]
 
 use clap::{Parser, ValueEnum};
 use rand::distributions::{Distribution, Uniform};
@@ -388,6 +387,7 @@ fn order_from_distributions<D: Distribution<u64>>(
     order.into_values().collect::<Vec<_>>()
 }
 
+#[expect(clippy::incompatible_msrv)]
 fn generate_mixed(
     rng: &mut impl RngCore,
     candidate_count: usize,

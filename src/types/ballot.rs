@@ -188,7 +188,7 @@ impl Order for BoxedFlatOrder {
         }
 
         if order.is_empty() {
-            order_indices = Vec::new();
+            order_indices.clear();
         }
 
         Self {

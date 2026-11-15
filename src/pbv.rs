@@ -77,10 +77,12 @@ Election: {}
         for ranking in ballot.order() {
             let rank_len = ranking.len();
             let weight = if votes_distributed + rank_len <= votes_per_ballot {
-                // Ballot still has enough power for all candidates at this rank.
+                // Ballot still has enough power for all candidates at this
+                // rank.
                 R::one()
             } else {
-                // Split the remaining power equally among candidates at this rank.
+                // Split the remaining power equally among candidates at this
+                // rank.
                 R::from_usize(votes_per_ballot - votes_distributed) / I::from_usize(rank_len)
             };
             trace!(

@@ -519,7 +519,8 @@ mod test {
                     .map(|range| s.spawn(move || range.iter().collect::<Vec<_>>()));
                 let values: [Vec<usize>; 4] = handles.map(|handle| handle.join().unwrap());
 
-                // The fixed range implementation always yields the same items in order.
+                // The fixed range implementation always yields the same items
+                // in order.
                 for (i, set) in values.iter().enumerate() {
                     assert_eq!(*set, (i * 25..(i + 1) * 25).collect::<Vec<_>>());
                 }

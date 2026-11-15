@@ -526,24 +526,26 @@ where
         let ranking = self.ballot.order_at(i);
 
         // TODO: skip defeated candidates according to their status.
-        // Number of eligible candidates (with a positive keep factor) in the current
-        // ranking.
+        // Number of eligible candidates (with a positive keep factor) in the
+        // current ranking.
         let filtered_ranking_len = ranking
             .iter()
             .filter(|&&candidate| !self.keep_factors[candidate.into()].is_zero())
             .count();
-        // If all the candidates are defeated in the current ranking, the original
-        // implementation (from Droop.py) doesn't distribute votes any further!
+        // If all the candidates are defeated in the current ranking, the
+        // original implementation (from Droop.py) doesn't distribute votes any
+        // further!
         if filtered_ranking_len == 0 {
             return;
         }
 
         // Multiple candidates ranked equally. The original implementation (from
         // Droop.py) starts by splitting the voting power evenly to all these
-        // candidates. If any of those has a non-one keep factor (i.e. is already
-        // elected), then the remaining power (for that candidate) is distributed via
-        // recursion to the next ranking in the ballot, rather than being distributed
-        // back to any other candidate in the same ranking.
+        // candidates. If any of those has a non-one keep factor (i.e. is
+        // already elected), then the remaining power (for that candidate) is
+        // distributed via recursion to the next ranking in the ballot, rather
+        // than being distributed back to any other candidate in the same
+        // ranking.
         voting_power /= &I::from_usize(filtered_ranking_len);
         for candidate in ranking.iter().filter_map(|&candidate| {
             let candidate: usize = candidate.into();
@@ -575,10 +577,10 @@ where
     /// 1/6: `a b c d`, `a b d c`, `a c b d`, `a c d b`, `a d b c`, `a d c
     /// b`.
     fn process_ballot_equalize(mut self) {
-        // Note: we separate the voting power and the number of occurrences of each
-        // ballot, and multiply by the ballot count only at the end, so that in
-        // order to ensure fairness a repeated ballot is really counted as the sum
-        // of `b.count` identical ballots.
+        // Note: we separate the voting power and the number of occurrences of
+        // each ballot, and multiply by the ballot count only at the end, so
+        // that in order to ensure fairness a repeated ballot is really counted
+        // as the sum of `b.count` identical ballots.
         let mut voting_power = R::one();
         let ballot_count = I::from_usize(self.ballot.count());
 
@@ -602,8 +604,8 @@ where
                     .iter()
                     .map(|&candidate| self.keep_factors[candidate.into()].clone())
                     .collect();
-                // For each candidate, the unused factor is one minus the keep factor (whatever
-                // is not kept).
+                // For each candidate, the unused factor is one minus the keep
+                // factor (whatever is not kept).
                 let ranking_unused_factors: Vec<R> =
                     ranking_keep_factors.iter().map(|k| R::one() - k).collect();
                 trace!("    Ranking keep_factors = {ranking_keep_factors:?}");
@@ -620,14 +622,16 @@ where
                     );
                     self.increment_candidate(candidate, used_power, &ballot_count);
                 }
-                // Conservatively, the remaining voting power passed to the next ranking in the
-                // ballot is the product of the unused factors (rounded down). Like for
-                // splitting the voting power for one candidate, we cannot simply let the
-                // remaining power being 1 minus the used power, because that would round up the
-                // remaining power and potentially giving more votes to candidates further in
-                // the ballot.
-                // TODO: Multiplication is not associative for all arithmetic backends!
-                // Calculate this product in a deterministic and fair way.
+                // Conservatively, the remaining voting power passed to the next
+                // ranking in the ballot is the product of the unused factors
+                // (rounded down). Like for splitting the voting power for one
+                // candidate, we cannot simply let the remaining power being 1
+                // minus the used power, because that would round up the
+                // remaining power and potentially giving more votes to
+                // candidates further in the ballot.
+                // TODO: Multiplication is not associative for all arithmetic
+                // backends! Calculate this product in a deterministic and fair
+                // way.
                 let remaining_power: R = ranking_unused_factors.into_iter().product();
                 voting_power *= remaining_power;
             }
@@ -653,13 +657,14 @@ where
     /// the remaining power, according to the candidate's keep factor.
     fn split_power_one_candidate(&self, voting_power: &R, candidate: usize) -> (R, R) {
         let keep_factor = &self.keep_factors[candidate];
-        // The candidate uses only a fraction k of the voting power, equal to its keep
-        // factor.
+        // The candidate uses only a fraction k of the voting power, equal to
+        // its keep factor.
         let used_power = voting_power * keep_factor;
-        // The remaining voting power cannot be larger than a `(1 - k)` fraction of the
-        // original voting power. Due to the potential rounding when computing the
-        // multiplication `power * k`, the remaining power needs to be explicilty
-        // computed as `power * (1 - k)`, rather than `power - used_power`.
+        // The remaining voting power cannot be larger than a `(1 - k)` fraction
+        // of the original voting power. Due to the potential rounding when
+        // computing the multiplication `power * k`, the remaining power needs
+        // to be explicilty computed as `power * (1 - k)`, rather than `power -
+        // used_power`.
         let remaining_power = voting_power * &(R::one() - keep_factor);
 
         trace!(
@@ -732,8 +737,8 @@ where
     R: Rational<I>,
     for<'a> &'a R: RationalRef<&'a I, R>,
 {
-    // One coefficient is excluded, so the degree `n` of the output polynomial is
-    // one less of that.
+    // One coefficient is excluded, so the degree `n` of the output polynomial
+    // is one less of that.
     let n = coefficients.len() - 1;
     // For a polynomial of degree `n`, there are `n + 1` coefficients.
     let mut poly = vec![R::zero(); n + 1];
@@ -749,8 +754,9 @@ where
 
         // Optimization: do nothing if a coefficient is zero.
         if !a.is_zero() {
-            // We start from `P = p[0] X^k + p[1] X^k-1 + ... + p[k]` and want to compute
-            // `Q = P * (X + a)`. The resulting coefficients are given by:
+            // We start from `P = p[0] X^k + p[1] X^k-1 + ... + p[k]` and want
+            // to compute `Q = P * (X + a)`. The resulting coefficients are
+            // given by:
             //
             // ```
             //    p[0] X^k+1 +   p[1] X^k + ... +     p[k] X
@@ -759,8 +765,8 @@ where
             // =  q[0] X^k+1 +   q[1] X^k + ... +     q[k] X + q[k+1]
             // ```
             //
-            // In other words, for each entry q[j], we take p[j], and add to it p[j-1] * a.
-            // We do that in one pass with a simple loop.
+            // In other words, for each entry q[j], we take p[j], and add to it
+            // p[j-1] * a. We do that in one pass with a simple loop.
             let mut prev = poly[0].clone();
             for j in 1..=n {
                 let tmp = poly[j].clone();
@@ -1363,7 +1369,8 @@ mod test {
                 /* keep_factors = */ &[R::ratio(1, 2), R::ratio(2, 3), R::ratio(3, 4)],
             );
 
-            // The last candidate gets 0.5 * (1/2 + 1/3) * 3/4 = 5/6 * 3/8 = 5/16
+            // The last candidate gets 0.5 * (1/2 + 1/3) * 3/4 = 5/6 * 3/8 =
+            // 5/16
             assert_eq!(sum, vec![R::ratio(1, 4), R::ratio(1, 3), R::ratio(5, 16)]);
             // 5/48.
             assert_eq!(unused_power, R::one() - R::ratio(43, 48));
@@ -1408,7 +1415,8 @@ mod test {
                     R::ratio(1, 6),
                 ]
             );
-            // Remaining voting power is 0.5 * (1/4 + 1/5) * 5/12 = 9/40 * 5/12 = 3/32.
+            // Remaining voting power is 0.5 * (1/4 + 1/5) * 5/12 = 9/40 * 5/12
+            // = 3/32.
             assert_eq!(
                 unused_power,
                 R::one()
@@ -1441,7 +1449,8 @@ mod test {
             for keep_factors in &keep_factors_list {
                 for order in &ballots {
                     for ballot_count in 1..=30 {
-                        // Count the ballot once with a multiplier of ballot_count.
+                        // Count the ballot once with a multiplier of
+                        // ballot_count.
                         let left_vote_count = {
                             let mut vote_accumulator = VoteAccumulator::new(5);
                             let ballot = Ballot::new(ballot_count, order.clone());
@@ -1455,7 +1464,8 @@ mod test {
                             vote_accumulator.into_vote_count()
                         };
 
-                        // Count the ballot ballot_count times with a multiplier of one each time.
+                        // Count the ballot ballot_count times with a multiplier
+                        // of one each time.
                         let right_vote_count = {
                             let mut vote_accumulator = VoteAccumulator::new(5);
                             let ballot = Ballot::new(1, order.clone());
@@ -1485,7 +1495,8 @@ mod test {
 
             for used_power in R::get_positive_test_values() {
                 for ballot_count in 1..=30 {
-                    // Increment the candidate once with a multiplier of ballot_count.
+                    // Increment the candidate once with a multiplier of
+                    // ballot_count.
                     let (left_sum, left_unused_power) = {
                         let mut sum = vec![R::zero()];
                         let mut unused_power = R::zero();
@@ -1506,8 +1517,8 @@ mod test {
                         (sum, unused_power)
                     };
 
-                    // Increment the candidate ballot_count times, with a multiplier of one each
-                    // time.
+                    // Increment the candidate ballot_count times, with a
+                    // multiplier of one each time.
                     let (right_sum, right_unused_power) = {
                         let mut sum = vec![R::zero()];
                         let mut unused_power = R::zero();

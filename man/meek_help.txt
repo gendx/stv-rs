@@ -10,13 +10,13 @@ Options:
 
       --parallel <PARALLEL>
           Enable parallel ballot counting
-          
-          [default: rayon]
 
           Possible values:
           - no:     No parallelism
           - rayon:  Parallelism based on the [`rayon` crate](https://crates.io/crates/rayon)
           - custom: Custom thread pool
+          
+          [default: rayon]
 
       --num-threads <NUM_THREADS>
           Explicitly specify the number of threads to use in `--parallel` modes. Ignored if parallelism is disabled

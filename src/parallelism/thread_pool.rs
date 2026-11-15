@@ -118,7 +118,7 @@ impl<T> Status<T> {
     ///
     /// This returns a [`MutexGuard`], allowing to further inspect or modify the
     /// status.
-    fn wait_while(&self, predicate: impl FnMut(&mut T) -> bool) -> MutexGuard<T> {
+    fn wait_while(&self, predicate: impl FnMut(&mut T) -> bool) -> MutexGuard<'_, T> {
         self.condvar
             .wait_while(self.mutex.lock().unwrap(), predicate)
             .unwrap()
@@ -401,8 +401,8 @@ impl<Rn: Range, Input, Output, Accum: ThreadAccumulator<Input, Output>>
                         self.id
                     );
 
-                    // Counting votes may panic, and we want to notify the main thread in that case
-                    // to avoid a deadlock.
+                    // Counting votes may panic, and we want to notify the main
+                    // thread in that case to avoid a deadlock.
                     let panic_notifier = PanicNotifier {
                         id: self.id,
                         main_status: &self.main_status,

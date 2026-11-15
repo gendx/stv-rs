@@ -445,8 +445,8 @@ pub(crate) mod test {
                     }
                 }
                 Some(n) => {
-                    // Randomly sample values rather than conducting an exhaustive O(n^3) search on
-                    // the test values.
+                    // Randomly sample values rather than conducting an
+                    // exhaustive O(n^3) search on the test values.
                     let mut rng = thread_rng();
 
                     for _ in 0..n {
@@ -926,8 +926,8 @@ pub(crate) mod test {
                     }
                 }
                 Some(n) => {
-                    // Randomly sample values rather than conducting an exhaustive O(n^3) search on
-                    // the test values.
+                    // Randomly sample values rather than conducting an
+                    // exhaustive O(n^3) search on the test values.
                     let mut rng = thread_rng();
 
                     for _ in 0..n {
@@ -954,8 +954,8 @@ pub(crate) mod test {
                     }
                 }
                 Some(n) => {
-                    // Randomly sample values rather than conducting an exhaustive O(n^3) search on
-                    // the test values.
+                    // Randomly sample values rather than conducting an
+                    // exhaustive O(n^3) search on the test values.
                     let integer_distribution = Uniform::from(0..100);
                     let mut rng = thread_rng();
 
@@ -984,8 +984,8 @@ pub(crate) mod test {
                     }
                 }
                 Some(n) => {
-                    // Randomly sample values rather than conducting an exhaustive O(n^3) search on
-                    // the test values.
+                    // Randomly sample values rather than conducting an
+                    // exhaustive O(n^3) search on the test values.
                     let integer_distribution = Uniform::from(0..100);
                     let mut rng = thread_rng();
 

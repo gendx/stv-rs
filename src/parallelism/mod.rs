@@ -86,7 +86,8 @@ mod test {
             let thread_pool = ThreadPool::new(scope, num_threads, range_strategy, &input, || {
                 SumAccumulator
             });
-            // The same input can be processed multiple times on the thread pool.
+            // The same input can be processed multiple times on the thread
+            // pool.
             let sum1 = thread_pool.process_inputs().reduce(|a, b| a + b).unwrap();
             let sum2 = thread_pool.process_inputs().reduce(|a, b| a + b).unwrap();
             (sum1, sum2)

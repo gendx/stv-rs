@@ -1,16 +1,16 @@
 # Single Transferable Vote implementation in Rust
 
 [![Crate](https://img.shields.io/crates/v/stv-rs.svg?logo=rust)](https://crates.io/crates/stv-rs)
-[![Documentation](https://img.shields.io/docsrs/stv-rs/0.5.1?logo=rust)](https://docs.rs/stv-rs/0.5.1/)
+[![Documentation](https://img.shields.io/docsrs/stv-rs?logo=rust)](https://docs.rs/stv-rs)
 [![Safety Dance](https://img.shields.io/badge/unsafe-forbidden-success.svg?logo=rust)](https://github.com/rust-secure-code/safety-dance/)
-[![Minimum Rust 1.75.0](https://img.shields.io/crates/msrv/stv-rs/0.5.1.svg?logo=rust&color=orange)](https://releases.rs/docs/1.75.0/)
-[![Dependencies](https://deps.rs/crate/stv-rs/0.5.1/status.svg)](https://deps.rs/crate/stv-rs/0.5.1)
-[![License](https://img.shields.io/crates/l/stv-rs/0.5.1.svg)](https://github.com/gendx/stv-rs/blob/0.5.1/LICENSE)
-[![Codecov](https://codecov.io/gh/gendx/stv-rs/branch/0.5.1/graph/badge.svg?token=JB5S8MYBZ0)](https://codecov.io/gh/gendx/stv-rs/tree/0.5.1)
-[![Lines of Code](https://www.aschey.tech/tokei/github/gendx/stv-rs?category=code&branch=0.5.1)](https://github.com/gendx/stv-rs/tree/0.5.1)
-[![Build Status](https://github.com/gendx/stv-rs/actions/workflows/build.yml/badge.svg?branch=0.5.1)](https://github.com/gendx/stv-rs/actions/workflows/build.yml)
-[![Test Status](https://github.com/gendx/stv-rs/actions/workflows/tests.yml/badge.svg?branch=0.5.1)](https://github.com/gendx/stv-rs/actions/workflows/tests.yml)
-[![Integration tests Status](https://github.com/gendx/stv-rs/actions/workflows/integration.yml/badge.svg?branch=0.5.1)](https://github.com/gendx/stv-rs/actions/workflows/integration.yml)
+[![Minimum Rust 1.75.0](https://img.shields.io/badge/rust-1.75.0%2B-orange.svg?logo=rust)](https://releases.rs/docs/1.75.0/)
+[![Dependencies](https://deps.rs/repo/github/gendx/stv-rs/status.svg)](https://deps.rs/repo/github/gendx/stv-rs)
+[![License](https://img.shields.io/crates/l/stv-rs.svg)](https://github.com/gendx/stv-rs/blob/main/LICENSE)
+[![Codecov](https://codecov.io/gh/gendx/stv-rs/branch/main/graph/badge.svg?token=JB5S8MYBZ0)](https://codecov.io/gh/gendx/stv-rs/tree/main)
+[![Lines of Code](https://www.aschey.tech/tokei/github/gendx/stv-rs?category=code&branch=main)](https://github.com/aschey/vercel-tokei)
+[![Build Status](https://github.com/gendx/stv-rs/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/gendx/stv-rs/actions/workflows/build.yml)
+[![Test Status](https://github.com/gendx/stv-rs/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/gendx/stv-rs/actions/workflows/tests.yml)
+[![Integration tests Status](https://github.com/gendx/stv-rs/actions/workflows/integration.yml/badge.svg?branch=main)](https://github.com/gendx/stv-rs/actions/workflows/integration.yml)
 
 This program is an implementation of
 [Single Transferable Vote](https://en.wikipedia.org/wiki/Single_transferable_vote)

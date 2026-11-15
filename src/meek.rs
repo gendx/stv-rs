@@ -547,9 +547,10 @@ Election: {}
         let mut has_elected = false;
         for (i, candidate) in self.election.candidates.iter().enumerate() {
             match self.statuses[i] {
-                // Elected candidates must always keep at least the threshold of ballots.
-                // Otherwise their keep factor was too low, i.e. too much of
-                // their ballots were unduly transfered to other candidates.
+                // Elected candidates must always keep at least the threshold of
+                // ballots. Otherwise their keep factor was too low, i.e. too
+                // much of their ballots were unduly transfered to other
+                // candidates.
                 Status::Elected => {
                     if log_enabled!(Level::Warn) && count.sum[i] < self.threshold {
                         warn!(
@@ -711,7 +712,8 @@ Election: {}
         stdout: &mut impl io::Write,
         count: &VoteCount<I, R>,
     ) -> io::Result<()> {
-        // Sort candidates: elected first, then candidates and lastly non-elected.
+        // Sort candidates: elected first, then candidates and lastly
+        // non-elected.
         let mut droop_sorted_candidates: Vec<usize> = (0..self.num_candidates()).collect();
         droop_sorted_candidates.sort_by_key(|&i| match self.statuses[i] {
             Status::Withdrawn | Status::Elected => 0,
@@ -745,8 +747,8 @@ Election: {}
             )?;
         }
 
-        // Candidates beyond the first defeated one with a zero count must all be
-        // defeated and with a zero count.
+        // Candidates beyond the first defeated one with a zero count must all
+        // be defeated and with a zero count.
         if let Some(split) = split {
             write!(stdout, "\tDefeated: ")?;
             for (rank, &i) in droop_sorted_candidates[split..].iter().enumerate() {
@@ -962,7 +964,7 @@ mod test {
             .build()
     }
 
-    fn make_fake_state(election: &Election) -> State<Integer64, FixedDecimal9> {
+    fn make_fake_state(election: &Election) -> State<'_, '_, Integer64, FixedDecimal9> {
         State::builder()
             .election(election)
             .statuses([
@@ -1628,9 +1630,10 @@ Action: Count Complete
             )
         });
 
-        // Unfortunately, Rust's test harness and/or the `catch_unwind()` function seem
-        // to interfere with panic propagation, so we cannot test all the details of the
-        // double-panic (worker thread + main thread) here in a unit test.
+        // Unfortunately, Rust's test harness and/or the `catch_unwind()`
+        // function seem to interfere with panic propagation, so we cannot test
+        // all the details of the double-panic (worker thread + main thread)
+        // here in a unit test.
         assert!(result.is_err());
         assert_eq!(
             result.as_ref().unwrap_err().type_id(),

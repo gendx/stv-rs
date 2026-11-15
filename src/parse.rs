@@ -191,8 +191,8 @@ pub fn parse_election(
     let num_ballots = ballots.iter().map(|b| b.count()).sum::<usize>();
     info!("Number of ballots: {num_ballots}");
 
-    // This block intentionally clones the ballots into themselves to obtain a more
-    // efficient memory layout, which conflicts with this lint.
+    // This block intentionally clones the ballots into themselves to obtain a
+    // more efficient memory layout, which conflicts with this lint.
     #[allow(clippy::assigning_clones)]
     if options.optimize_layout {
         ballots.sort_by(|a, b| {

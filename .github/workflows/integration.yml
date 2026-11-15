@@ -473,12 +473,14 @@ jobs:
         if: ${{ matrix.equalize == false }}
         run: |
           target/release/stv-rs --arithmetic fixed9 --input testdata/ballots/${{ matrix.file }}.blt meek --num-threads=1 --parallel=${{ matrix.parallel }} > stv.log 2> stv.err || true
+          sed -i -E 's#\([0-9]+\) panicked at#panicked at#g' stv.err
           diff -u -s testdata/meek/${{ matrix.file }}.fixed9.log stv.log
           diff -u -s testdata/meek/${{ matrix.file }}.fixed9${{ matrix.error_suffix }}.err stv.err
       - name: Check STV-rs output (big integer)
         if: ${{ matrix.equalize == false }}
         run: |
           target/release/stv-rs --arithmetic bigfixed9 --input testdata/ballots/${{ matrix.file }}.blt meek --num-threads=1 --parallel=${{ matrix.parallel }} > stv.log 2> stv.err || true
+          sed -i -E 's#\([0-9]+\) panicked at#panicked at#g' stv.err
           diff -u -s testdata/meek/${{ matrix.file }}.bigfixed9.log stv.log
           diff -u -s testdata/meek/${{ matrix.file }}.bigfixed9.err stv.err
 
@@ -486,12 +488,14 @@ jobs:
         if: ${{ matrix.equalize == true }}
         run: |
           target/release/stv-rs --arithmetic fixed9 --input testdata/ballots/${{ matrix.file }}.blt meek --equalize --num-threads=1 --parallel=${{ matrix.parallel }} > stv.log 2> stv.err || true
+          sed -i -E 's#\([0-9]+\) panicked at#panicked at#g' stv.err
           diff -u -s testdata/meek/${{ matrix.file }}.equalize.fixed9.log stv.log
           diff -u -s testdata/meek/${{ matrix.file }}.equalize.fixed9${{ matrix.error_suffix }}.err stv.err
       - name: Check STV-rs output (equalized counting, big integer)
         if: ${{ matrix.equalize == true }}
         run: |
           target/release/stv-rs --arithmetic bigfixed9 --input testdata/ballots/${{ matrix.file }}.blt meek --equalize --num-threads=1 --parallel=${{ matrix.parallel }} > stv.log 2> stv.err || true
+          sed -i -E 's#\([0-9]+\) panicked at#panicked at#g' stv.err
           diff -u -s testdata/meek/${{ matrix.file }}.equalize.bigfixed9.log stv.log
           diff -u -s testdata/meek/${{ matrix.file }}.equalize.bigfixed9.err stv.err
 

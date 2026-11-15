@@ -668,14 +668,14 @@ mod test {
 
     #[test]
     fn test_intermediate_overflow() {
-        // Even though the intermediate product overflows a i64, the result doesn't and
-        // is correct.
+        // Even though the intermediate product overflows a i64, the result
+        // doesn't and is correct.
         assert_eq!(
             FixedDecimal9::from_i64(1_000) * FixedDecimal9::from_i64(1_000),
             FixedDecimal9::from_i64(1_000_000)
         );
-        // The intermediate result of 10^19 is just between 2^63 and 2^64. Therefore it
-        // overflows i64 as well.
+        // The intermediate result of 10^19 is just between 2^63 and 2^64.
+        // Therefore it overflows i64 as well.
         assert_eq!(
             FixedDecimal9::from_i64(5) * FixedDecimal9::from_i64(2),
             FixedDecimal9::from_i64(10)
@@ -694,7 +694,9 @@ mod test {
 
     #[cfg(feature = "checked_i64")]
     #[test]
-    #[should_panic(expected = "called `Result::unwrap()` on an `Err` value: TryFromIntError(())")]
+    #[should_panic(
+        expected = "called `Result::unwrap()` on an `Err` value: TryFromIntError(PosOverflow)"
+    )]
     fn test_mul_overflow() {
         // The result overflows an i64, which is caught by checked_i64.
         let _ = FixedDecimal9::from_i64(1_000_000) * FixedDecimal9::from_i64(1_000_000);
@@ -702,7 +704,9 @@ mod test {
 
     #[cfg(feature = "checked_i64")]
     #[test]
-    #[should_panic(expected = "called `Result::unwrap()` on an `Err` value: TryFromIntError(())")]
+    #[should_panic(
+        expected = "called `Result::unwrap()` on an `Err` value: TryFromIntError(PosOverflow)"
+    )]
     fn test_mul_assign_overflow() {
         // The result overflows an i64, which is caught by checked_i64.
         let mut x = FixedDecimal9::from_i64(1_000_000);
