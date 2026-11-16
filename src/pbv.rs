@@ -15,7 +15,7 @@
 //! A simulation of plurality block voting based on ranked ballots.
 
 use crate::arithmetic::{Integer, IntegerRef, Rational, RationalRef};
-use crate::types::{Election, ElectionResult};
+use crate::types::{Election, ElectionResult, TranscriptEvent};
 use log::{debug, info, trace};
 use std::io;
 
@@ -38,13 +38,20 @@ pub fn plurality_block_voting<I, R>(
     election: &Election,
     package_name: &str,
     votes_per_ballot: Option<usize>,
-) -> io::Result<ElectionResult>
+) -> io::Result<ElectionResult<R>>
 where
     I: Integer + Send + Sync,
     for<'a> &'a I: IntegerRef<I>,
     R: Rational<I> + Send + Sync,
     for<'a> &'a R: RationalRef<&'a I, R>,
 {
+    let mut transcript = Vec::new();
+    for (i, c) in election.candidates.iter().enumerate() {
+        if c.is_withdrawn {
+            transcript.push(TranscriptEvent::Withdrawn(i));
+        }
+    }
+
     let votes_per_ballot = votes_per_ballot.unwrap_or(election.num_seats);
     info!(
         "Plurality block voting with {} seats / {} candidates, votes per ballot = {votes_per_ballot}",
@@ -70,6 +77,7 @@ Election: {}
     )?;
 
     let mut sum = vec![R::zero(); election.num_candidates];
+    let mut exhausted = R::zero();
     for (i, ballot) in election.ballots.iter().enumerate() {
         trace!("Processing ballot {i} = {:?}", ballot);
 
@@ -100,7 +108,15 @@ Election: {}
                 break;
             }
         }
+
+        if votes_distributed < votes_per_ballot {
+            exhausted += R::from_usize(votes_per_ballot - votes_distributed);
+        }
     }
+    transcript.push(TranscriptEvent::Count {
+        tallies: sum.clone(),
+        exhausted,
+    });
 
     let mut order: Vec<usize> = (0..election.num_candidates).collect();
     order.sort_by(|&i, &j| {
@@ -132,6 +148,7 @@ Election: {}
     for (i, &id) in elected.iter().enumerate() {
         info!("    [{}] {}", i, election.candidates[id].nickname);
         writeln!(stdout, "Action: Elect: {}", election.candidates[id].name)?;
+        transcript.push(TranscriptEvent::Elected(id));
     }
 
     info!("Not elected:");
@@ -142,6 +159,7 @@ Election: {}
             election.candidates[id].nickname
         );
         writeln!(stdout, "Action: Defeat: {}", election.candidates[id].name)?;
+        transcript.push(TranscriptEvent::NotElected(id));
     }
 
     writeln!(stdout, "Action: Count Complete")?;
@@ -163,6 +181,7 @@ Election: {}
     let result = ElectionResult {
         elected,
         not_elected,
+        transcript,
     };
     Ok(result)
 }
@@ -218,7 +237,32 @@ mod test {
             result,
             ElectionResult {
                 elected: vec![8, 0, 7, 2, 4],
-                not_elected: vec![3, 6]
+                not_elected: vec![3, 6],
+                transcript: vec![
+                    TranscriptEvent::Withdrawn(1),
+                    TranscriptEvent::Withdrawn(5),
+                    TranscriptEvent::Count {
+                        tallies: vec![
+                            FixedDecimal9::new(38000000000),
+                            FixedDecimal9::new(0),
+                            FixedDecimal9::new(32500000000),
+                            FixedDecimal9::new(26500000000),
+                            FixedDecimal9::new(28000000000),
+                            FixedDecimal9::new(0),
+                            FixedDecimal9::new(28000000000),
+                            FixedDecimal9::new(33500000000),
+                            FixedDecimal9::new(38500000000)
+                        ],
+                        exhausted: FixedDecimal9::new(0)
+                    },
+                    TranscriptEvent::Elected(8),
+                    TranscriptEvent::Elected(0),
+                    TranscriptEvent::Elected(7),
+                    TranscriptEvent::Elected(2),
+                    TranscriptEvent::Elected(4),
+                    TranscriptEvent::NotElected(3),
+                    TranscriptEvent::NotElected(6)
+                ],
             }
         );
         assert_eq!(
@@ -269,7 +313,32 @@ Action: Count Complete
             result,
             ElectionResult {
                 elected: vec![6, 8, 7, 4, 0],
-                not_elected: vec![3, 2]
+                not_elected: vec![3, 2],
+                transcript: vec![
+                    TranscriptEvent::Withdrawn(1),
+                    TranscriptEvent::Withdrawn(5),
+                    TranscriptEvent::Count {
+                        tallies: vec![
+                            FixedDecimal9::new(5500000000),
+                            FixedDecimal9::new(0),
+                            FixedDecimal9::new(3500000000),
+                            FixedDecimal9::new(3500000000),
+                            FixedDecimal9::new(7000000000),
+                            FixedDecimal9::new(0),
+                            FixedDecimal9::new(9500000000),
+                            FixedDecimal9::new(7500000000),
+                            FixedDecimal9::new(8500000000)
+                        ],
+                        exhausted: FixedDecimal9::new(0)
+                    },
+                    TranscriptEvent::Elected(6),
+                    TranscriptEvent::Elected(8),
+                    TranscriptEvent::Elected(7),
+                    TranscriptEvent::Elected(4),
+                    TranscriptEvent::Elected(0),
+                    TranscriptEvent::NotElected(3),
+                    TranscriptEvent::NotElected(2)
+                ],
             }
         );
         assert_eq!(
@@ -320,7 +389,32 @@ Action: Count Complete
             result,
             ElectionResult {
                 elected: vec![8, 7, 6, 0, 4],
-                not_elected: vec![2, 3]
+                not_elected: vec![2, 3],
+                transcript: vec![
+                    TranscriptEvent::Withdrawn(1),
+                    TranscriptEvent::Withdrawn(5),
+                    TranscriptEvent::Count {
+                        tallies: vec![
+                            FixedDecimal9::new(11999999998),
+                            FixedDecimal9::new(0),
+                            FixedDecimal9::new(5333333333),
+                            FixedDecimal9::new(8333333333),
+                            FixedDecimal9::new(10333333333),
+                            FixedDecimal9::new(0),
+                            FixedDecimal9::new(14666666665),
+                            FixedDecimal9::new(18666666663),
+                            FixedDecimal9::new(20666666663)
+                        ],
+                        exhausted: FixedDecimal9::new(0)
+                    },
+                    TranscriptEvent::Elected(8),
+                    TranscriptEvent::Elected(7),
+                    TranscriptEvent::Elected(6),
+                    TranscriptEvent::Elected(0),
+                    TranscriptEvent::Elected(4),
+                    TranscriptEvent::NotElected(2),
+                    TranscriptEvent::NotElected(3)
+                ],
             }
         );
         assert_eq!(
@@ -371,7 +465,32 @@ Action: Count Complete
             result,
             ElectionResult {
                 elected: vec![8, 7, 0, 6, 2],
-                not_elected: vec![4, 3]
+                not_elected: vec![4, 3],
+                transcript: vec![
+                    TranscriptEvent::Withdrawn(1),
+                    TranscriptEvent::Withdrawn(5),
+                    TranscriptEvent::Count {
+                        tallies: vec![
+                            FixedDecimal9::new(21499999996),
+                            FixedDecimal9::new(0),
+                            FixedDecimal9::new(14166666666),
+                            FixedDecimal9::new(14166666666),
+                            FixedDecimal9::new(13166666666),
+                            FixedDecimal9::new(0),
+                            FixedDecimal9::new(19833333330),
+                            FixedDecimal9::new(24333333326),
+                            FixedDecimal9::new(27833333326)
+                        ],
+                        exhausted: FixedDecimal9::new(0)
+                    },
+                    TranscriptEvent::Elected(8),
+                    TranscriptEvent::Elected(7),
+                    TranscriptEvent::Elected(0),
+                    TranscriptEvent::Elected(6),
+                    TranscriptEvent::Elected(2),
+                    TranscriptEvent::NotElected(4),
+                    TranscriptEvent::NotElected(3)
+                ],
             }
         );
         assert_eq!(
@@ -422,7 +541,32 @@ Action: Count Complete
             result,
             ElectionResult {
                 elected: vec![8, 0, 7, 6, 2],
-                not_elected: vec![4, 3]
+                not_elected: vec![4, 3],
+                transcript: vec![
+                    TranscriptEvent::Withdrawn(1),
+                    TranscriptEvent::Withdrawn(5),
+                    TranscriptEvent::Count {
+                        tallies: vec![
+                            FixedDecimal9::new(31000000000),
+                            FixedDecimal9::new(0),
+                            FixedDecimal9::new(23000000000),
+                            FixedDecimal9::new(19000000000),
+                            FixedDecimal9::new(15000000000),
+                            FixedDecimal9::new(0),
+                            FixedDecimal9::new(26000000000),
+                            FixedDecimal9::new(31000000000),
+                            FixedDecimal9::new(35000000000)
+                        ],
+                        exhausted: FixedDecimal9::new(0)
+                    },
+                    TranscriptEvent::Elected(8),
+                    TranscriptEvent::Elected(0),
+                    TranscriptEvent::Elected(7),
+                    TranscriptEvent::Elected(6),
+                    TranscriptEvent::Elected(2),
+                    TranscriptEvent::NotElected(4),
+                    TranscriptEvent::NotElected(3)
+                ],
             }
         );
         assert_eq!(
@@ -473,7 +617,32 @@ Action: Count Complete
             result,
             ElectionResult {
                 elected: vec![8, 0, 2, 7, 3],
-                not_elected: vec![6, 4]
+                not_elected: vec![6, 4],
+                transcript: vec![
+                    TranscriptEvent::Withdrawn(1),
+                    TranscriptEvent::Withdrawn(5),
+                    TranscriptEvent::Count {
+                        tallies: vec![
+                            FixedDecimal9::new(40000000000),
+                            FixedDecimal9::new(0),
+                            FixedDecimal9::new(36000000000),
+                            FixedDecimal9::new(34000000000),
+                            FixedDecimal9::new(32000000000),
+                            FixedDecimal9::new(0),
+                            FixedDecimal9::new(28000000000),
+                            FixedDecimal9::new(35000000000),
+                            FixedDecimal9::new(42000000000)
+                        ],
+                        exhausted: FixedDecimal9::new(5000000000)
+                    },
+                    TranscriptEvent::Elected(8),
+                    TranscriptEvent::Elected(0),
+                    TranscriptEvent::Elected(2),
+                    TranscriptEvent::Elected(7),
+                    TranscriptEvent::Elected(3),
+                    TranscriptEvent::NotElected(6),
+                    TranscriptEvent::NotElected(4)
+                ],
             }
         );
         assert_eq!(
