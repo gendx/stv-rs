@@ -18,7 +18,7 @@
 use crate::arithmetic::{Integer, IntegerRef, Rational, RationalRef};
 use crate::cli::Parallel;
 use crate::parallelism::RangeStrategy;
-use crate::types::{Election, ElectionResult, TranscriptEvent};
+use crate::types::{ElectedReason, Election, ElectionResult, NotElectedReason, TranscriptEvent};
 use crate::vote_count::{self, VoteCount, VoteCountingThreadPool};
 use log::{Level, debug, info, log_enabled, warn};
 use std::fmt::{self, Debug, Display};
@@ -286,6 +286,7 @@ where
                 break;
             }
 
+            self.transcript.push(TranscriptEvent::StartRound(round));
             self.election_round(stdout, &mut count)?;
 
             if log_enabled!(Level::Debug) {
@@ -300,6 +301,10 @@ where
         }
 
         self.handle_remaining_candidates(stdout, &mut count)?;
+        self.transcript.push(TranscriptEvent::Count {
+            tallies: count.sum.clone(),
+            exhausted: count.exhausted.clone(),
+        });
 
         self.write_action(stdout, "Count Complete", &count, true)?;
 
@@ -319,7 +324,7 @@ where
     }
 
     /// Elects a candidate, and updates the state accordingly.
-    fn elect_candidate(&mut self, i: usize) {
+    fn elect_candidate(&mut self, i: usize, reason: ElectedReason) {
         info!(
             "Electing candidate #{i} ({})",
             self.election.candidates[i].nickname
@@ -328,18 +333,18 @@ where
         self.elected.push(i);
         self.statuses[i] = Status::Elected;
         self.to_elect -= 1;
-        self.transcript.push(TranscriptEvent::Elected(i));
+        self.transcript.push(TranscriptEvent::Elected(i, reason));
     }
 
     /// Defeats a candidate, and updates the state accordingly.
-    fn defeat_candidate(&mut self, i: usize) {
+    fn defeat_candidate(&mut self, i: usize, reason: NotElectedReason) {
         info!(
             "Defeating candidate #{i} ({})",
             self.election.candidates[i].nickname
         );
         self.not_elected.push(i);
         self.statuses[i] = Status::NotElected;
-        self.transcript.push(TranscriptEvent::NotElected(i));
+        self.transcript.push(TranscriptEvent::NotElected(i, reason));
     }
 
     /// Returns the number of candidates.
@@ -465,14 +470,19 @@ Election: {}
                 debug!("Iteration returned Elected, continuing the loop");
                 None
             }
-            DroopIteration::Stable => Some(format!("stable surplus {}", self.surplus)),
-            DroopIteration::Omega => Some(format!("surplus {} < omega", self.surplus)),
+            DroopIteration::Stable => Some(NotElectedReason::StableSurplus),
+            DroopIteration::Omega => Some(NotElectedReason::LowSurplus),
         };
 
         if let Some(reason) = reason {
             let not_elected = self.next_defeated_candidate(stdout, count)?;
 
-            self.defeat_candidate(not_elected);
+            self.defeat_candidate(not_elected, reason);
+            let reason = match reason {
+                NotElectedReason::StableSurplus => format!("stable surplus {}", self.surplus),
+                NotElectedReason::LowSurplus => format!("surplus {} < omega", self.surplus),
+                NotElectedReason::Remaining | NotElectedReason::Other => unreachable!(),
+            };
             let message = format!(
                 "Defeat ({reason}): {}",
                 self.election.candidates[not_elected].name
@@ -522,6 +532,8 @@ Election: {}
             } else {
                 count.surplus_droop(&self.threshold, &self.elected)
             };
+            self.transcript
+                .push(TranscriptEvent::Surplus(self.surplus.clone()));
 
             if has_elected {
                 debug!("Returning from iterate_droop (Elected)");
@@ -605,7 +617,7 @@ Election: {}
                     if exceeds_threshold {
                         // We cannot elect more candidates than seats.
                         assert!(self.to_elect > 0);
-                        self.elect_candidate(i);
+                        self.elect_candidate(i, ElectedReason::ExceedsQuota);
                         self.write_action(
                             stdout,
                             &format!("Elect: {}", candidate.name),
@@ -632,7 +644,7 @@ Election: {}
         for (i, candidate) in self.election.candidates.iter().enumerate() {
             if self.statuses[i] == Status::Candidate {
                 if self.elected.len() < self.election.num_seats {
-                    self.elect_candidate(i);
+                    self.elect_candidate(i, ElectedReason::Remaining);
                     self.write_action(
                         stdout,
                         &format!("Elect remaining: {}", candidate.name),
@@ -640,7 +652,7 @@ Election: {}
                         true,
                     )?;
                 } else {
-                    self.defeat_candidate(i);
+                    self.defeat_candidate(i, NotElectedReason::Remaining);
                     self.write_action(
                         stdout,
                         &format!("Defeat remaining: {}", candidate.name),
@@ -658,7 +670,7 @@ Election: {}
 
     /// Returns the next candidate to defeat.
     fn next_defeated_candidate(
-        &self,
+        &mut self,
         stdout: &mut impl io::Write,
         count: &VoteCount<I, R>,
     ) -> io::Result<usize> {
@@ -696,6 +708,10 @@ Election: {}
             .iter()
             .min_by_key(|c| self.election.tie_order.get(c).unwrap())
             .unwrap();
+        self.transcript.push(TranscriptEvent::BreakTie {
+            list: low_candidates.clone(),
+            chosen: defeated,
+        });
 
         let low_candidates_list: String = low_candidates
             .into_iter()
@@ -844,6 +860,7 @@ Election: {}
 mod test {
     use super::*;
     use crate::arithmetic::{FixedDecimal9, Integer64};
+    use crate::types::TranscriptEvent::*;
     use crate::types::{Ballot, Candidate};
     use crate::util::log_tester::ThreadLocalLogger;
     use log::Level::{Debug, Info, Warn};
@@ -963,8 +980,12 @@ mod test {
                 match status {
                     Status::Candidate => (),
                     Status::Withdrawn => transcript.push(TranscriptEvent::Withdrawn(i)),
-                    Status::Elected => transcript.push(TranscriptEvent::Elected(i)),
-                    Status::NotElected => transcript.push(TranscriptEvent::NotElected(i)),
+                    Status::Elected => {
+                        transcript.push(TranscriptEvent::Elected(i, ElectedReason::Other))
+                    }
+                    Status::NotElected => {
+                        transcript.push(TranscriptEvent::NotElected(i, NotElectedReason::Other))
+                    }
                 }
             }
             transcript.push(TranscriptEvent::KeepFactors(keep_factors.clone()));
@@ -1120,9 +1141,9 @@ mod test {
                 elected: vec![6, 7, 8, 4, 3],
                 not_elected: vec![0, 2],
                 transcript: vec![
-                    TranscriptEvent::Withdrawn(1),
-                    TranscriptEvent::Withdrawn(5),
-                    TranscriptEvent::KeepFactors(vec![
+                    Withdrawn(1),
+                    Withdrawn(5),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
@@ -1133,7 +1154,7 @@ mod test {
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(1000000000),
                             FixedDecimal9::new(0),
@@ -1147,7 +1168,8 @@ mod test {
                         ],
                         exhausted: FixedDecimal9::new(0)
                     },
-                    TranscriptEvent::Count {
+                    StartRound(1),
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(1000000000),
                             FixedDecimal9::new(0),
@@ -1161,11 +1183,13 @@ mod test {
                         ],
                         exhausted: FixedDecimal9::new(0)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(4666666667)),
-                    TranscriptEvent::Elected(6),
-                    TranscriptEvent::Elected(7),
-                    TranscriptEvent::Elected(8),
-                    TranscriptEvent::Count {
+                    Quota(FixedDecimal9::new(4666666667)),
+                    Elected(6, ElectedReason::ExceedsQuota),
+                    Elected(7, ElectedReason::ExceedsQuota),
+                    Elected(8, ElectedReason::ExceedsQuota),
+                    Surplus(FixedDecimal9::new(3999999999)),
+                    StartRound(2),
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(1000000000),
                             FixedDecimal9::new(0),
@@ -1179,8 +1203,9 @@ mod test {
                         ],
                         exhausted: FixedDecimal9::new(0)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(4666666667)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(4666666667)),
+                    Surplus(FixedDecimal9::new(3999999999)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
@@ -1191,7 +1216,7 @@ mod test {
                         FixedDecimal9::new(777777778),
                         FixedDecimal9::new(666666667)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(1000000000),
                             FixedDecimal9::new(0),
@@ -1205,8 +1230,9 @@ mod test {
                         ],
                         exhausted: FixedDecimal9::new(3999999993)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(4000000002)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(4000000002)),
+                    Surplus(FixedDecimal9::new(2000000001)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
@@ -1217,7 +1243,7 @@ mod test {
                         FixedDecimal9::new(666666668),
                         FixedDecimal9::new(571428572)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(1000000000),
                             FixedDecimal9::new(0),
@@ -1231,9 +1257,11 @@ mod test {
                         ],
                         exhausted: FixedDecimal9::new(5999999983)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3666666670)),
-                    TranscriptEvent::Elected(4),
-                    TranscriptEvent::Count {
+                    Quota(FixedDecimal9::new(3666666670)),
+                    Elected(4, ElectedReason::ExceedsQuota),
+                    Surplus(FixedDecimal9::new(1333333337)),
+                    StartRound(3),
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(1000000000),
                             FixedDecimal9::new(0),
@@ -1247,8 +1275,9 @@ mod test {
                         ],
                         exhausted: FixedDecimal9::new(5999999983)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3666666670)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3666666670)),
+                    Surplus(FixedDecimal9::new(1333333337)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
@@ -1259,7 +1288,7 @@ mod test {
                         FixedDecimal9::new(611111112),
                         FixedDecimal9::new(523809525)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(1000000000),
                             FixedDecimal9::new(0),
@@ -1273,8 +1302,9 @@ mod test {
                         ],
                         exhausted: FixedDecimal9::new(7333333306)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3444444450)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3444444450)),
+                    Surplus(FixedDecimal9::new(888888894)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
@@ -1285,7 +1315,7 @@ mod test {
                         FixedDecimal9::new(574074076),
                         FixedDecimal9::new(492063494)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(1000000000),
                             FixedDecimal9::new(0),
@@ -1299,8 +1329,9 @@ mod test {
                         ],
                         exhausted: FixedDecimal9::new(8222222179)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3296296304)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3296296304)),
+                    Surplus(FixedDecimal9::new(592592605)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
@@ -1311,7 +1342,7 @@ mod test {
                         FixedDecimal9::new(549382718),
                         FixedDecimal9::new(470899473)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(1000000000),
                             FixedDecimal9::new(0),
@@ -1325,8 +1356,9 @@ mod test {
                         ],
                         exhausted: FixedDecimal9::new(8814814763)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3197530873)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3197530873)),
+                    Surplus(FixedDecimal9::new(395061745)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
@@ -1337,7 +1369,7 @@ mod test {
                         FixedDecimal9::new(532921813),
                         FixedDecimal9::new(456790125)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(1000000000),
                             FixedDecimal9::new(0),
@@ -1351,8 +1383,9 @@ mod test {
                         ],
                         exhausted: FixedDecimal9::new(9209876496)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3131687251)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3131687251)),
+                    Surplus(FixedDecimal9::new(263374500)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
@@ -1363,7 +1396,7 @@ mod test {
                         FixedDecimal9::new(521947876),
                         FixedDecimal9::new(447383894)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(1000000000),
                             FixedDecimal9::new(0),
@@ -1377,8 +1410,9 @@ mod test {
                         ],
                         exhausted: FixedDecimal9::new(9473250979)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3087791504)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3087791504)),
+                    Surplus(FixedDecimal9::new(175583005)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
@@ -1389,7 +1423,7 @@ mod test {
                         FixedDecimal9::new(514631918),
                         FixedDecimal9::new(441113073)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(1000000000),
                             FixedDecimal9::new(0),
@@ -1403,8 +1437,9 @@ mod test {
                         ],
                         exhausted: FixedDecimal9::new(9648833968)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3058527673)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3058527673)),
+                    Surplus(FixedDecimal9::new(117055340)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
@@ -1415,7 +1450,7 @@ mod test {
                         FixedDecimal9::new(509754613),
                         FixedDecimal9::new(436932525)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(1000000000),
                             FixedDecimal9::new(0),
@@ -1429,8 +1464,9 @@ mod test {
                         ],
                         exhausted: FixedDecimal9::new(9765889296)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3039018451)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3039018451)),
+                    Surplus(FixedDecimal9::new(78036900)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
@@ -1441,7 +1477,7 @@ mod test {
                         FixedDecimal9::new(506503076),
                         FixedDecimal9::new(434145494)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(1000000000),
                             FixedDecimal9::new(0),
@@ -1455,8 +1491,9 @@ mod test {
                         ],
                         exhausted: FixedDecimal9::new(9843926175)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3026012305)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3026012305)),
+                    Surplus(FixedDecimal9::new(52024605)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
@@ -1467,7 +1504,7 @@ mod test {
                         FixedDecimal9::new(504335385),
                         FixedDecimal9::new(432287473)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(1000000000),
                             FixedDecimal9::new(0),
@@ -1481,8 +1518,9 @@ mod test {
                         ],
                         exhausted: FixedDecimal9::new(9895950761)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3017341540)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3017341540)),
+                    Surplus(FixedDecimal9::new(34683079)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
@@ -1493,7 +1531,7 @@ mod test {
                         FixedDecimal9::new(502890257),
                         FixedDecimal9::new(431048792)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(1000000000),
                             FixedDecimal9::new(0),
@@ -1507,8 +1545,9 @@ mod test {
                         ],
                         exhausted: FixedDecimal9::new(9930633825)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3011561030)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3011561030)),
+                    Surplus(FixedDecimal9::new(23122055)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
@@ -1519,7 +1558,7 @@ mod test {
                         FixedDecimal9::new(501926839),
                         FixedDecimal9::new(430223005)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(1000000000),
                             FixedDecimal9::new(0),
@@ -1533,8 +1572,9 @@ mod test {
                         ],
                         exhausted: FixedDecimal9::new(9953755864)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3007707357)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3007707357)),
+                    Surplus(FixedDecimal9::new(15414708)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
@@ -1545,7 +1585,7 @@ mod test {
                         FixedDecimal9::new(501284560),
                         FixedDecimal9::new(429672480)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(1000000000),
                             FixedDecimal9::new(0),
@@ -1559,8 +1599,9 @@ mod test {
                         ],
                         exhausted: FixedDecimal9::new(9969170560)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3005138241)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3005138241)),
+                    Surplus(FixedDecimal9::new(10276476)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
@@ -1571,7 +1612,7 @@ mod test {
                         FixedDecimal9::new(500856374),
                         FixedDecimal9::new(429305464)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(1000000000),
                             FixedDecimal9::new(0),
@@ -1585,8 +1626,9 @@ mod test {
                         ],
                         exhausted: FixedDecimal9::new(9979447019)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3003425497)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3003425497)),
+                    Surplus(FixedDecimal9::new(6850993)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
@@ -1597,7 +1639,7 @@ mod test {
                         FixedDecimal9::new(500570917),
                         FixedDecimal9::new(429060786)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(1000000000),
                             FixedDecimal9::new(0),
@@ -1611,8 +1653,9 @@ mod test {
                         ],
                         exhausted: FixedDecimal9::new(9986297996)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3002283668)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3002283668)),
+                    Surplus(FixedDecimal9::new(4567332)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
@@ -1623,7 +1666,7 @@ mod test {
                         FixedDecimal9::new(500380612),
                         FixedDecimal9::new(428897668)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(1000000000),
                             FixedDecimal9::new(0),
@@ -1637,8 +1680,9 @@ mod test {
                         ],
                         exhausted: FixedDecimal9::new(9990865310)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3001522449)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3001522449)),
+                    Surplus(FixedDecimal9::new(3044894)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
@@ -1649,7 +1693,7 @@ mod test {
                         FixedDecimal9::new(500253742),
                         FixedDecimal9::new(428788922)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(1000000000),
                             FixedDecimal9::new(0),
@@ -1663,8 +1707,9 @@ mod test {
                         ],
                         exhausted: FixedDecimal9::new(9993910192)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3001014969)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3001014969)),
+                    Surplus(FixedDecimal9::new(2029932)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
@@ -1675,7 +1720,7 @@ mod test {
                         FixedDecimal9::new(500169162),
                         FixedDecimal9::new(428716425)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(1000000000),
                             FixedDecimal9::new(0),
@@ -1689,8 +1734,9 @@ mod test {
                         ],
                         exhausted: FixedDecimal9::new(9995940111)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3000676649)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3000676649)),
+                    Surplus(FixedDecimal9::new(1353293)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
@@ -1701,7 +1747,7 @@ mod test {
                         FixedDecimal9::new(500112775),
                         FixedDecimal9::new(428668093)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(1000000000),
                             FixedDecimal9::new(0),
@@ -1715,8 +1761,9 @@ mod test {
                         ],
                         exhausted: FixedDecimal9::new(9997293397)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3000451101)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3000451101)),
+                    Surplus(FixedDecimal9::new(902199)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
@@ -1727,7 +1774,7 @@ mod test {
                         FixedDecimal9::new(500075184),
                         FixedDecimal9::new(428635872)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(1000000000),
                             FixedDecimal9::new(0),
@@ -1741,8 +1788,9 @@ mod test {
                         ],
                         exhausted: FixedDecimal9::new(9998195583)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3000300737)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3000300737)),
+                    Surplus(FixedDecimal9::new(601469)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
@@ -1753,7 +1801,7 @@ mod test {
                         FixedDecimal9::new(500050124),
                         FixedDecimal9::new(428614392)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(1000000000),
                             FixedDecimal9::new(0),
@@ -1767,8 +1815,9 @@ mod test {
                         ],
                         exhausted: FixedDecimal9::new(9998797032)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3000200495)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3000200495)),
+                    Surplus(FixedDecimal9::new(400988)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
@@ -1779,7 +1828,7 @@ mod test {
                         FixedDecimal9::new(500033416),
                         FixedDecimal9::new(428600072)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(1000000000),
                             FixedDecimal9::new(0),
@@ -1793,8 +1842,9 @@ mod test {
                         ],
                         exhausted: FixedDecimal9::new(9999198004)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3000133667)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3000133667)),
+                    Surplus(FixedDecimal9::new(267328)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
@@ -1805,7 +1855,7 @@ mod test {
                         FixedDecimal9::new(500022278),
                         FixedDecimal9::new(428590524)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(1000000000),
                             FixedDecimal9::new(0),
@@ -1819,8 +1869,9 @@ mod test {
                         ],
                         exhausted: FixedDecimal9::new(9999465326)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3000089113)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3000089113)),
+                    Surplus(FixedDecimal9::new(178222)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
@@ -1831,7 +1882,7 @@ mod test {
                         FixedDecimal9::new(500014853),
                         FixedDecimal9::new(428584160)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(1000000000),
                             FixedDecimal9::new(0),
@@ -1845,8 +1896,9 @@ mod test {
                         ],
                         exhausted: FixedDecimal9::new(9999643531)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3000059412)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3000059412)),
+                    Surplus(FixedDecimal9::new(118821)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
@@ -1857,7 +1909,7 @@ mod test {
                         FixedDecimal9::new(500009903),
                         FixedDecimal9::new(428579917)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(1000000000),
                             FixedDecimal9::new(0),
@@ -1871,8 +1923,9 @@ mod test {
                         ],
                         exhausted: FixedDecimal9::new(9999762332)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3000039612)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3000039612)),
+                    Surplus(FixedDecimal9::new(79220)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
@@ -1883,7 +1936,7 @@ mod test {
                         FixedDecimal9::new(500006603),
                         FixedDecimal9::new(428577088)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(1000000000),
                             FixedDecimal9::new(0),
@@ -1897,8 +1950,9 @@ mod test {
                         ],
                         exhausted: FixedDecimal9::new(9999841535)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3000026411)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3000026411)),
+                    Surplus(FixedDecimal9::new(52821)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
@@ -1909,7 +1963,7 @@ mod test {
                         FixedDecimal9::new(500004402),
                         FixedDecimal9::new(428575202)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(1000000000),
                             FixedDecimal9::new(0),
@@ -1923,8 +1977,9 @@ mod test {
                         ],
                         exhausted: FixedDecimal9::new(9999894347)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3000017609)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3000017609)),
+                    Surplus(FixedDecimal9::new(35217)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
@@ -1935,7 +1990,7 @@ mod test {
                         FixedDecimal9::new(500002935),
                         FixedDecimal9::new(428573945)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(1000000000),
                             FixedDecimal9::new(0),
@@ -1949,8 +2004,9 @@ mod test {
                         ],
                         exhausted: FixedDecimal9::new(9999929553)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3000011742)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3000011742)),
+                    Surplus(FixedDecimal9::new(23479)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
@@ -1961,7 +2017,7 @@ mod test {
                         FixedDecimal9::new(500001958),
                         FixedDecimal9::new(428573107)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(1000000000),
                             FixedDecimal9::new(0),
@@ -1975,8 +2031,9 @@ mod test {
                         ],
                         exhausted: FixedDecimal9::new(9999953014)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3000007832)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3000007832)),
+                    Surplus(FixedDecimal9::new(15658)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
@@ -1987,7 +2044,7 @@ mod test {
                         FixedDecimal9::new(500001306),
                         FixedDecimal9::new(428572548)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(1000000000),
                             FixedDecimal9::new(0),
@@ -2001,8 +2058,9 @@ mod test {
                         ],
                         exhausted: FixedDecimal9::new(9999968657)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3000005224)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3000005224)),
+                    Surplus(FixedDecimal9::new(10447)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
@@ -2013,7 +2071,7 @@ mod test {
                         FixedDecimal9::new(500000871),
                         FixedDecimal9::new(428572175)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(1000000000),
                             FixedDecimal9::new(0),
@@ -2027,8 +2085,9 @@ mod test {
                         ],
                         exhausted: FixedDecimal9::new(9999979096)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3000003485)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3000003485)),
+                    Surplus(FixedDecimal9::new(6964)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
@@ -2039,7 +2098,7 @@ mod test {
                         FixedDecimal9::new(500000581),
                         FixedDecimal9::new(428571927)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(1000000000),
                             FixedDecimal9::new(0),
@@ -2053,8 +2112,9 @@ mod test {
                         ],
                         exhausted: FixedDecimal9::new(9999986047)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3000002326)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3000002326)),
+                    Surplus(FixedDecimal9::new(4649)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
@@ -2065,7 +2125,7 @@ mod test {
                         FixedDecimal9::new(500000388),
                         FixedDecimal9::new(428571761)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(1000000000),
                             FixedDecimal9::new(0),
@@ -2079,8 +2139,9 @@ mod test {
                         ],
                         exhausted: FixedDecimal9::new(9999990687)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3000001553)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3000001553)),
+                    Surplus(FixedDecimal9::new(3101)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
@@ -2091,7 +2152,7 @@ mod test {
                         FixedDecimal9::new(500000259),
                         FixedDecimal9::new(428571651)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(1000000000),
                             FixedDecimal9::new(0),
@@ -2105,8 +2166,9 @@ mod test {
                         ],
                         exhausted: FixedDecimal9::new(9999993778)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3000001038)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3000001038)),
+                    Surplus(FixedDecimal9::new(2070)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
@@ -2117,7 +2179,7 @@ mod test {
                         FixedDecimal9::new(500000174),
                         FixedDecimal9::new(428571577)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(1000000000),
                             FixedDecimal9::new(0),
@@ -2131,8 +2193,9 @@ mod test {
                         ],
                         exhausted: FixedDecimal9::new(9999995837)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3000000694)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3000000694)),
+                    Surplus(FixedDecimal9::new(1387)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
@@ -2143,7 +2206,7 @@ mod test {
                         FixedDecimal9::new(500000116),
                         FixedDecimal9::new(428571528)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(1000000000),
                             FixedDecimal9::new(0),
@@ -2157,9 +2220,10 @@ mod test {
                         ],
                         exhausted: FixedDecimal9::new(9999997217)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3000000464)),
-                    TranscriptEvent::NotElected(0),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3000000464)),
+                    Surplus(FixedDecimal9::new(927)),
+                    NotElected(0, NotElectedReason::LowSurplus),
+                    KeepFactors(vec![
                         FixedDecimal9::new(0),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
@@ -2170,7 +2234,7 @@ mod test {
                         FixedDecimal9::new(500000116),
                         FixedDecimal9::new(428571528)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(0),
                             FixedDecimal9::new(0),
@@ -2184,7 +2248,8 @@ mod test {
                         ],
                         exhausted: FixedDecimal9::new(10999997217)
                     },
-                    TranscriptEvent::Count {
+                    StartRound(4),
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(0),
                             FixedDecimal9::new(0),
@@ -2198,9 +2263,24 @@ mod test {
                         ],
                         exhausted: FixedDecimal9::new(10999997217)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(2833333798)),
-                    TranscriptEvent::Elected(3),
-                    TranscriptEvent::NotElected(2)
+                    Quota(FixedDecimal9::new(2833333798)),
+                    Elected(3, ElectedReason::ExceedsQuota),
+                    Surplus(FixedDecimal9::new(833333793)),
+                    NotElected(2, NotElectedReason::Remaining),
+                    Count {
+                        tallies: vec![
+                            FixedDecimal9::new(0),
+                            FixedDecimal9::new(0),
+                            FixedDecimal9::new(0),
+                            FixedDecimal9::new(3000000000),
+                            FixedDecimal9::new(3000000696),
+                            FixedDecimal9::new(0),
+                            FixedDecimal9::new(3000000695),
+                            FixedDecimal9::new(3000000696),
+                            FixedDecimal9::new(3000000696)
+                        ],
+                        exhausted: FixedDecimal9::new(12999997217)
+                    }
                 ],
             },
         );
@@ -2430,14 +2510,14 @@ Action: Count Complete
                 elected: vec![4, 3, 0],
                 not_elected: vec![1, 2],
                 transcript: vec![
-                    TranscriptEvent::KeepFactors(vec![
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(3000000000),
                             FixedDecimal9::new(1500000000),
@@ -2447,7 +2527,8 @@ Action: Count Complete
                         ],
                         exhausted: FixedDecimal9::new(0)
                     },
-                    TranscriptEvent::Count {
+                    StartRound(1),
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(3000000000),
                             FixedDecimal9::new(1500000000),
@@ -2457,9 +2538,11 @@ Action: Count Complete
                         ],
                         exhausted: FixedDecimal9::new(0)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3750000001)),
-                    TranscriptEvent::Elected(4),
-                    TranscriptEvent::Count {
+                    Quota(FixedDecimal9::new(3750000001)),
+                    Elected(4, ElectedReason::ExceedsQuota),
+                    Surplus(FixedDecimal9::new(749999999)),
+                    StartRound(2),
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(3000000000),
                             FixedDecimal9::new(1500000000),
@@ -2469,15 +2552,16 @@ Action: Count Complete
                         ],
                         exhausted: FixedDecimal9::new(0)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3750000001)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3750000001)),
+                    Surplus(FixedDecimal9::new(749999999)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(833333334)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(3416666665),
                             FixedDecimal9::new(1500000000),
@@ -2487,9 +2571,11 @@ Action: Count Complete
                         ],
                         exhausted: FixedDecimal9::new(0)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3750000001)),
-                    TranscriptEvent::Elected(3),
-                    TranscriptEvent::Count {
+                    Quota(FixedDecimal9::new(3750000001)),
+                    Elected(3, ElectedReason::ExceedsQuota),
+                    Surplus(FixedDecimal9::new(83333333)),
+                    StartRound(3),
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(3416666665),
                             FixedDecimal9::new(1500000000),
@@ -2499,15 +2585,16 @@ Action: Count Complete
                         ],
                         exhausted: FixedDecimal9::new(0)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3750000001)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3750000001)),
+                    Surplus(FixedDecimal9::new(83333333)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(978260871),
                         FixedDecimal9::new(833333334)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(3421497581),
                             FixedDecimal9::new(1504830916),
@@ -2517,15 +2604,16 @@ Action: Count Complete
                         ],
                         exhausted: FixedDecimal9::new(11)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3749999998)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3749999998)),
+                    Surplus(FixedDecimal9::new(36231888)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(978260871),
                         FixedDecimal9::new(825358853)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(3441664925),
                             FixedDecimal9::new(1505062060),
@@ -2535,15 +2623,16 @@ Action: Count Complete
                         ],
                         exhausted: FixedDecimal9::new(20)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3749999996)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3749999996)),
+                    Surplus(FixedDecimal9::new(15602251)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(974207584),
                         FixedDecimal9::new(825358853)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(3442608753),
                             FixedDecimal9::new(1506005888),
@@ -2553,15 +2642,16 @@ Action: Count Complete
                         ],
                         exhausted: FixedDecimal9::new(17)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3749999996)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3749999996)),
+                    Surplus(FixedDecimal9::new(6690838)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(974207584),
                         FixedDecimal9::new(823888853)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(3446334305),
                             FixedDecimal9::new(1506056440),
@@ -2571,15 +2661,16 @@ Action: Count Complete
                         ],
                         exhausted: FixedDecimal9::new(17)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3749999996)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3749999996)),
+                    Surplus(FixedDecimal9::new(2864182)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(973464072),
                         FixedDecimal9::new(823888852)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(3446508898),
                             FixedDecimal9::new(1506231028),
@@ -2589,15 +2680,16 @@ Action: Count Complete
                         ],
                         exhausted: FixedDecimal9::new(12)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3749999998)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3749999998)),
+                    Surplus(FixedDecimal9::new(1225146)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(973464072),
                         FixedDecimal9::new(823619772)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(3447191118),
                             FixedDecimal9::new(1506240548),
@@ -2607,15 +2699,16 @@ Action: Count Complete
                         ],
                         exhausted: FixedDecimal9::new(12)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3749999998)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3749999998)),
+                    Surplus(FixedDecimal9::new(523886)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(973328097),
                         FixedDecimal9::new(823619772)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(3447223094),
                             FixedDecimal9::new(1506272524),
@@ -2625,15 +2718,16 @@ Action: Count Complete
                         ],
                         exhausted: FixedDecimal9::new(19)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3749999996)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3749999996)),
+                    Surplus(FixedDecimal9::new(223994)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(973328096),
                         FixedDecimal9::new(823570580)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(3447347826),
                             FixedDecimal9::new(1506274276),
@@ -2643,15 +2737,16 @@ Action: Count Complete
                         ],
                         exhausted: FixedDecimal9::new(12)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3749999998)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3749999998)),
+                    Surplus(FixedDecimal9::new(95758)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(973303243),
                         FixedDecimal9::new(823570581)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(3447353665),
                             FixedDecimal9::new(1506280120),
@@ -2661,15 +2756,16 @@ Action: Count Complete
                         ],
                         exhausted: FixedDecimal9::new(24)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3749999995)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3749999995)),
+                    Surplus(FixedDecimal9::new(40947)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(973303243),
                         FixedDecimal9::new(823561590)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(3447376465),
                             FixedDecimal9::new(1506280440),
@@ -2679,15 +2775,16 @@ Action: Count Complete
                         ],
                         exhausted: FixedDecimal9::new(23)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3749999995)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3749999995)),
+                    Surplus(FixedDecimal9::new(17508)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(973298701),
                         FixedDecimal9::new(823561590)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(3447377533),
                             FixedDecimal9::new(1506281508),
@@ -2697,15 +2794,16 @@ Action: Count Complete
                         ],
                         exhausted: FixedDecimal9::new(19)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3749999996)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3749999996)),
+                    Surplus(FixedDecimal9::new(7493)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(973298700),
                         FixedDecimal9::new(823559946)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(3447381703),
                             FixedDecimal9::new(1506281568),
@@ -2715,15 +2813,16 @@ Action: Count Complete
                         ],
                         exhausted: FixedDecimal9::new(16)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3749999997)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3749999997)),
+                    Surplus(FixedDecimal9::new(3201)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(973297870),
                         FixedDecimal9::new(823559947)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(3447381894),
                             FixedDecimal9::new(1506281764),
@@ -2733,15 +2832,16 @@ Action: Count Complete
                         ],
                         exhausted: FixedDecimal9::new(21)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3749999995)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3749999995)),
+                    Surplus(FixedDecimal9::new(1372)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(973297870),
                         FixedDecimal9::new(823559647)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(3447382656),
                             FixedDecimal9::new(1506281776),
@@ -2751,16 +2851,17 @@ Action: Count Complete
                         ],
                         exhausted: FixedDecimal9::new(17)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3749999996)),
-                    TranscriptEvent::NotElected(1),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(3749999996)),
+                    Surplus(FixedDecimal9::new(588)),
+                    NotElected(1, NotElectedReason::LowSurplus),
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(0),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(973297870),
                         FixedDecimal9::new(823559647)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(3950523544),
                             FixedDecimal9::new(0),
@@ -2770,7 +2871,8 @@ Action: Count Complete
                         ],
                         exhausted: FixedDecimal9::new(17)
                     },
-                    TranscriptEvent::Count {
+                    StartRound(4),
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(3950523544),
                             FixedDecimal9::new(0),
@@ -2780,9 +2882,20 @@ Action: Count Complete
                         ],
                         exhausted: FixedDecimal9::new(17)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(3749999996)),
-                    TranscriptEvent::Elected(0),
-                    TranscriptEvent::NotElected(2)
+                    Quota(FixedDecimal9::new(3749999996)),
+                    Elected(0, ElectedReason::ExceedsQuota),
+                    Surplus(FixedDecimal9::new(200524136)),
+                    NotElected(2, NotElectedReason::Remaining),
+                    Count {
+                        tallies: vec![
+                            FixedDecimal9::new(4744588121),
+                            FixedDecimal9::new(0),
+                            FixedDecimal9::new(0),
+                            FixedDecimal9::new(5916055638),
+                            FixedDecimal9::new(4339356223)
+                        ],
+                        exhausted: FixedDecimal9::new(18)
+                    }
                 ],
             },
         );
@@ -2951,13 +3064,13 @@ Action: Count Complete
                 elected: vec![0, 1],
                 not_elected: vec![2, 3],
                 transcript: vec![
-                    TranscriptEvent::KeepFactors(vec![
+                    KeepFactors(vec![
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(2500000000),
                             FixedDecimal9::new(1500000000),
@@ -2966,7 +3079,8 @@ Action: Count Complete
                         ],
                         exhausted: FixedDecimal9::new(0)
                     },
-                    TranscriptEvent::Count {
+                    StartRound(1),
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(2500000000),
                             FixedDecimal9::new(1500000000),
@@ -2975,9 +3089,11 @@ Action: Count Complete
                         ],
                         exhausted: FixedDecimal9::new(0)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(1666666667)),
-                    TranscriptEvent::Elected(0),
-                    TranscriptEvent::Count {
+                    Quota(FixedDecimal9::new(1666666667)),
+                    Elected(0, ElectedReason::ExceedsQuota),
+                    Surplus(FixedDecimal9::new(833333333)),
+                    StartRound(2),
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(2500000000),
                             FixedDecimal9::new(1500000000),
@@ -2986,14 +3102,15 @@ Action: Count Complete
                         ],
                         exhausted: FixedDecimal9::new(0)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(1666666667)),
-                    TranscriptEvent::KeepFactors(vec![
+                    Quota(FixedDecimal9::new(1666666667)),
+                    Surplus(FixedDecimal9::new(833333333)),
+                    KeepFactors(vec![
                         FixedDecimal9::new(666666667),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000),
                         FixedDecimal9::new(1000000000)
                     ]),
-                    TranscriptEvent::Count {
+                    Count {
                         tallies: vec![
                             FixedDecimal9::new(1666666665),
                             FixedDecimal9::new(1833333332),
@@ -3002,10 +3119,20 @@ Action: Count Complete
                         ],
                         exhausted: FixedDecimal9::new(5)
                     },
-                    TranscriptEvent::Quota(FixedDecimal9::new(1666666666)),
-                    TranscriptEvent::Elected(1),
-                    TranscriptEvent::NotElected(2),
-                    TranscriptEvent::NotElected(3)
+                    Quota(FixedDecimal9::new(1666666666)),
+                    Elected(1, ElectedReason::ExceedsQuota),
+                    Surplus(FixedDecimal9::new(166666665)),
+                    NotElected(2, NotElectedReason::Remaining),
+                    NotElected(3, NotElectedReason::Remaining),
+                    Count {
+                        tallies: vec![
+                            FixedDecimal9::new(2333333333),
+                            FixedDecimal9::new(2166666666),
+                            FixedDecimal9::new(0),
+                            FixedDecimal9::new(0)
+                        ],
+                        exhausted: FixedDecimal9::new(500000001)
+                    }
                 ],
             },
         );
@@ -4334,7 +4461,7 @@ Action: Defeat remaining: Eggplant
                 Candidate::new("date", false),
             ])
             .build();
-        let state = State::builder()
+        let mut state = State::builder()
             .election(&election)
             .statuses([
                 Status::Elected,

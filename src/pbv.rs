@@ -15,7 +15,7 @@
 //! A simulation of plurality block voting based on ranked ballots.
 
 use crate::arithmetic::{Integer, IntegerRef, Rational, RationalRef};
-use crate::types::{Election, ElectionResult, TranscriptEvent};
+use crate::types::{ElectedReason, Election, ElectionResult, NotElectedReason, TranscriptEvent};
 use log::{debug, info, trace};
 use std::io;
 
@@ -148,7 +148,7 @@ Election: {}
     for (i, &id) in elected.iter().enumerate() {
         info!("    [{}] {}", i, election.candidates[id].nickname);
         writeln!(stdout, "Action: Elect: {}", election.candidates[id].name)?;
-        transcript.push(TranscriptEvent::Elected(id));
+        transcript.push(TranscriptEvent::Elected(id, ElectedReason::Other));
     }
 
     info!("Not elected:");
@@ -159,7 +159,7 @@ Election: {}
             election.candidates[id].nickname
         );
         writeln!(stdout, "Action: Defeat: {}", election.candidates[id].name)?;
-        transcript.push(TranscriptEvent::NotElected(id));
+        transcript.push(TranscriptEvent::NotElected(id, NotElectedReason::Other));
     }
 
     writeln!(stdout, "Action: Count Complete")?;
@@ -255,13 +255,13 @@ mod test {
                         ],
                         exhausted: FixedDecimal9::new(0)
                     },
-                    TranscriptEvent::Elected(8),
-                    TranscriptEvent::Elected(0),
-                    TranscriptEvent::Elected(7),
-                    TranscriptEvent::Elected(2),
-                    TranscriptEvent::Elected(4),
-                    TranscriptEvent::NotElected(3),
-                    TranscriptEvent::NotElected(6)
+                    TranscriptEvent::Elected(8, ElectedReason::Other),
+                    TranscriptEvent::Elected(0, ElectedReason::Other),
+                    TranscriptEvent::Elected(7, ElectedReason::Other),
+                    TranscriptEvent::Elected(2, ElectedReason::Other),
+                    TranscriptEvent::Elected(4, ElectedReason::Other),
+                    TranscriptEvent::NotElected(3, NotElectedReason::Other),
+                    TranscriptEvent::NotElected(6, NotElectedReason::Other)
                 ],
             }
         );
@@ -331,13 +331,13 @@ Action: Count Complete
                         ],
                         exhausted: FixedDecimal9::new(0)
                     },
-                    TranscriptEvent::Elected(6),
-                    TranscriptEvent::Elected(8),
-                    TranscriptEvent::Elected(7),
-                    TranscriptEvent::Elected(4),
-                    TranscriptEvent::Elected(0),
-                    TranscriptEvent::NotElected(3),
-                    TranscriptEvent::NotElected(2)
+                    TranscriptEvent::Elected(6, ElectedReason::Other),
+                    TranscriptEvent::Elected(8, ElectedReason::Other),
+                    TranscriptEvent::Elected(7, ElectedReason::Other),
+                    TranscriptEvent::Elected(4, ElectedReason::Other),
+                    TranscriptEvent::Elected(0, ElectedReason::Other),
+                    TranscriptEvent::NotElected(3, NotElectedReason::Other),
+                    TranscriptEvent::NotElected(2, NotElectedReason::Other)
                 ],
             }
         );
@@ -407,13 +407,13 @@ Action: Count Complete
                         ],
                         exhausted: FixedDecimal9::new(0)
                     },
-                    TranscriptEvent::Elected(8),
-                    TranscriptEvent::Elected(7),
-                    TranscriptEvent::Elected(6),
-                    TranscriptEvent::Elected(0),
-                    TranscriptEvent::Elected(4),
-                    TranscriptEvent::NotElected(2),
-                    TranscriptEvent::NotElected(3)
+                    TranscriptEvent::Elected(8, ElectedReason::Other),
+                    TranscriptEvent::Elected(7, ElectedReason::Other),
+                    TranscriptEvent::Elected(6, ElectedReason::Other),
+                    TranscriptEvent::Elected(0, ElectedReason::Other),
+                    TranscriptEvent::Elected(4, ElectedReason::Other),
+                    TranscriptEvent::NotElected(2, NotElectedReason::Other),
+                    TranscriptEvent::NotElected(3, NotElectedReason::Other)
                 ],
             }
         );
@@ -483,13 +483,13 @@ Action: Count Complete
                         ],
                         exhausted: FixedDecimal9::new(0)
                     },
-                    TranscriptEvent::Elected(8),
-                    TranscriptEvent::Elected(7),
-                    TranscriptEvent::Elected(0),
-                    TranscriptEvent::Elected(6),
-                    TranscriptEvent::Elected(2),
-                    TranscriptEvent::NotElected(4),
-                    TranscriptEvent::NotElected(3)
+                    TranscriptEvent::Elected(8, ElectedReason::Other),
+                    TranscriptEvent::Elected(7, ElectedReason::Other),
+                    TranscriptEvent::Elected(0, ElectedReason::Other),
+                    TranscriptEvent::Elected(6, ElectedReason::Other),
+                    TranscriptEvent::Elected(2, ElectedReason::Other),
+                    TranscriptEvent::NotElected(4, NotElectedReason::Other),
+                    TranscriptEvent::NotElected(3, NotElectedReason::Other)
                 ],
             }
         );
@@ -559,13 +559,13 @@ Action: Count Complete
                         ],
                         exhausted: FixedDecimal9::new(0)
                     },
-                    TranscriptEvent::Elected(8),
-                    TranscriptEvent::Elected(0),
-                    TranscriptEvent::Elected(7),
-                    TranscriptEvent::Elected(6),
-                    TranscriptEvent::Elected(2),
-                    TranscriptEvent::NotElected(4),
-                    TranscriptEvent::NotElected(3)
+                    TranscriptEvent::Elected(8, ElectedReason::Other),
+                    TranscriptEvent::Elected(0, ElectedReason::Other),
+                    TranscriptEvent::Elected(7, ElectedReason::Other),
+                    TranscriptEvent::Elected(6, ElectedReason::Other),
+                    TranscriptEvent::Elected(2, ElectedReason::Other),
+                    TranscriptEvent::NotElected(4, NotElectedReason::Other),
+                    TranscriptEvent::NotElected(3, NotElectedReason::Other)
                 ],
             }
         );
@@ -635,13 +635,13 @@ Action: Count Complete
                         ],
                         exhausted: FixedDecimal9::new(5000000000)
                     },
-                    TranscriptEvent::Elected(8),
-                    TranscriptEvent::Elected(0),
-                    TranscriptEvent::Elected(2),
-                    TranscriptEvent::Elected(7),
-                    TranscriptEvent::Elected(3),
-                    TranscriptEvent::NotElected(6),
-                    TranscriptEvent::NotElected(4)
+                    TranscriptEvent::Elected(8, ElectedReason::Other),
+                    TranscriptEvent::Elected(0, ElectedReason::Other),
+                    TranscriptEvent::Elected(2, ElectedReason::Other),
+                    TranscriptEvent::Elected(7, ElectedReason::Other),
+                    TranscriptEvent::Elected(3, ElectedReason::Other),
+                    TranscriptEvent::NotElected(6, NotElectedReason::Other),
+                    TranscriptEvent::NotElected(4, NotElectedReason::Other)
                 ],
             }
         );

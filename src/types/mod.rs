@@ -260,10 +260,47 @@ pub enum TranscriptEvent<T> {
     KeepFactors(Vec<T>),
     /// Number of votes required to be elected.
     Quota(T),
+    /// Sum of the votes of elected candidates that exceed the quota.
+    Surplus(T),
     /// Candidate was withdrawn.
     Withdrawn(usize),
     /// Candidate is now elected.
-    Elected(usize),
+    Elected(usize, ElectedReason),
     /// Candidate is now defeated.
-    NotElected(usize),
+    NotElected(usize, NotElectedReason),
+    /// Start of an election round.
+    StartRound(usize),
+    /// Break a tie to chose the next defeated candidate.
+    BreakTie {
+        /// List of tied candidates.
+        list: Vec<usize>,
+        /// Candidate chosen to break the tie.
+        chosen: usize,
+    },
+}
+
+/// Reason why a candidate was elected.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ElectedReason {
+    /// The candidate received at least as many votes as the quota.
+    ExceedsQuota,
+    /// All remaining candidates are elected after the required quorum has been
+    /// defeated.
+    Remaining,
+    /// Unspecified reason.
+    Other,
+}
+
+/// Reason why a candidate was defeated.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum NotElectedReason {
+    /// Counting converged to a stable surplus of votes.
+    StableSurplus,
+    /// Surplus of votes became smaller than the threshold.
+    LowSurplus,
+    /// All remaining candidates are defeated after the required quorum has been
+    /// elected.
+    Remaining,
+    /// Unspecified reason.
+    Other,
 }
